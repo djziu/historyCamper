@@ -3,8 +3,11 @@ import { Tent, Compass, Map as MapIcon, ShieldCheck, MapPin, Clock, Flame, Acces
 import { Map, MapMarker, Polyline, useKakaoLoader } from 'react-kakao-maps-sdk'
 
 function App() {
-  const [loading, error] = useKakaoLoader({
-    appkey: "2a9acbfdf57b3822c73494498fc87389",
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const KAKAO_KEY = isLocal ? "2a9acbfdf57b3822c73494498fc87389" : "0bf5fc207b57b96ebcce8a4a17f33a5c";
+
+  useKakaoLoader({
+    appkey: KAKAO_KEY,
   });
   
   const [activeTab, setActiveTab] = useState('home');
