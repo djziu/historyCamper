@@ -4,7 +4,7 @@ import { Map, MapMarker, Polyline, useKakaoLoader } from 'react-kakao-maps-sdk'
 import { useTranslation } from 'react-i18next'
 import { supabase, isSupabaseConfigured, QuizQuestion, Campsite, HeritageSite } from './supabaseClient'
 
-// Campsites Master Data
+// Campsites Master Data (Historical Campsites)
 const MASTER_CAMPSITES: Campsite[] = [
   {
     id: 'moaksan',
@@ -93,6 +93,22 @@ const MASTER_HERITAGES: HeritageSite[] = [
   }
 ];
 
+// Mock Jeolla region public campsites data (Fallback for Open API)
+const MOCK_JEOLLA_CAMPS = [
+  { id: 'public-mock-1', name: '전주 교동 오토캠핑장', addr: '전북 전주시 완산구 교동 12-3', lat: 35.8115, lng: 127.1585, tel: '063-222-1111', induty: '일반야영장', description: '전주 한옥마을 도보 거리에 위치한 도심 속 야영장.' },
+  { id: 'public-mock-2', name: '완주 대둔산 캠핑파크', addr: '전북 완주군 운주면 산북리 55', lat: 36.1245, lng: 127.3120, tel: '063-263-0000', induty: '일반야영장, 글램핑', description: '대둔산 도립공원 자락에 위치한 수려한 경관의 캠핑장.' },
+  { id: 'public-mock-3', name: '익산 웅포관광지 곰개나루 캠핑장', addr: '전북 익산시 웅포면 웅포리 738', lat: 36.0745, lng: 126.8580, tel: '063-859-3846', induty: '일반야영장, 오토캠핑', description: '금강변의 아름다운 낙조를 감상할 수 있는 가족 야영장.' },
+  { id: 'public-mock-4', name: '군산 청암산 오토캠핑장', addr: '전북 군산시 회현면 세제길 27', lat: 35.9388, lng: 126.7725, tel: '063-465-3357', induty: '오토캠핑장', description: '청암산 호수공원 인근의 깨끗하고 넓은 오토캠핑장.' },
+  { id: 'public-mock-5', name: '고창 선운산도립공원 야영장', addr: '전북 고창군 아산면 선운사로 205', lat: 35.4988, lng: 126.6185, tel: '063-560-8600', induty: '일반야영장', description: '선운산의 사계절 아름다움을 만끽할 수 있는 자연 친화 야영장.' },
+  { id: 'public-mock-6', name: '부안 고사포야영장', addr: '전북 부안군 변산면 변산로 2065-1', lat: 35.6845, lng: 126.4715, tel: '063-582-7888', induty: '일반야영장', description: '변산반도 국립공원 고사포 해수욕장 송림 속 야영장.' },
+  { id: 'public-mock-7', name: '남원 지리산백무동야영장', addr: '전북 남원시 아영면 지리산로', lat: 35.3785, lng: 127.5855, tel: '055-970-1000', induty: '일반야영장', description: '지리산 천왕봉 코스 기점에 있는 계곡 옆 야영장.' },
+  { id: 'public-mock-8', name: '여수 더스타 오토캠핑장', addr: '전남 여수시 돌산읍 평사리 12-4', lat: 34.6855, lng: 127.7985, tel: '061-644-0000', induty: '오토캠핑, 카라반', description: '돌산 바다가 한눈에 내려다보이는 오션뷰 오토캠핑장.' },
+  { id: 'public-mock-9', name: '순천만 국가정원 글램핑', addr: '전남 순천시 홍내동 11-2', lat: 34.9255, lng: 127.5020, tel: '061-744-1111', induty: '글램핑', description: '순천만 습지와 국가정원 관광에 최적화된 럭셔리 글램핑.' },
+  { id: 'public-mock-10', name: '담양 메타프로방스 카라반', addr: '전남 담양군 담양읍 깊은실길 22', lat: 35.3288, lng: 127.0088, tel: '061-380-0000', induty: '카라반', description: '담양 메타세쿼이아길 바로 옆 유럽풍 프로방스 마을 카라반.' },
+  { id: 'public-mock-11', name: '장성 백양사 가인야영장', addr: '전남 장성군 북하면 백양로 1114', lat: 35.4385, lng: 126.8785, tel: '061-392-7288', induty: '일반야영장', description: '내장산 국립공원 백양사 지구에 위치한 수려한 계곡 야영장.' },
+  { id: 'public-mock-12', name: '보성 율포솔밭오토캠핑장', addr: '전남 보성군 회천면 우암길 24', lat: 34.7015, lng: 127.0815, tel: '061-850-8600', induty: '오토캠핑, 카라반', description: '보성 율포 솔밭 해수욕장 백사장 인근의 소나무 숲 캠핑장.' }
+];
+
 // Mock Quiz Data - Korean
 const MOCK_QUIZZES_KO: QuizQuestion[] = [
   {
@@ -167,6 +183,15 @@ function App() {
   
   const [activeTab, setActiveTab] = useState('home');
   const [activeEra, setActiveEra] = useState('all');
+
+  // GoCamping API setup
+  const gocampingApiKey = import.meta.env.VITE_GOCAMPING_API_KEY || '';
+  const isGocampingConfigured = !!(gocampingApiKey && gocampingApiKey !== 'your-gocamping-decoding-service-key');
+
+  const [showPublicCamps, setShowPublicCamps] = useState(false);
+  const [publicCamps, setPublicCamps] = useState<any[]>([]);
+  const [loadingPublicCamps, setLoadingPublicCamps] = useState(false);
+  const [activeInfoWindowCampId, setActiveInfoWindowCampId] = useState<string | null>(null);
 
   // Device identifier
   const [deviceId] = useState(() => {
@@ -293,6 +318,58 @@ function App() {
     }
   };
 
+  // Fetch Public campsites from Korea Tourism Organization Open API (with Local Proxy support)
+  const fetchPublicCamps = async () => {
+    if (publicCamps.length > 0) return;
+    setLoadingPublicCamps(true);
+
+    if (isGocampingConfigured) {
+      try {
+        const isDev = import.meta.env.DEV;
+        // Use Vite Proxy in local dev mode to bypass CORS
+        const baseUrl = isDev ? '/api-gocamping' : 'https://apis.data.go.kr';
+        const url = `${baseUrl}/B551011/GoCamping/basedList?serviceKey=${gocampingApiKey}&numOfRows=1000&pageNo=1&MobileOS=ETC&MobileApp=historyCamper&_type=json`;
+
+        console.log("Fetching GoCamping Public API:", url);
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        const result = await response.json();
+        const items = result?.response?.body?.items?.item;
+
+        if (Array.isArray(items)) {
+          // Filter Jeolla province
+          const filtered = items.filter((item: any) => {
+            const doNm = item.doNm || '';
+            return doNm.includes('전라') || doNm.includes('전북') || doNm.includes('전남');
+          }).map((item: any) => ({
+            id: `public-${item.contentId}`,
+            name: item.facltNm,
+            addr: item.addr1 || item.addr2 || '',
+            lat: parseFloat(item.mapY),
+            lng: parseFloat(item.mapX),
+            tel: item.tel || '',
+            induty: item.induty || '일반야영장',
+            description: item.intro || item.lineIntro || ''
+          })).filter((item: any) => !isNaN(item.lat) && !isNaN(item.lng));
+
+          setPublicCamps(filtered);
+        } else {
+          throw new Error("Invalid API response format");
+        }
+      } catch (err) {
+        console.error("Failed to load GoCamping API, falling back to mock Jeolla list:", err);
+        setPublicCamps(MOCK_JEOLLA_CAMPS);
+      } finally {
+        setLoadingPublicCamps(false);
+      }
+    } else {
+      // Fallback to local mock dataset if API key isn't provided
+      setPublicCamps(MOCK_JEOLLA_CAMPS);
+      setLoadingPublicCamps(false);
+    }
+  };
+
   // Load Quiz Data
   useEffect(() => {
     async function loadQuizzes() {
@@ -326,8 +403,28 @@ function App() {
     loadQuizzes();
   }, [i18n.language]);
 
-  // Dynamic campsite routing helpers
-  const selectedCampsite = MASTER_CAMPSITES.find(c => c.id === selectedCampsiteId) || MASTER_CAMPSITES[0];
+  // Master merge displaying campsites - includes historical ones + any bookmarked public campsites
+  const allDisplayCampsites = [...MASTER_CAMPSITES];
+  Object.keys(campsiteStatuses).forEach(id => {
+    if (id.startsWith('public-')) {
+      const found = publicCamps.find(c => c.id === id) || MOCK_JEOLLA_CAMPS.find(c => c.id === id);
+      if (found && !allDisplayCampsites.some(c => c.id === id)) {
+        allDisplayCampsites.push({
+          id: found.id,
+          name: found.name,
+          description: found.addr,
+          lat: found.lat,
+          lng: found.lng,
+          era: 'all',
+          tags: [found.induty || '공공 캠핑장', '공공 데이터'],
+          distanceToHistoric: 0,
+          nearbyHeritageIds: []
+        });
+      }
+    }
+  });
+
+  const selectedCampsite = allDisplayCampsites.find(c => c.id === selectedCampsiteId) || allDisplayCampsites[0];
   const nearbyHeritages = MASTER_HERITAGES.filter(h => selectedCampsite.nearbyHeritageIds.includes(h.id));
 
   // Path coordinates for polyline route starting at campground and drawing lines to historical landmarks
@@ -337,12 +434,10 @@ function App() {
   ]);
 
   // Filter campsites for Era Matching tab
-  const filteredCampsites = MASTER_CAMPSITES.filter(c => {
-    // 1. If filtering by status (planned or visited), check matching status
+  const filteredCampsites = allDisplayCampsites.filter(c => {
     if (statusFilter !== 'all' && campsiteStatuses[c.id] !== statusFilter) {
       return false;
     }
-    // 2. If showing all statuses, we can filter by era
     if (statusFilter === 'all' && activeEra !== 'all' && c.era !== activeEra) {
       return false;
     }
@@ -579,11 +674,13 @@ function App() {
                             onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
                             onMouseLeave={(e) => e.currentTarget.style.color = ''}
                           >
-                            {t(campsite.name)}
+                            {campsite.id.startsWith('public-') ? campsite.name : t(campsite.name)}
                           </div>
                         </div>
                         
-                        <div className="list-desc">{t(campsite.description)}</div>
+                        <div className="list-desc">
+                          {campsite.id.startsWith('public-') ? campsite.description : t(campsite.description)}
+                        </div>
                         
                         <div className="tag-container" style={{ marginTop: '6px' }}>
                           {campsite.tags.map((tag, idx) => (
@@ -706,13 +803,45 @@ function App() {
           <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem' }}>{t('route.title')}</h3>
             
+            {/* Open API Toggle controller */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', marginBottom: '10px', padding: '10px', background: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                <input 
+                  type="checkbox" 
+                  checked={showPublicCamps} 
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setShowPublicCamps(checked);
+                    if (checked) {
+                      fetchPublicCamps();
+                    }
+                  }}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                />
+                {t('route.map.load_public')}
+              </label>
+              {loadingPublicCamps && (
+                <span style={{ fontSize: '0.8rem', color: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <Clock size={12} className="animate-spin" /> {i18n.language === 'ko' ? '불러오는 중...' : 'Loading...'}
+                </span>
+              )}
+            </div>
+
+            {/* API key fallback alert */}
+            {showPublicCamps && !isGocampingConfigured && (
+              <div className="quiz-alert mock" style={{ marginBottom: '10px', marginTop: 0 }}>
+                <AlertCircle size={16} />
+                <span style={{ fontSize: '0.75rem', lineHeight: 1.4 }}>{t('route.map.api_key_alert')}</span>
+              </div>
+            )}
+
             <div className="route-layout">
               {/* KAKAO MAP COMPONENT */}
               <div className="route-map-container">
                 <Map
                   center={{ lat: selectedCampsite.lat, lng: selectedCampsite.lng }}
                   style={{ width: "100%", height: "100%" }}
-                  level={selectedCampsiteId === 'mireuksa' ? 6 : 8}
+                  level={selectedCampsiteId.startsWith('public-') || showPublicCamps ? 9 : (selectedCampsiteId === 'mireuksa' ? 6 : 8)}
                 >
                   {/* Selected Campsite Marker */}
                   <MapMarker 
@@ -723,16 +852,108 @@ function App() {
                     }}
                   >
                     <div style={{ padding: "3px 6px", color: "black", fontSize: "0.75rem", textAlign: "center", borderRadius: "4px", fontWeight: "bold" }}>
-                      ⛺ {t(selectedCampsite.name)}
+                      ⛺ {selectedCampsite.id.startsWith('public-') ? selectedCampsite.name : t(selectedCampsite.name)}
                     </div>
                   </MapMarker>
                   
-                  {/* Dynamic Nearby Heritage Markers */}
+                  {/* Dynamic Nearby Heritage Markers (Only render if there are matching ones) */}
                   {nearbyHeritages.map(heritage => (
                     <MapMarker key={heritage.id} position={{ lat: heritage.lat, lng: heritage.lng }}>
                       <div style={{ padding: "3px 6px", color: "black", fontSize: "0.75rem", textAlign: "center", fontWeight: 'bold' }}>
                         🏛️ {t(heritage.name)}
                       </div>
+                    </MapMarker>
+                  ))}
+
+                  {/* Render public campsites markers from Open API if enabled */}
+                  {showPublicCamps && publicCamps.filter(camp => camp.id !== selectedCampsite.id).map(camp => (
+                    <MapMarker
+                      key={camp.id}
+                      position={{ lat: camp.lat, lng: camp.lng }}
+                      onClick={() => {
+                        setActiveInfoWindowCampId(camp.id);
+                      }}
+                    >
+                      {activeInfoWindowCampId === camp.id && (
+                        <div style={{ 
+                          padding: '10px', 
+                          minWidth: '240px', 
+                          background: 'white', 
+                          borderRadius: '12px', 
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                          fontSize: '0.8rem',
+                          color: '#333',
+                          zIndex: 99999
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f0f0f0', paddingBottom: '6px', marginBottom: '8px' }}>
+                            <span style={{ fontWeight: 800, color: 'var(--primary)', fontSize: '0.85rem' }}>{camp.name}</span>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveInfoWindowCampId(null);
+                              }}
+                              style={{ background: 'none', border: 'none', fontSize: '0.9rem', cursor: 'pointer', color: '#999', padding: '2px' }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                          <div style={{ marginBottom: '6px', lineHeight: 1.4 }}>
+                            <strong>📍 {t('route.map.address')}:</strong> {camp.addr}
+                          </div>
+                          {camp.tel && (
+                            <div style={{ marginBottom: '6px', lineHeight: 1.4 }}>
+                              <strong>📞 {t('route.map.tel')}:</strong> {camp.tel}
+                            </div>
+                          )}
+                          {camp.induty && (
+                            <div style={{ marginBottom: '10px', lineHeight: 1.4 }}>
+                              <strong>⛺ {t('route.map.induty')}:</strong> {camp.induty}
+                            </div>
+                          )}
+                          
+                          {/* Bookmarking / Status selection inside InfoWindow */}
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleStatus(camp.id, 'planned');
+                              }}
+                              style={{
+                                flex: 1,
+                                padding: '6px 8px',
+                                borderRadius: '6px',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                border: campsiteStatuses[camp.id] === 'planned' ? '1px solid var(--gold)' : '1px solid var(--border)',
+                                background: campsiteStatuses[camp.id] === 'planned' ? 'rgba(217, 119, 6, 0.08)' : 'white',
+                                color: campsiteStatuses[camp.id] === 'planned' ? 'var(--gold)' : '#555'
+                              }}
+                            >
+                              📌 {t('era.status_planned')}
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleStatus(camp.id, 'visited');
+                              }}
+                              style={{
+                                flex: 1,
+                                padding: '6px 8px',
+                                borderRadius: '6px',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                border: campsiteStatuses[camp.id] === 'visited' ? '1px solid var(--primary)' : '1px solid var(--border)',
+                                background: campsiteStatuses[camp.id] === 'visited' ? 'rgba(22, 101, 52, 0.08)' : 'white',
+                                color: campsiteStatuses[camp.id] === 'visited' ? 'var(--primary)' : '#555'
+                              }}
+                            >
+                              ✅ {t('era.status_visited')}
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </MapMarker>
                   ))}
 
@@ -754,7 +975,7 @@ function App() {
                 <div className="card-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <MapPin size={20} color="var(--gold)"/>
-                    {t('route.card.title', { campsiteName: t(selectedCampsite.name) })}
+                    {t('route.card.title', { campsiteName: selectedCampsite.id.startsWith('public-') ? selectedCampsite.name : t(selectedCampsite.name) })}
                   </div>
                   
                   {/* Quick toggle statuses in the map detail panel */}
@@ -795,7 +1016,7 @@ function App() {
                 </div>
                 
                 <div className="card-text">
-                  {t('route.card.desc', { campsiteName: t(selectedCampsite.name) })}
+                  {t('route.card.desc', { campsiteName: selectedCampsite.id.startsWith('public-') ? selectedCampsite.name : t(selectedCampsite.name) })}
                 </div>
 
                 <div className="timeline">
@@ -804,28 +1025,47 @@ function App() {
                     <div className="timeline-dot"></div>
                     <div className="timeline-content">
                       <div className="time">DAY 1 - 14:00</div>
-                      <div className="title">{t(selectedCampsite.name)} {i18n.language === 'ko' ? '체크인' : 'Check-in'}</div>
-                      <div className="desc">{t(selectedCampsite.description)}</div>
+                      <div className="title">
+                        {selectedCampsite.id.startsWith('public-') ? selectedCampsite.name : t(selectedCampsite.name)} {i18n.language === 'ko' ? '체크인' : 'Check-in'}
+                      </div>
+                      <div className="desc">
+                        {selectedCampsite.id.startsWith('public-') ? selectedCampsite.description : t(selectedCampsite.description)}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Dynamic heritage steps */}
-                  {nearbyHeritages.map((heritage, index) => (
-                    <div className="timeline-item" key={heritage.id}>
-                      <div className="timeline-dot"></div>
-                      <div className="timeline-content">
-                        <div className="time">
-                          {index === 0 ? "DAY 1 - 16:00" : `DAY 2 - 10:00`}
+                  {/* Dynamic heritage steps (Only show if this campsite has preconfigured historical sites) */}
+                  {nearbyHeritages.length > 0 ? (
+                    nearbyHeritages.map((heritage, index) => (
+                      <div className="timeline-item" key={heritage.id}>
+                        <div className="timeline-dot"></div>
+                        <div className="timeline-content">
+                          <div className="time">
+                            {index === 0 ? "DAY 1 - 16:00" : `DAY 2 - 10:00`}
+                          </div>
+                          <div className="title">{t(heritage.name)}</div>
+                          <div className="desc">{t(heritage.description)}</div>
                         </div>
-                        <div className="title">{t(heritage.name)}</div>
-                        <div className="desc">{t(heritage.description)}</div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="timeline-item">
+                      <div className="timeline-dot" style={{ background: 'var(--border)' }}></div>
+                      <div className="timeline-content">
+                        <div className="time">DAY 1 - 16:00</div>
+                        <div className="title">{i18n.language === 'ko' ? '자유 캠핑 및 힐링' : 'Free Camping & Relaxation'}</div>
+                        <div className="desc">
+                          {i18n.language === 'ko' 
+                            ? '특별히 지정된 주변 역사 연계 코스가 없는 일반 야영지입니다. 자연 속에서 편안한 캠핑을 즐겨보세요.' 
+                            : 'This is a general public campsite without pre-configured historical routes. Enjoy cozy camping in nature.'}
+                        </div>
                       </div>
                     </div>
-                  ))}
+                  )}
                 </div>
                 
                 <button 
-                  onClick={() => window.open(`https://map.kakao.com/link/to/${t(selectedCampsite.name)},${selectedCampsite.lat},${selectedCampsite.lng}`)}
+                  onClick={() => window.open(`https://map.kakao.com/link/to/${selectedCampsite.id.startsWith('public-') ? selectedCampsite.name : t(selectedCampsite.name)},${selectedCampsite.lat},${selectedCampsite.lng}`)}
                   style={{ width: '100%', padding: '12px', marginTop: '1rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
                 >
                   <Navigation size={18} />
@@ -1051,7 +1291,7 @@ function App() {
               <div className="card red-accent" style={{ marginBottom: 0 }}>
                 <div className="card-title">
                   <Tent size={20} color="var(--red-accent)"/>
-                  {t(selectedCampsite.name)} {i18n.language === 'ko' ? '안전 정보' : 'Safety Info'}
+                  {selectedCampsite.id.startsWith('public-') ? selectedCampsite.name : t(selectedCampsite.name)} {i18n.language === 'ko' ? '안전 정보' : 'Safety Info'}
                 </div>
                 <div className="list-item">
                   <div className="list-icon safety"><Flame size={20} /></div>

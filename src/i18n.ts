@@ -100,6 +100,12 @@ const resources = {
         map: {
           marker_campsite: "캠핑장",
           marker_heritage: "유적지 (도슨트)",
+          load_public: "전라도 공공 캠핑장 표시 🗺️",
+          api_key_alert: "💡 API 키가 미등록 상태여서 전라도 지역 주요 공공 캠핑장 모의 데이터를 지도에 표시합니다. 실시간 고캠핑 데이터를 불러오려면 .env 파일에 VITE_GOCAMPING_API_KEY를 기입해 주세요.",
+          campsite_info: "공공 캠핑장 상세 정보",
+          address: "주소",
+          tel: "전화번호",
+          induty: "유형"
         },
         card: {
           title: "{{campsiteName}} 기점 탐방 코스",
@@ -249,6 +255,12 @@ const resources = {
         map: {
           marker_campsite: "Campground",
           marker_heritage: "Heritage (Docent)",
+          load_public: "Show Jeolla Public Campsites 🗺️",
+          api_key_alert: "💡 API key is not registered. Showing mock campsite data for Jeolla region. To load real-time GoCamping API data, please write VITE_GOCAMPING_API_KEY in your .env file.",
+          campsite_info: "Public Campsite Info",
+          address: "Address",
+          tel: "Tel",
+          induty: "Type"
         },
         card: {
           title: "Exploration Course based on {{campsiteName}}",
