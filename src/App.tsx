@@ -1172,6 +1172,14 @@ function App() {
                   {t('route.card.desc', { campsiteName: selectedCampsite.id.startsWith('public-') ? selectedCampsite.name : t(selectedCampsite.name) })}
                 </div>
 
+                <button 
+                  onClick={() => window.open(`https://map.kakao.com/link/to/${selectedCampsite.id.startsWith('public-') ? selectedCampsite.name : t(selectedCampsite.name)},${selectedCampsite.lat},${selectedCampsite.lng}`)}
+                  style={{ width: '100%', padding: '12px', marginTop: '1rem', marginBottom: '1rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                >
+                  <Navigation size={18} />
+                  {t('route.card.btn')}
+                </button>
+
                 <div className="timeline">
                   {/* Campground Check-in step */}
                   <div className="timeline-item">
@@ -1216,14 +1224,6 @@ function App() {
                     </div>
                   )}
                 </div>
-                
-                <button 
-                  onClick={() => window.open(`https://map.kakao.com/link/to/${selectedCampsite.id.startsWith('public-') ? selectedCampsite.name : t(selectedCampsite.name)},${selectedCampsite.lat},${selectedCampsite.lng}`)}
-                  style={{ width: '100%', padding: '12px', marginTop: '1rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                >
-                  <Navigation size={18} />
-                  {t('route.card.btn')}
-                </button>
               </div>
             </div>
           </div>
