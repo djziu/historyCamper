@@ -171,6 +171,21 @@ const MOCK_QUIZZES_EN: QuizQuestion[] = [
   }
 ];
 
+// Geolocation Haversine Distance Calculator (computed locally in device memory)
+const calculateHaversineDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+  const R = 6371; // Radius of Earth in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) *
+      Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c * 10) / 10;
+};
+
 function App() {
   const { t, i18n } = useTranslation();
 
@@ -193,6 +208,10 @@ function App() {
   const [loadingPublicCamps, setLoadingPublicCamps] = useState(false);
   const [activeInfoWindowCampId, setActiveInfoWindowCampId] = useState<string | null>(null);
 
+  // Client-side user geolocation tracking (retained in smartphone memory only)
+  const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
+  const [gpsError, setGpsError] = useState<string | null>(null);
+
   // Device identifier
   const [deviceId] = useState(() => {
     let id = localStorage.getItem('history_camper_device_id');
@@ -210,6 +229,9 @@ function App() {
 
   // Selected Campsite for interactive mapping (defaults to Moaksan)
   const [selectedCampsiteId, setSelectedCampsiteId] = useState('moaksan');
+
+  // Map Center controller state
+  const [mapCenter, setMapCenter] = useState<{ lat: number, lng: number }>({ lat: 35.7336, lng: 127.0928 });
 
   // Supabase & Quiz States
   const [quizzes, setQuizzes] = useState<QuizQuestion[]>([]);
@@ -433,7 +455,7 @@ function App() {
     { lat: h.lat, lng: h.lng }
   ]);
 
-  // Filter campsites for Era Matching tab
+  // Filter and sort campsites based on distance to user (computed locally)
   const filteredCampsites = allDisplayCampsites.filter(c => {
     if (statusFilter !== 'all' && campsiteStatuses[c.id] !== statusFilter) {
       return false;
@@ -444,10 +466,61 @@ function App() {
     return true;
   });
 
+  const sortedCampsites = [...filteredCampsites].sort((a, b) => {
+    if (userLocation) {
+      const distA = calculateHaversineDistance(userLocation.lat, userLocation.lng, a.lat, a.lng);
+      const distB = calculateHaversineDistance(userLocation.lat, userLocation.lng, b.lat, b.lng);
+      return distA - distB;
+    }
+    return 0;
+  });
+
+  // Center on selected campsite when it changes
+  useEffect(() => {
+    if (selectedCampsite) {
+      setMapCenter({ lat: selectedCampsite.lat, lng: selectedCampsite.lng });
+    }
+  }, [selectedCampsiteId]);
+
   // Navigate to route tab and load clicked campsite
   const viewHeritageRoute = (campsiteId: string) => {
     setSelectedCampsiteId(campsiteId);
     setActiveTab('route');
+  };
+
+  // Request browser location permission and center map (client-side only, no server updates)
+  const handleFindMyLocation = () => {
+    if (!navigator.geolocation) {
+      setGpsError(t('route.map.gps_error'));
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        setUserLocation({ lat, lng });
+        setMapCenter({ lat, lng });
+        setGpsError(null);
+      },
+      (error) => {
+        console.error("GPS retrieval error:", error);
+        setGpsError(t('route.map.gps_error'));
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
+  // Helper text builder for campground cards to display local distance
+  const getCampsiteDistanceText = (campsite: Campsite | any) => {
+    if (userLocation) {
+      const dist = calculateHaversineDistance(userLocation.lat, userLocation.lng, campsite.lat, campsite.lng);
+      return t('route.map.distance_from_me', { distance: dist });
+    }
+    if (campsite.distanceToHistoric) {
+      return t('era.distance_km', { distance: campsite.distanceToHistoric }) + ` (${i18n.language === 'ko' ? '유적지와의 거리' : 'to heritage'})`;
+    }
+    return campsite.description;
   };
 
   // Filtered Quiz List
@@ -657,9 +730,41 @@ function App() {
               )}
             </div>
 
-            {filteredCampsites.length > 0 ? (
+            {/* Quick GPS search bar triggers locally */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+              <button
+                onClick={handleFindMyLocation}
+                style={{
+                  padding: '6px 12px',
+                  background: 'none',
+                  border: '1px solid var(--border)',
+                  borderRadius: '20px',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  color: 'var(--surface-foreground)'
+                }}
+              >
+                <span>🎯</span>
+                {userLocation 
+                  ? (i18n.language === 'ko' ? '내 위치 기준 거리순 정렬됨' : 'Sorted by distance') 
+                  : t('route.map.find_my_location')
+                }
+              </button>
+            </div>
+
+            {gpsError && activeTab === 'era' && (
+              <div className="quiz-alert mock" style={{ marginBottom: '10px', background: 'rgba(185, 28, 28, 0.05)', borderColor: 'rgba(185, 28, 28, 0.15)', color: 'var(--red-accent)' }}>
+                <AlertCircle size={16} />
+                <span style={{ fontSize: '0.75rem' }}>{gpsError}</span>
+              </div>
+            )}
+
+            {sortedCampsites.length > 0 ? (
               <div className="era-grid">
-                {filteredCampsites.map(campsite => (
+                {sortedCampsites.map(campsite => (
                   <div key={campsite.id} className="card" style={{ marginBottom: 0, position: 'relative' }}>
                     <div className="list-item" style={{ borderBottom: 'none', padding: 0 }}>
                       <div className="list-icon historic" style={{ cursor: 'pointer' }} onClick={() => viewHeritageRoute(campsite.id)}>
@@ -679,7 +784,7 @@ function App() {
                         </div>
                         
                         <div className="list-desc">
-                          {campsite.id.startsWith('public-') ? campsite.description : t(campsite.description)}
+                          {getCampsiteDistanceText(campsite)}
                         </div>
                         
                         <div className="tag-container" style={{ marginTop: '6px' }}>
@@ -804,7 +909,7 @@ function App() {
             <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem' }}>{t('route.title')}</h3>
             
             {/* Open API Toggle controller */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', marginBottom: '10px', padding: '10px', background: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', padding: '10px', background: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--border)' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' }}>
                 <input 
                   type="checkbox" 
@@ -820,12 +925,37 @@ function App() {
                 />
                 {t('route.map.load_public')}
               </label>
-              {loadingPublicCamps && (
-                <span style={{ fontSize: '0.8rem', color: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <Clock size={12} className="animate-spin" /> {i18n.language === 'ko' ? '불러오는 중...' : 'Loading...'}
-                </span>
-              )}
+
+              {/* Local GPS Finder button */}
+              <button
+                onClick={handleFindMyLocation}
+                style={{
+                  padding: '8px 12px',
+                  background: 'var(--primary)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: 'bold',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.filter = 'brightness(0.95)'}
+                onMouseLeave={(e) => e.currentTarget.style.filter = ''}
+              >
+                <span>🎯</span>
+                {t('route.map.find_my_location')}
+              </button>
             </div>
+
+            {loadingPublicCamps && (
+              <div style={{ fontSize: '0.85rem', color: 'var(--primary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Clock size={14} className="animate-spin" /> {i18n.language === 'ko' ? '공공 캠핑장 API 데이터를 불러오는 중...' : 'Loading public api campsites...'}
+              </div>
+            )}
 
             {/* API key fallback alert */}
             {showPublicCamps && !isGocampingConfigured && (
@@ -835,11 +965,19 @@ function App() {
               </div>
             )}
 
+            {/* GPS permissions error */}
+            {gpsError && (
+              <div className="quiz-alert mock" style={{ marginBottom: '10px', marginTop: 0, background: 'rgba(185, 28, 28, 0.05)', borderColor: 'rgba(185, 28, 28, 0.15)', color: 'var(--red-accent)' }}>
+                <AlertCircle size={16} />
+                <span style={{ fontSize: '0.75rem' }}>{gpsError}</span>
+              </div>
+            )}
+
             <div className="route-layout">
               {/* KAKAO MAP COMPONENT */}
               <div className="route-map-container">
                 <Map
-                  center={{ lat: selectedCampsite.lat, lng: selectedCampsite.lng }}
+                  center={mapCenter}
                   style={{ width: "100%", height: "100%" }}
                   level={selectedCampsiteId.startsWith('public-') || showPublicCamps ? 9 : (selectedCampsiteId === 'mireuksa' ? 6 : 8)}
                 >
@@ -864,6 +1002,21 @@ function App() {
                       </div>
                     </MapMarker>
                   ))}
+
+                  {/* Render user's local GPS coordinates marker (Does NOT leave device memory) */}
+                  {userLocation && (
+                    <MapMarker
+                      position={userLocation}
+                      image={{
+                        src: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+                        size: { width: 24, height: 35 }
+                      }}
+                    >
+                      <div style={{ padding: "3px 6px", color: "var(--primary)", fontSize: "0.75rem", textAlign: "center", fontWeight: "bold" }}>
+                        📍 {t('route.map.my_location')}
+                      </div>
+                    </MapMarker>
+                  )}
 
                   {/* Render public campsites markers from Open API if enabled */}
                   {showPublicCamps && publicCamps.filter(camp => camp.id !== selectedCampsite.id).map(camp => (

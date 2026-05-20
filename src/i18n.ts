@@ -80,7 +80,7 @@ const resources = {
         },
         omokdae: {
           name: "오목대",
-          desc: "이성계가 황산대첩 승전 후 종친들과 연회를 베풀었던 언덕 유적"
+          desc: "이성계가 황산대첩 승전 후 종친들과 연회를 베밀었던 언덕 유적"
         },
         pungnammun: {
           name: "풍남문",
@@ -105,7 +105,11 @@ const resources = {
           campsite_info: "공공 캠핑장 상세 정보",
           address: "주소",
           tel: "전화번호",
-          induty: "유형"
+          induty: "유형",
+          my_location: "내 위치",
+          find_my_location: "내 위치 찾기 🎯",
+          distance_from_me: "내 위치에서 {{distance}}km",
+          gps_error: "위치 정보를 가져올 수 없습니다. 브라우저의 위치 권한을 허용해 주세요."
         },
         card: {
           title: "{{campsiteName}} 기점 탐방 코스",
@@ -260,7 +264,11 @@ const resources = {
           campsite_info: "Public Campsite Info",
           address: "Address",
           tel: "Tel",
-          induty: "Type"
+          induty: "Type",
+          my_location: "My Location",
+          find_my_location: "Find My Location 🎯",
+          distance_from_me: "{{distance}}km from me",
+          gps_error: "Failed to retrieve location. Please allow location permissions in your browser."
         },
         card: {
           title: "Exploration Course based on {{campsiteName}}",
