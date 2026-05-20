@@ -905,7 +905,7 @@ function App() {
             ROUTE: 도슨트 맞춤형 방문 경로 & KAKAO MAP (Dynamic Integration)
         ========================================= */}
         {activeTab === 'route' && (
-          <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column' }}>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem' }}>{t('route.title')}</h3>
             
             {/* Open API Toggle controller */}
