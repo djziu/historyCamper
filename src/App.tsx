@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Tent, Compass, Map as MapIcon, ShieldCheck, MapPin, Clock, Flame, Accessibility, Info, Star, Navigation, Award, CheckCircle2, XCircle, AlertCircle, Database, Heart } from 'lucide-react'
+import { Tent, Compass, Map as MapIcon, ShieldCheck, MapPin, Clock, Flame, Accessibility, Info, Star, Navigation, Award, CheckCircle2, XCircle, AlertCircle, Database } from 'lucide-react'
 import { Map, MapMarker, Polyline, useKakaoLoader } from 'react-kakao-maps-sdk'
 import { useTranslation } from 'react-i18next'
 import { supabase, isSupabaseConfigured, QuizQuestion, Campsite, HeritageSite } from './supabaseClient'
@@ -166,9 +166,9 @@ function App() {
   });
   
   const [activeTab, setActiveTab] = useState('home');
-  const [activeEra, setActiveEra] = useState('joseon');
+  const [activeEra, setActiveEra] = useState('all');
 
-  // Favorites states
+  // Device identifier
   const [deviceId] = useState(() => {
     let id = localStorage.getItem('history_camper_device_id');
     if (!id) {
@@ -177,8 +177,11 @@ function App() {
     }
     return id;
   });
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+
+  // Campsite statuses: { [campsiteId]: 'planned' | 'visited' }
+  const [campsiteStatuses, setCampsiteStatuses] = useState<Record<string, 'planned' | 'visited'>>({});
+  // Status filter: 'all' | 'planned' | 'visited'
+  const [statusFilter, setStatusFilter] = useState<'all' | 'planned' | 'visited'>('all');
 
   // Selected Campsite for interactive mapping (defaults to Moaksan)
   const [selectedCampsiteId, setSelectedCampsiteId] = useState('moaksan');
@@ -205,54 +208,59 @@ function App() {
     { id: 'modern', label: t('era.eras.modern') }
   ];
 
-  // Retrieve Favorites from Supabase or LocalStorage
+  // Retrieve Campsite Statuses from Supabase or LocalStorage
   useEffect(() => {
-    async function loadFavorites() {
+    async function loadStatuses() {
       if (isSupabaseConfigured && supabase) {
         try {
           const { data, error } = await supabase
             .from('favorites')
-            .select('campsite_id')
+            .select('campsite_id, status')
             .eq('device_id', deviceId);
           
           if (error) throw error;
           if (data) {
-            setFavorites(data.map(item => item.campsite_id));
+            const mapping: Record<string, 'planned' | 'visited'> = {};
+            data.forEach(item => {
+              mapping[item.campsite_id] = item.status || 'planned';
+            });
+            setCampsiteStatuses(mapping);
           }
         } catch (err) {
-          console.error("Failed to load favorites from Supabase, loading from LocalStorage:", err);
-          const saved = localStorage.getItem('history_camper_favorites');
+          console.error("Failed to load statuses from Supabase, loading from LocalStorage:", err);
+          const saved = localStorage.getItem('history_camper_statuses');
           if (saved) {
-            setFavorites(JSON.parse(saved));
+            setCampsiteStatuses(JSON.parse(saved));
           }
         }
       } else {
-        const saved = localStorage.getItem('history_camper_favorites');
+        const saved = localStorage.getItem('history_camper_statuses');
         if (saved) {
-          setFavorites(JSON.parse(saved));
+          setCampsiteStatuses(JSON.parse(saved));
         }
       }
     }
-    loadFavorites();
+    loadStatuses();
   }, [deviceId]);
 
-  // Toggle Favorite
-  const toggleFavorite = async (campsiteId: string) => {
-    const isFavorited = favorites.includes(campsiteId);
-    let updatedFavorites: string[];
+  // Toggle status
+  const toggleStatus = async (campsiteId: string, targetStatus: 'planned' | 'visited') => {
+    const currentStatus = campsiteStatuses[campsiteId];
+    const isRemoving = currentStatus === targetStatus;
 
-    if (isFavorited) {
-      updatedFavorites = favorites.filter(id => id !== campsiteId);
+    const updated = { ...campsiteStatuses };
+    if (isRemoving) {
+      delete updated[campsiteId];
     } else {
-      updatedFavorites = [...favorites, campsiteId];
+      updated[campsiteId] = targetStatus;
     }
 
-    setFavorites(updatedFavorites);
-    localStorage.setItem('history_camper_favorites', JSON.stringify(updatedFavorites));
+    setCampsiteStatuses(updated);
+    localStorage.setItem('history_camper_statuses', JSON.stringify(updated));
 
     if (isSupabaseConfigured && supabase) {
       try {
-        if (isFavorited) {
+        if (isRemoving) {
           const { error } = await supabase
             .from('favorites')
             .delete()
@@ -260,16 +268,27 @@ function App() {
             .eq('campsite_id', campsiteId);
           if (error) throw error;
         } else {
-          const { error } = await supabase
-            .from('favorites')
-            .insert({
-              device_id: deviceId,
-              campsite_id: campsiteId
-            });
-          if (error) throw error;
+          // If status existed before, update it. Otherwise, insert.
+          if (currentStatus) {
+            const { error } = await supabase
+              .from('favorites')
+              .update({ status: targetStatus })
+              .eq('device_id', deviceId)
+              .eq('campsite_id', campsiteId);
+            if (error) throw error;
+          } else {
+            const { error } = await supabase
+              .from('favorites')
+              .insert({
+                device_id: deviceId,
+                campsite_id: campsiteId,
+                status: targetStatus
+              });
+            if (error) throw error;
+          }
         }
       } catch (err) {
-        console.error("Failed to update favorite in Supabase:", err);
+        console.error("Failed to update status in Supabase:", err);
       }
     }
   };
@@ -319,10 +338,12 @@ function App() {
 
   // Filter campsites for Era Matching tab
   const filteredCampsites = MASTER_CAMPSITES.filter(c => {
-    if (showFavoritesOnly && !favorites.includes(c.id)) {
+    // 1. If filtering by status (planned or visited), check matching status
+    if (statusFilter !== 'all' && campsiteStatuses[c.id] !== statusFilter) {
       return false;
     }
-    if (!showFavoritesOnly && activeEra !== 'all' && c.era !== activeEra) {
+    // 2. If showing all statuses, we can filter by era
+    if (statusFilter === 'all' && activeEra !== 'all' && c.era !== activeEra) {
       return false;
     }
     return true;
@@ -383,6 +404,13 @@ function App() {
 
   const handleRestartQuiz = () => {
     setQuizState('intro');
+  };
+
+  // Helper to determine empty state translation
+  const getEmptyStateMessage = () => {
+    if (statusFilter === 'planned') return t('era.empty_planned');
+    if (statusFilter === 'visited') return t('era.empty_visited');
+    return i18n.language === 'ko' ? '해당 조건의 캠핑지가 없습니다.' : 'No campsites matching current filters.';
   };
 
   return (
@@ -463,49 +491,75 @@ function App() {
         )}
 
         {/* =========================================
-            ERA: 시대별 역사 캠핑지 매칭 & 즐겨찾기
+            ERA: 시대별 역사 캠핑지 매칭 & 상태 관리
         ========================================= */}
         {activeTab === 'era' && (
           <div className="animate-fade-in">
             <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem' }}>{t('era.title')}</h3>
             
             <div className="era-selector" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
-              {/* Favorites filter toggle */}
+              {/* Category selector based on status */}
               <button
-                className={`era-btn ${showFavoritesOnly ? 'active' : ''}`}
+                className={`era-btn ${statusFilter === 'all' ? 'active' : ''}`}
                 onClick={() => {
-                  setShowFavoritesOnly(prev => !prev);
-                  if (!showFavoritesOnly) {
-                    setActiveEra('all');
-                  }
+                  setStatusFilter('all');
+                  setActiveEra('all');
+                }}
+              >
+                {t('era.eras.all')}
+              </button>
+
+              <button
+                className={`era-btn ${statusFilter === 'planned' ? 'active' : ''}`}
+                onClick={() => {
+                  setStatusFilter('planned');
                 }}
                 style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
                   gap: '4px',
-                  borderColor: showFavoritesOnly ? 'var(--red-accent)' : '',
-                  backgroundColor: showFavoritesOnly ? 'rgba(185, 28, 28, 0.05)' : '',
-                  color: showFavoritesOnly ? 'var(--red-accent)' : ''
+                  borderColor: statusFilter === 'planned' ? 'var(--gold)' : '',
+                  backgroundColor: statusFilter === 'planned' ? 'rgba(217, 119, 6, 0.05)' : '',
+                  color: statusFilter === 'planned' ? 'var(--gold)' : ''
                 }}
               >
-                <Heart size={14} fill={showFavoritesOnly ? 'var(--red-accent)' : 'none'} color={showFavoritesOnly ? 'var(--red-accent)' : 'currentColor'} />
-                {t('era.favorites')}
+                <span>📌</span> {t('era.status_planned')}
               </button>
 
-              <div style={{ height: '20px', width: '1px', background: 'var(--border)', margin: '0 4px' }} />
+              <button
+                className={`era-btn ${statusFilter === 'visited' ? 'active' : ''}`}
+                onClick={() => {
+                  setStatusFilter('visited');
+                }}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '4px',
+                  borderColor: statusFilter === 'visited' ? 'var(--primary)' : '',
+                  backgroundColor: statusFilter === 'visited' ? 'rgba(22, 101, 52, 0.05)' : '',
+                  color: statusFilter === 'visited' ? 'var(--primary)' : ''
+                }}
+              >
+                <span>✅</span> {t('era.status_visited')}
+              </button>
 
-              {Eras.map(era => (
-                <button 
-                  key={era.id} 
-                  className={`era-btn ${(!showFavoritesOnly && activeEra === era.id) ? 'active' : ''}`}
-                  onClick={() => {
-                    setShowFavoritesOnly(false);
-                    setActiveEra(era.id);
-                  }}
-                >
-                  {era.label}
-                </button>
-              ))}
+              {/* Show divider and Era selectors only when status is 'all' */}
+              {statusFilter === 'all' && (
+                <>
+                  <div style={{ height: '20px', width: '1px', background: 'var(--border)', margin: '0 4px' }} />
+                  {Eras.filter(e => e.id !== 'all').map(era => (
+                    <button 
+                      key={era.id} 
+                      className={`era-btn ${activeEra === era.id ? 'active' : ''}`}
+                      onClick={() => {
+                        setActiveEra(era.id);
+                      }}
+                    >
+                      {era.label}
+                    </button>
+                  ))}
+                </>
+              )}
             </div>
 
             {filteredCampsites.length > 0 ? (
@@ -527,21 +581,6 @@ function App() {
                           >
                             {t(campsite.name)}
                           </div>
-                          
-                          {/* Heart Icon Button to toggle Favorite */}
-                          <button
-                            onClick={() => toggleFavorite(campsite.id)}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', marginTop: '-4px' }}
-                          >
-                            <Heart 
-                              size={20} 
-                              fill={favorites.includes(campsite.id) ? 'var(--red-accent)' : 'none'} 
-                              color={favorites.includes(campsite.id) ? 'var(--red-accent)' : 'var(--surface-foreground)'}
-                              style={{ transition: 'transform 0.1s ease' }}
-                              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.15)'}
-                              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                            />
-                          </button>
                         </div>
                         
                         <div className="list-desc">{t(campsite.description)}</div>
@@ -552,12 +591,67 @@ function App() {
                           ))}
                         </div>
 
+                        {/* Status buttons: [Plan to Visit] and [Visited] */}
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleStatus(campsite.id, 'planned');
+                            }}
+                            style={{
+                              flex: 1,
+                              padding: '8px 12px',
+                              borderRadius: '8px',
+                              fontSize: '0.8rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px',
+                              transition: 'all 0.2s',
+                              border: campsiteStatuses[campsite.id] === 'planned' ? '1px solid var(--gold)' : '1px solid var(--border)',
+                              background: campsiteStatuses[campsite.id] === 'planned' ? 'rgba(217, 119, 6, 0.08)' : 'var(--surface)',
+                              color: campsiteStatuses[campsite.id] === 'planned' ? 'var(--gold)' : 'var(--surface-foreground)'
+                            }}
+                          >
+                            <span>📌</span>
+                            {t('era.status_planned')}
+                          </button>
+                          
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleStatus(campsite.id, 'visited');
+                            }}
+                            style={{
+                              flex: 1,
+                              padding: '8px 12px',
+                              borderRadius: '8px',
+                              fontSize: '0.8rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px',
+                              transition: 'all 0.2s',
+                              border: campsiteStatuses[campsite.id] === 'visited' ? '1px solid var(--primary)' : '1px solid var(--border)',
+                              background: campsiteStatuses[campsite.id] === 'visited' ? 'rgba(22, 101, 52, 0.08)' : 'var(--surface)',
+                              color: campsiteStatuses[campsite.id] === 'visited' ? 'var(--primary)' : 'var(--surface-foreground)'
+                            }}
+                          >
+                            <span>✅</span>
+                            {t('era.status_visited')}
+                          </button>
+                        </div>
+
                         {/* Button to view dynamic heritage routes */}
                         <button
                           onClick={() => viewHeritageRoute(campsite.id)}
                           style={{
                             width: '100%',
-                            marginTop: '12px',
+                            marginTop: '8px',
                             padding: '10px',
                             background: 'rgba(22, 101, 52, 0.06)',
                             border: '1px solid rgba(22, 101, 52, 0.15)',
@@ -574,10 +668,7 @@ function App() {
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.background = 'var(--primary)';
-                            e.currentTarget.style.color = '#white';
-                            // inline style update hack since React direct style rewrite is easier
-                            const target = e.currentTarget;
-                            target.style.color = '#ffffff';
+                            e.currentTarget.style.color = '#ffffff';
                           }}
                           onMouseLeave={(e) => {
                             e.currentTarget.style.background = 'rgba(22, 101, 52, 0.06)';
@@ -594,12 +685,14 @@ function App() {
               </div>
             ) : (
               <div className="card" style={{ textAlign: 'center', padding: '3rem 1.5rem', marginBottom: 0 }}>
-                <Heart size={40} color="var(--border)" style={{ margin: '0 auto 1rem', display: 'block' }} />
-                <div className="card-title" style={{ justifyContent: 'center', fontSize: '1rem', color: 'var(--surface-foreground)', marginBottom: '0.5rem' }}>
-                  {showFavoritesOnly ? t('era.favorites') : t('era.title')}
+                <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>
+                  {statusFilter === 'planned' ? '📌' : statusFilter === 'visited' ? '✅' : '⛺'}
                 </div>
-                <div className="card-text" style={{ fontSize: '0.85rem' }}>
-                  {showFavoritesOnly ? t('era.empty_favorites') : (i18n.language === 'ko' ? '해당 조건의 캠핑지가 없습니다.' : 'No campsites matching current filters.')}
+                <div className="card-title" style={{ justifyContent: 'center', fontSize: '1rem', color: 'var(--surface-foreground)', marginBottom: '0.5rem' }}>
+                  {statusFilter !== 'all' ? t(`era.status_${statusFilter}`) : t('era.title')}
+                </div>
+                <div className="card-text" style={{ fontSize: '0.85rem', lineHeight: 1.5 }}>
+                  {getEmptyStateMessage()}
                 </div>
               </div>
             )}
@@ -663,17 +756,42 @@ function App() {
                     <MapPin size={20} color="var(--gold)"/>
                     {t('route.card.title', { campsiteName: t(selectedCampsite.name) })}
                   </div>
-                  {/* Heart button on map details */}
-                  <button
-                    onClick={() => toggleFavorite(selectedCampsite.id)}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
-                  >
-                    <Heart 
-                      size={20} 
-                      fill={favorites.includes(selectedCampsite.id) ? 'var(--red-accent)' : 'none'} 
-                      color={favorites.includes(selectedCampsite.id) ? 'var(--red-accent)' : 'var(--surface-foreground)'}
-                    />
-                  </button>
+                  
+                  {/* Quick toggle statuses in the map detail panel */}
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    <button
+                      onClick={() => toggleStatus(selectedCampsite.id, 'planned')}
+                      style={{
+                        padding: '4px 8px',
+                        background: campsiteStatuses[selectedCampsite.id] === 'planned' ? 'var(--gold)' : 'none',
+                        color: campsiteStatuses[selectedCampsite.id] === 'planned' ? 'white' : 'var(--surface-foreground)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '6px',
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        fontWeight: 'bold'
+                      }}
+                      title={t('era.status_planned')}
+                    >
+                      📌
+                    </button>
+                    <button
+                      onClick={() => toggleStatus(selectedCampsite.id, 'visited')}
+                      style={{
+                        padding: '4px 8px',
+                        background: campsiteStatuses[selectedCampsite.id] === 'visited' ? 'var(--primary)' : 'none',
+                        color: campsiteStatuses[selectedCampsite.id] === 'visited' ? 'white' : 'var(--surface-foreground)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '6px',
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        fontWeight: 'bold'
+                      }}
+                      title={t('era.status_visited')}
+                    >
+                      ✅
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="card-text">

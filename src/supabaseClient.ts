@@ -49,5 +49,6 @@ export interface FavoriteItem {
   id?: number;
   campsite_id: string;
   device_id: string;
+  status: 'planned' | 'visited';
   created_at?: string;
 }
