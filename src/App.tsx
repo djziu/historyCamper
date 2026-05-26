@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Tent, Compass, Map as MapIcon, ShieldCheck, MapPin, Clock, Flame, Accessibility, Info, Star, Navigation, Award, CheckCircle2, XCircle, AlertCircle, Database } from 'lucide-react'
+import { Tent, Compass, Map as MapIcon, ShieldCheck, MapPin, Clock, Flame, Accessibility, Info, Star, Navigation, Award, CheckCircle2, XCircle, AlertCircle, Database, X } from 'lucide-react'
 import { Map, MapMarker, Polyline, useKakaoLoader } from 'react-kakao-maps-sdk'
 import { useTranslation } from 'react-i18next'
 import { supabase, isSupabaseConfigured, QuizQuestion, Campsite, HeritageSite } from './supabaseClient'
@@ -350,6 +350,316 @@ const MOCK_QUIZZES_EN: QuizQuestion[] = [
   }
 ];
 
+interface HeritageQuiz {
+  question: string;
+  options: string[];
+  correct_option_index: number;
+  explanation: string;
+}
+
+const HERITAGE_QUIZZES: Record<string, { ko: HeritageQuiz; en: HeritageQuiz }> = {
+  songgwangsa: {
+    ko: {
+      question: "완주 송광사에 있는 문화유산 중 하나인 보물 제1243호 대웅전과 관련된 특징으로 옳은 것은 무엇인가요?",
+      options: [
+        "벽면 전체가 도자기 타일로 마감되어 있다.",
+        "임진왜란 때 소실된 후 조선 인조 대에 재건되었으며 삼세불상이 봉안되어 있다.",
+        "지하에 석굴암과 같은 인공 석굴이 존재한다.",
+        "국내에서 가장 오래된 철조 비로자나불좌상이 있다."
+      ],
+      correct_option_index: 1,
+      explanation: "완주 송광사 대웅전은 보물 제1243호로 지정되어 있으며, 광해군/인조 대에 활발히 이루어진 사찰 중건 과정에서 재건되었습니다. 대웅전 내에는 흙으로 빚어 만든 삼세불상(소조석가여래삼존불좌상)이 모셔져 있습니다."
+    },
+    en: {
+      question: "Which of the following is correct about the Daeungjeon Hall (Treasure No. 1243) of Wanju Songgwangsa Temple?",
+      options: [
+        "The walls are fully covered with porcelain tiles.",
+        "It was rebuilt in the reign of King Injo after being burned during the Imjin War, housing the Clay Triad Buddhas.",
+        "It has an artificial stone cave underground like Seokguram.",
+        "It houses the oldest iron Vairocana Buddha in Korea."
+      ],
+      correct_option_index: 1,
+      explanation: "Daeungjeon of Wanju Songgwangsa Temple is designated as Treasure No. 1243. It was reconstructed during the reconstruction projects of Buddhist temples under Gwanghaegun and King Injo, and enshrines massive clay Buddhas."
+    }
+  },
+  gyeonggijeon: {
+    ko: {
+      question: "전주 경기전(사적)에 봉안되어 있는 조선의 국왕 어진(초상화)은 누구의 어진인가요?",
+      options: ["태종 이방원", "태조 이성계", "세종 이도", "정조 이산"],
+      correct_option_index: 1,
+      explanation: "경기전은 조선을 건국한 태조 이성계의 영정(초상화인 어진, 국보)을 봉안하기 위해 태종 10년(1410년)에 창건되었습니다."
+    },
+    en: {
+      question: "Whose royal portrait (Eojin) is enshrined in Jeonju Gyeonggijeon Shrine?",
+      options: ["King Taejong (Yi Bang-won)", "King Taejo (Yi Seong-gye)", "King Sejong (Yi Do)", "King Jeongjo (Yi San)"],
+      correct_option_index: 1,
+      explanation: "Gyeonggijeon was founded in 1410 (10th year of King Taejong) to enshrine the royal portrait (Eojin) of King Taejo, the founder of the Joseon Dynasty."
+    }
+  },
+  omokdae: {
+    ko: {
+      question: "오목대는 태조 이성계가 고려 우왕 시절 어느 전투에서 왜구를 크게 무찌르고 개경으로 돌아가던 길에 종친들과 잔치를 베푼 곳인가요?",
+      options: ["홍산대첩", "진포대첩", "황산대첩", "관음포대첩"],
+      correct_option_index: 2,
+      explanation: "이성계는 1380년 삼남 지방을 약탈하던 왜구를 황산(현재 전북 남원)에서 크게 격퇴한 '황산대첩'을 거두고 개경으로 귀환하던 도중, 전주 오목대에서 친지들과 잔치를 벌이며 왕조 창업의 야망을 한시로 읊었습니다."
+    },
+    en: {
+      question: "At Omokdae, Yi Seong-gye hosted a celebratory banquet after defeating Japanese pirates in which battle during the late Goryeo Dynasty?",
+      options: ["Battle of Hongsan", "Battle of Jinpo", "Battle of Hwangsan", "Battle of Gwaneumpo"],
+      correct_option_index: 2,
+      explanation: "Yi Seong-gye defeated the pillaging Japanese pirates in the Battle of Hwangsan (in present-day Namwon) in 1380. On his way back to Gaegyeong, he stopped at Omokdae in Jeonju to hold a feast and recite a poem expressing his ambition to found a new dynasty."
+    }
+  },
+  pungnammun: {
+    ko: {
+      question: "조선시대 전라감영의 소재지였던 전주를 둘러싸고 있던 전주부성의 남문이자, 성문 중 유일하게 남아있는 보물은 무엇인가요?",
+      options: ["풍남문", "동고문", "서평문", "패엽문"],
+      correct_option_index: 0,
+      explanation: "풍남문은 전주부성의 남문으로 임진왜란 때 파괴되었다가 영조 때 재건되었습니다. 전주부성의 4대문 중 유일하게 현존하는 유적이며 보물로 지정되어 있습니다."
+    },
+    en: {
+      question: "What is the only remaining gate of the Jeonju Fortress and a designated Treasure that served as the south gate of the Jeonju administrative center during the Joseon Dynasty?",
+      options: ["Pungnammun", "Donggomun", "Seopyeongmun", "Paeyeopmun"],
+      correct_option_index: 0,
+      explanation: "Pungnammun is the southern gate of Jeonju Fortress. Rebuilt in the reign of King Yeongjo after being destroyed in the Imjin War, it is the sole surviving gate of the fortress's four gates."
+    }
+  },
+  gwanghallu: {
+    ko: {
+      question: "남원의 광한루원에 대한 설명으로 가장 알맞은 것은 무엇인가요?",
+      options: [
+        "견훤이 고려에 대항하여 축성한 산성 정원이다.",
+        "백제 무왕이 궁궐 연못으로 조성한 정원이다.",
+        "조선의 명승이자 소설 '춘향전'의 배경으로 신선사상과 전통 정원 양식이 조화를 이룬 곳이다.",
+        "구한말 의병들이 연합 전선을 펼쳤던 역사적 격전지이다."
+      ],
+      correct_option_index: 2,
+      explanation: "광한루원은 조선 시대의 대표적인 정원으로, 신선들이 산다는 전설 속 삼신산을 연못 위에 구현한 전통 조경 양식을 보여줍니다. 고대 소설 '춘향전'에서 이몽룡과 성춘향이 처음 만난 장소로 유명합니다."
+    },
+    en: {
+      question: "Which of the following describes Gwanghalluwon Garden in Namwon?",
+      options: [
+        "A mountain fortress garden constructed by Gyeon Hwon against Goryeo.",
+        "A palace pond garden created by King Mu of Baekje.",
+        "A scenic Joseon garden, setting of 'Chunhyangjeon', combining Taoist immortal beliefs and traditional garden styles.",
+        "A historic battlefield where late Joseon righteous armies formed an alliance."
+      ],
+      correct_option_index: 2,
+      explanation: "Gwanghalluwon is a representative traditional garden of the Joseon Dynasty, embodying the Taoist concept of the mythical dwelling of deities. It is also famous as the place where Sung Chun-hyang and Yi Mong-ryong first met in the classical novel 'Chunhyangjeon'."
+    }
+  },
+  mireuksa_site: {
+    ko: {
+      question: "백제 무왕 때 건립된 동양 최대의 사찰 터인 익산 미륵사지에서 발견된 국보 제11호 미륵사지 석탑과 관련된 설명으로 옳은 것은?",
+      options: [
+        "목탑의 양식을 석재로 구현한 과도기적 석탑이자 한국 석탑의 시원(시작)으로 평가된다.",
+        "고구려의 양식을 완벽히 이어받은 육각형 탑이다.",
+        "1990년대에 한반도 최초로 발굴된 유리 탑이다.",
+        "돌이 아닌 붉은 벽돌만을 쌓아서 만든 전탑이다."
+      ],
+      correct_option_index: 0,
+      explanation: "익산 미륵사지 석탑(국보)은 목조건축의 기법을 석재로 충실히 구현한 독특한 과도기 양식을 띠고 있어, 한국 석탑의 출발점으로 역사적 가치가 큽니다."
+    },
+    en: {
+      question: "Which of the following is correct about the Stone Pagoda of Mireuksa Temple Site (National Treasure No. 11) in Iksan?",
+      options: [
+        "It is a transitional pagoda imitating wooden architecture in stone and is regarded as the origin of Korean stone pagodas.",
+        "It is a hexagonal pagoda that perfectly inherited the Goguryeo style.",
+        "It was the first glass pagoda excavated in the Korean Peninsula in the 1990s.",
+        "It is a brick pagoda constructed entirely of red clay bricks."
+      ],
+      correct_option_index: 0,
+      explanation: "The Stone Pagoda at the Mireuksa Temple Site in Iksan (National Treasure) represents a unique transitional style, applying wooden construction techniques to stone materials, making it highly valuable as the starting point of Korean stone pagodas."
+    }
+  },
+  wanggungri: {
+    ko: {
+      question: "백제 무왕 시기 왕궁으로 조성된 익산 왕궁리 유적에서 확인된 독특하고 선진적인 고대 생활사 유적은 무엇인가요?",
+      options: [
+        "온수 순환 방식의 구들장(보일러)",
+        "대형 화장실 유적과 똥분석을 통한 기생충 흔적",
+        "지하식 천문대(혼천의)",
+        "천연 탄산수 온천탕 복합시설"
+      ],
+      correct_option_index: 1,
+      explanation: "익산 왕궁리 유적에서는 한국 고대 유적 최초로 대형 공동화장실 터와 나무 주걱(뒤처리용), 그리고 화장실 흙 분석을 통한 회충 등 기생충 알이 검출되어 고대인들의 청결/위생 생활상을 직접 증명해 주었습니다."
+    },
+    en: {
+      question: "Which unique and advanced ancient lifestyle relic was discovered at the Wanggung-ri ruins in Iksan, a Baekje royal palace site?",
+      options: [
+        "A hot-water circulation underfloor heating system (Ondol)",
+        "Large-scale public restroom ruins and parasite eggs identified via soil analysis",
+        "An underground astronomical observatory",
+        "A natural carbonated hot spring complex"
+      ],
+      correct_option_index: 1,
+      explanation: "Wanggung-ri in Iksan revealed Korea's first ancient large-scale public restrooms, wooden scrapers for toilet paper, and parasite eggs in the soil, which provided direct evidence of sanitation and hygiene practices in ancient times."
+    }
+  },
+  donggosanseong: {
+    ko: {
+      question: "전주 동고산성은 삼국사기에 기록된 어느 나라의 궁성(도성) 터로 비정되고 있나요?",
+      options: ["백제", "후고구려", "가야", "후백제"],
+      correct_option_index: 3,
+      explanation: "전주 동고산성은 900년 견훤이 완산주(현재의 전주)에 도읍을 정하고 세운 후백제의 궁성(도성) 터로 유력하게 추정되며, 대형 건물지 유적이 발굴되었습니다."
+    },
+    en: {
+      question: "Jeonju Donggosanseong Fortress is presumed to be the palace site of which ancient state founded in 900 AD?",
+      options: ["Baekje", "Later Goguryeo", "Gaya", "Later Baekje"],
+      correct_option_index: 3,
+      explanation: "Donggosanseong is strongly presumed to be the royal castle site of Later Baekje, established in 900 AD by King Gyeon Hwon when he made Wansanju (present-day Jeonju) his capital."
+    }
+  },
+  seungamsan_fortress: {
+    ko: {
+      question: "전주 승암산성(치명자산성)의 주된 역사적 역할은 무엇이었나요?",
+      options: [
+        "가야의 대일본 해상 무역 전초 기지",
+        "후백제의 도성(완산주) 방어를 위한 동방 외곽 방어 요새",
+        "임진왜란 당시 전주사고의 실록을 보관한 장소",
+        "일제강점기 쌀 수탈을 감시하던 감시탑"
+      ],
+      correct_option_index: 1,
+      explanation: "승암산성은 완산주(전주)의 동쪽을 병풍처럼 둘러싸고 있는 승암산 일대에 축성되어 후백제 도성의 동쪽 방어를 담당했던 핵심 보루이자 전략 요새였습니다."
+    },
+    en: {
+      question: "What was the primary historical role of Jeonju Seungamsan Fortress?",
+      options: [
+        "An maritime trade outpost of Gaya with Japan",
+        "An eastern fortress for defending Later Baekje's capital, Wansanju",
+        "A storage facility for royal records during the Imjin War",
+        "A watchtower to monitor rice exploitation during the Japanese colonial era"
+      ],
+      correct_option_index: 1,
+      explanation: "Seungamsan Fortress was located on Mt. Seungamsan bordering the east of Wansanju (Jeonju), serving as a crucial military stronghold defending the eastern perimeter of the Later Baekje capital."
+    }
+  },
+  geumsansa: {
+    ko: {
+      question: "후백제의 시조 견훤이 넷째 아들 금강에게 왕위를 물려주려 하자, 이에 분노한 큰아들 신검 등에 의해 유배당했던 비극적인 역사의 현장은 어디인가요?",
+      options: ["김제 금산사", "익산 미륵사", "완주 송광사", "남원 만복사"],
+      correct_option_index: 0,
+      explanation: "견훤은 왕위 계승 분쟁 과정에서 큰아들 신검과 그 무리에 의해 김제 금산사에 3개월 동안 유금(유배)당했다가 탈출하여 고려 태조 왕건에게 투항하였습니다."
+    },
+    en: {
+      question: "Where was King Gyeon Hwon, the founder of Later Baekje, imprisoned by his eldest son Singeom after trying to pass the throne to his fourth son Geumgang?",
+      options: ["Geumsansa Temple in Gimje", "Mireuksa Temple in Iksan", "Songgwangsa Temple in Wanju", "Manboksa Temple in Namwon"],
+      correct_option_index: 0,
+      explanation: "Gyeon Hwon was confined at Geumsansa Temple in Gimje for about three months by his rebellious eldest son Singeom, before escaping to surrender to King Wang Geon of the Goryeo Dynasty."
+    }
+  },
+  godori_buddha: {
+    ko: {
+      question: "보물로 지정된 익산 고도리 석조여래입상은 약 200m 거리를 두고 두 석상이 마주 보고 서 있습니다. 이 둘의 흥미로운 전설은 무엇인가요?",
+      options: [
+        "해마다 단오 날이 되면 동서로 마주보고 춤을 춘다.",
+        "평소에는 떨어져 있다가, 섣달그믐날 밤 음력 12월 말에 냇물이 얼면 만나 포옹을 나눈다.",
+        "왕궁리 5층석탑을 함께 옮겼다는 전설이 있다.",
+        "나라에 큰 난리가 나기 전에 석상에서 눈물이 흘러내린다."
+      ],
+      correct_option_index: 1,
+      explanation: "고도리 석조여래입상은 동서로 약 200미터 떨어져 냇물을 사이에 두고 서 있습니다. 전설에 따르면 평소에는 서로 만나지 못하다가, 일 년 중 마지막 날 밤(섣달그믐날)에 냇물이 얼어붙으면 두 불상이 건너와서 만났다가 새벽 닭이 울면 다시 제자리로 돌아간다고 전해집니다."
+    },
+    en: {
+      question: "The two stone Buddhas of Iksan Godori (Treasure) stand facing each other across a stream. What is the legendary romance associated with them?",
+      options: [
+        "They perform a face-to-face dance every year on Dano Festival.",
+        "Separated by a stream, they meet and embrace on the last night of the lunar year when the water freezes.",
+        "Legend says they physically moved the Wanggung-ri Pagoda together.",
+        "They are said to shed tears before national crises."
+      ],
+      correct_option_index: 1,
+      explanation: "The Godori Stone Buddhas face each other about 200m apart across a stream. Legend has it that they cannot meet usually, but on the last night of the lunar year when the stream freezes, they cross to meet and return before dawn."
+    }
+  },
+  manboksa_site: {
+    ko: {
+      question: "남원 만복사지는 고려 시대에 세워져 김시습의 한문 소설의 배경이 된 절터입니다. 이 소설의 이름은 무엇인가요?",
+      options: ["구운몽", "홍길동전", "만복사저포기", "춘향전"],
+      correct_option_index: 2,
+      explanation: "만복사지는 매월당 김시습이 지은 한국 최초의 한문 소설집 '금오신화'에 수록된 '만복사저포기(萬福寺樗蒲記)'의 배경입니다. 주인공 양생이 만복사 불당에서 부처님과 저포(주사위 놀이)를 해 이겨 아름다운 여인의 영혼과 애틋한 사랑을 나누는 이야기입니다."
+    },
+    en: {
+      question: "The Manboksa Temple Site in Namwon is the setting of a famous story in Korea's first classical Chinese novel collection by Kim Si-seup. What is the title of this story?",
+      options: ["Guunmong", "Hong Gildongjeon", "Manboksa Jeopogi", "Chunhyangjeon"],
+      correct_option_index: 2,
+      explanation: "Manboksa Temple Site is the backdrop of 'Manboksa Jeopogi' (A Dice Game at Manboksa) in Kim Si-seup's novel collection 'Geumo Shinhwa'. The story features a bachelor who plays a dice game against Buddha to meet a beautiful lady's ghost."
+    }
+  },
+  modern_museum: {
+    ko: {
+      question: "군산 근대역사박물관이 위치한 군산항은 일제강점기 당시 어떤 역사적 수탈과 연관이 깊은 곳인가요?",
+      options: [
+        "평양 대동강 유역의 철광석 수탈",
+        "호남 평야 일대의 쌀 수탈과 일본 반출",
+        "한라산의 울창한 목재 수탈",
+        "태백산맥의 석탄 자원 수탈"
+      ],
+      correct_option_index: 1,
+      explanation: "군산은 일제강점기 호남평야에서 생산된 쌀을 일본으로 수탈해 가던 핵심 항구 도시였습니다. 박물관은 이 같은 아픈 역사와 일제에 저항한 군산 시민들의 항일 운동을 상세히 다루고 있습니다."
+    },
+    en: {
+      question: "Gunsan Port, near the Modern History Museum, is associated with which major colonial exploitation during the Japanese occupation?",
+      options: [
+        "Extraction of iron ore from Pyongyang",
+        "Looting and exporting rice harvested from the Honam plains to Japan",
+        "Deforestation of Jeju Island's timber",
+        "Exploitation of coal from the Taebaek Mountains"
+      ],
+      correct_option_index: 1,
+      explanation: "Gunsan was a primary port used by the Japanese colonial government to export rice plundered from the fertile Honam Plain. The museum displays this painful history alongside Gunsan's active anti-Japanese resistance movements."
+    }
+  },
+  hirotsu_house: {
+    ko: {
+      question: "군산 신흥동 일본식 가옥은 일제강점기 군산에서 대규모 포목상과 농장을 운영했던 일본인이 지은 주택입니다. 이 가옥의 건축사적 가치는 무엇인가요?",
+      options: [
+        "전형적인 조선 후기 사대부 가옥의 양식을 보여준다.",
+        "한옥과 양식 건축이 결합한 절충형 기독교 예배당이다.",
+        "일제강점기 일본인 지주나 부유층의 전형적인 일본식 주택 및 정원의 모습을 고스란히 간직하고 있다.",
+        "백제 전통 점토 가마터의 구조를 따르고 있다."
+      ],
+      correct_option_index: 2,
+      explanation: "신흥동 일본식 가옥(구 히로쓰 가옥)은 목조 2층 주택으로, 일제강점기 당시 부유한 일본인 지주의 전형적인 주택 양식과 일본식 정원 배치를 온전히 유지하고 있어 근대 주거 생활사를 연구하는 데 중요한 사료가 됩니다."
+    },
+    en: {
+      question: "The Hirotsu House in Sinheung-dong, Gunsan is an architectural relic of the Japanese colonial era. What is its significance?",
+      options: [
+        "It shows the typical upper-class Joseon dynasty house style.",
+        "It is a hybrid Christian chapel combining Hanok and Western architectures.",
+        "It preserves the typical residential style and garden layout of wealthy Japanese landlords during the colonial period.",
+        "It follows the structure of Baekje traditional clay kilns."
+      ],
+      correct_option_index: 2,
+      explanation: "The Sinheung-dong Japanese House (formerly Hirotsu House) is a two-story wooden house that perfectly preserves the residential architecture and garden style of wealthy Japanese merchants during the colonial era."
+    }
+  },
+  mokpo_modern: {
+    ko: {
+      question: "목포 근대역사관 1관은 붉은 벽돌과 르네상스 건축 양식이 특징인 근대 건축물입니다. 원래 이 건물은 어떤 목적으로 건립되었나요?",
+      options: [
+        "일제의 동양척식주식회사 목포지점",
+        "구 목포 일본영사관",
+        "대한제국의 목포 해관(세관)",
+        "조선총독부 전라남도 청사"
+      ],
+      correct_option_index: 1,
+      explanation: "목포 근대역사관 1관은 1900년에 지어진 구 목포 일본영사관 건물입니다. 붉은 벽돌을 사용하여 화려하게 지어진 목포에서 가장 오래된 근대 서양식 건축물 중 하나입니다."
+    },
+    en: {
+      question: "Mokpo Modern History Hall 1 is a red-brick Renaissance building. What was its original purpose when constructed in 1900?",
+      options: [
+        "Mokpo branch of the Oriental Development Company",
+        "Former Japanese Consulate in Mokpo",
+        "Customs office of the Korean Empire",
+        "Jeollanam-do Provincial Government Building under the Governor-General"
+      ],
+      correct_option_index: 1,
+      explanation: "Mokpo Modern History Hall 1 is the former Japanese Consulate built in 1900. It is one of the oldest modern Western-style buildings in Mokpo, designed using red bricks and Renaissance architectural elements."
+    }
+  }
+};
+
 // Geolocation Haversine Distance Calculator (computed locally in device memory)
 const calculateHaversineDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
   const R = 6371; // Radius of Earth in km
@@ -404,6 +714,18 @@ function App() {
 
   // Campsite statuses: { [campsiteId]: 'planned' | 'visited' }
   const [campsiteStatuses, setCampsiteStatuses] = useState<Record<string, 'planned' | 'visited'>>({});
+
+  // Heritage statuses: { [heritageId]: 'planned' | 'visited' }
+  const [heritageStatuses, setHeritageStatuses] = useState<Record<string, 'planned' | 'visited'>>({});
+  // Heritage reviews: { [heritageId]: string }
+  const [heritageReviews, setHeritageReviews] = useState<Record<string, string>>({});
+  // Active heritage quiz states
+  const [activeQuizHeritage, setActiveQuizHeritage] = useState<HeritageSite | null>(null);
+  const [activeQuizTargetStatus, setActiveQuizTargetStatus] = useState<'planned' | 'visited' | null>(null);
+  const [heritageQuizAnswered, setHeritageQuizAnswered] = useState(false);
+  const [heritageQuizSelectedIdx, setHeritageQuizSelectedIdx] = useState<number | null>(null);
+  const [heritageQuizReviewText, setHeritageQuizReviewText] = useState('');
+
   // Status filter: 'all' | 'planned' | 'visited'
   const [statusFilter, setStatusFilter] = useState<'all' | 'planned' | 'visited'>('all');
 
@@ -468,6 +790,20 @@ function App() {
       }
     }
     loadStatuses();
+
+    // Load heritage statuses and reviews from LocalStorage
+    try {
+      const savedHStatuses = localStorage.getItem('history_camper_heritage_statuses');
+      if (savedHStatuses) {
+        setHeritageStatuses(JSON.parse(savedHStatuses));
+      }
+      const savedHReviews = localStorage.getItem('history_camper_heritage_reviews');
+      if (savedHReviews) {
+        setHeritageReviews(JSON.parse(savedHReviews));
+      }
+    } catch (e) {
+      console.error("Failed to load heritage data from localStorage", e);
+    }
   }, [deviceId]);
 
   // Toggle status
@@ -517,6 +853,90 @@ function App() {
       } catch (err) {
         console.error("Failed to update status in Supabase:", err);
       }
+    }
+  };
+
+  // Heritage actions and quiz handlers
+  const [editingHeritageId, setEditingHeritageId] = useState<string | null>(null);
+  const [editingReviewText, setEditingReviewText] = useState<string>('');
+
+  const handleHeritageStatusClick = (heritage: HeritageSite, targetStatus: 'planned' | 'visited') => {
+    const current = heritageStatuses[heritage.id];
+    if (current === targetStatus) {
+      // Toggle off
+      const updatedStatuses = { ...heritageStatuses };
+      delete updatedStatuses[heritage.id];
+      setHeritageStatuses(updatedStatuses);
+      localStorage.setItem('history_camper_heritage_statuses', JSON.stringify(updatedStatuses));
+      
+      if (targetStatus === 'visited') {
+        const updatedReviews = { ...heritageReviews };
+        delete updatedReviews[heritage.id];
+        setHeritageReviews(updatedReviews);
+        localStorage.setItem('history_camper_heritage_reviews', JSON.stringify(updatedReviews));
+      }
+      return;
+    }
+    
+    // Otherwise trigger Quiz Modal
+    setActiveQuizHeritage(heritage);
+    setActiveQuizTargetStatus(targetStatus);
+    setHeritageQuizAnswered(false);
+    setHeritageQuizSelectedIdx(null);
+    setHeritageQuizReviewText(heritageReviews[heritage.id] || '');
+  };
+
+  const handleHeritageQuizSubmit = (optionIdx: number) => {
+    setHeritageQuizSelectedIdx(optionIdx);
+    setHeritageQuizAnswered(true);
+  };
+
+  const handleHeritageQuizComplete = () => {
+    if (!activeQuizHeritage || !activeQuizTargetStatus) return;
+
+    // Update status
+    const updatedStatuses = { ...heritageStatuses, [activeQuizHeritage.id]: activeQuizTargetStatus };
+    setHeritageStatuses(updatedStatuses);
+    localStorage.setItem('history_camper_heritage_statuses', JSON.stringify(updatedStatuses));
+
+    // Update review if visited
+    if (activeQuizTargetStatus === 'visited') {
+      const updatedReviews = { ...heritageReviews };
+      if (heritageQuizReviewText.trim()) {
+        updatedReviews[activeQuizHeritage.id] = heritageQuizReviewText.trim();
+      } else {
+        delete updatedReviews[activeQuizHeritage.id];
+      }
+      setHeritageReviews(updatedReviews);
+      localStorage.setItem('history_camper_heritage_reviews', JSON.stringify(updatedReviews));
+    }
+
+    // Reset states
+    setActiveQuizHeritage(null);
+    setActiveQuizTargetStatus(null);
+    setHeritageQuizAnswered(false);
+    setHeritageQuizSelectedIdx(null);
+    setHeritageQuizReviewText('');
+  };
+
+  const handleSaveEditedReview = (heritageId: string) => {
+    const updatedReviews = { ...heritageReviews };
+    if (editingReviewText.trim()) {
+      updatedReviews[heritageId] = editingReviewText.trim();
+    } else {
+      delete updatedReviews[heritageId];
+    }
+    setHeritageReviews(updatedReviews);
+    localStorage.setItem('history_camper_heritage_reviews', JSON.stringify(updatedReviews));
+    setEditingHeritageId(null);
+  };
+
+  const handleDeleteReview = (heritageId: string) => {
+    if (window.confirm(i18n.language === 'ko' ? '후기를 삭제하시겠습니까?' : 'Are you sure you want to delete this review?')) {
+      const updatedReviews = { ...heritageReviews };
+      delete updatedReviews[heritageId];
+      setHeritageReviews(updatedReviews);
+      localStorage.setItem('history_camper_heritage_reviews', JSON.stringify(updatedReviews));
     }
   };
 
@@ -1693,13 +2113,130 @@ function App() {
                   {nearbyHeritages.length > 0 ? (
                     nearbyHeritages.map((heritage, index) => (
                       <div className="timeline-item" key={heritage.id}>
-                        <div className="timeline-dot"></div>
+                        <div className="timeline-dot" style={{
+                          background: heritageStatuses[heritage.id] === 'visited' ? 'var(--primary)' : (heritageStatuses[heritage.id] === 'planned' ? 'var(--gold)' : 'var(--border)')
+                        }}></div>
                         <div className="timeline-content">
-                          <div className="time">
-                            {index === 0 ? "DAY 1 - 16:00" : `DAY 2 - 10:00`}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                            <div>
+                              <div className="time">
+                                {index === 0 ? "DAY 1 - 16:00" : `DAY 2 - 10:00`}
+                              </div>
+                              <div className="title" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                <span>{t(heritage.name)}</span>
+                                {heritageStatuses[heritage.id] === 'planned' && (
+                                  <span style={{ fontSize: '0.7rem', padding: '2px 6px', background: 'rgba(217, 119, 6, 0.1)', color: 'var(--gold)', border: '1px solid rgba(217, 119, 6, 0.2)', borderRadius: '4px', fontWeight: 'bold' }}>
+                                    📌 {t('era.status_planned')}
+                                  </span>
+                                )}
+                                {heritageStatuses[heritage.id] === 'visited' && (
+                                  <span style={{ fontSize: '0.7rem', padding: '2px 6px', background: 'rgba(22, 101, 52, 0.1)', color: 'var(--primary)', border: '1px solid rgba(22, 101, 52, 0.2)', borderRadius: '4px', fontWeight: 'bold' }}>
+                                    ✅ {t('era.status_visited')}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            
+                            {/* Toggle buttons */}
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button
+                                onClick={() => handleHeritageStatusClick(heritage, 'planned')}
+                                style={{
+                                  padding: '5px 8px',
+                                  borderRadius: '6px',
+                                  fontSize: '0.72rem',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s',
+                                  border: heritageStatuses[heritage.id] === 'planned' ? '1px solid var(--gold)' : '1px solid var(--border)',
+                                  background: heritageStatuses[heritage.id] === 'planned' ? 'rgba(217, 119, 6, 0.08)' : 'var(--surface)',
+                                  color: heritageStatuses[heritage.id] === 'planned' ? 'var(--gold)' : 'var(--surface-foreground)'
+                                }}
+                                title={i18n.language === 'ko' ? '갈 예정 등록 (역사 퀴즈)' : 'Register Planned (History Quiz)'}
+                              >
+                                📌 {i18n.language === 'ko' ? '갈 예정' : 'Plan'}
+                              </button>
+                              <button
+                                onClick={() => handleHeritageStatusClick(heritage, 'visited')}
+                                style={{
+                                  padding: '5px 8px',
+                                  borderRadius: '6px',
+                                  fontSize: '0.72rem',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s',
+                                  border: heritageStatuses[heritage.id] === 'visited' ? '1px solid var(--primary)' : '1px solid var(--border)',
+                                  background: heritageStatuses[heritage.id] === 'visited' ? 'rgba(22, 101, 52, 0.08)' : 'var(--surface)',
+                                  color: heritageStatuses[heritage.id] === 'visited' ? 'var(--primary)' : 'var(--surface-foreground)'
+                                }}
+                                title={i18n.language === 'ko' ? '갔다옴 등록 (역사 퀴즈 및 후기)' : 'Register Visited (History Quiz & Review)'}
+                              >
+                                ✅ {i18n.language === 'ko' ? '갔다옴' : 'Visited'}
+                              </button>
+                            </div>
                           </div>
-                          <div className="title">{t(heritage.name)}</div>
-                          <div className="desc">{t(heritage.description)}</div>
+                          
+                          <div className="desc" style={{ marginTop: '6px' }}>{t(heritage.description)}</div>
+
+                          {/* Review display/edit section */}
+                          {heritageStatuses[heritage.id] === 'visited' && (
+                            <div className="heritage-review-box">
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  📝 {i18n.language === 'ko' ? '나의 탐방 후기' : 'My Visit Review'}
+                                </span>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  {editingHeritageId === heritage.id ? (
+                                    <>
+                                      <button 
+                                        onClick={() => handleSaveEditedReview(heritage.id)}
+                                        style={{ border: 'none', background: 'none', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                                      >
+                                        {i18n.language === 'ko' ? '저장' : 'Save'}
+                                      </button>
+                                      <button 
+                                        onClick={() => setEditingHeritageId(null)}
+                                        style={{ border: 'none', background: 'none', color: '#64748b', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                                      >
+                                        {i18n.language === 'ko' ? '취소' : 'Cancel'}
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <button 
+                                        onClick={() => {
+                                          setEditingHeritageId(heritage.id);
+                                          setEditingReviewText(heritageReviews[heritage.id] || '');
+                                        }}
+                                        style={{ border: 'none', background: 'none', color: 'var(--gold)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                                      >
+                                        {i18n.language === 'ko' ? '수정' : 'Edit'}
+                                      </button>
+                                      <button 
+                                        onClick={() => handleDeleteReview(heritage.id)}
+                                        style={{ border: 'none', background: 'none', color: 'var(--red-accent)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                                      >
+                                        {i18n.language === 'ko' ? '삭제' : 'Delete'}
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+
+                              {editingHeritageId === heritage.id ? (
+                                <textarea
+                                  value={editingReviewText}
+                                  onChange={(e) => setEditingReviewText(e.target.value)}
+                                  className="heritage-review-textarea"
+                                  placeholder={i18n.language === 'ko' ? '이 유적지에 대한 탐방 후기를 작성해 보세요.' : 'Write your review about this historic site.'}
+                                />
+                              ) : (
+                                <p style={{ fontSize: '0.85rem', color: 'var(--foreground)', fontStyle: heritageReviews[heritage.id] ? 'normal' : 'italic', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+                                  {heritageReviews[heritage.id] || (i18n.language === 'ko' ? '작성된 후기가 없습니다. [수정]을 눌러 등록해 보세요!' : 'No review written. Click [Edit] to write one!')}
+                                </p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))
@@ -1989,6 +2526,124 @@ function App() {
         <button className={`nav-item ${activeTab === 'quiz' ? 'active' : ''}`} onClick={() => setActiveTab('quiz')}><Award /><span>{t('tabs.quiz')}</span></button>
         <button className={`nav-item ${activeTab === 'safety' ? 'active' : ''}`} onClick={() => setActiveTab('safety')}><ShieldCheck /><span>{t('tabs.safety')}</span></button>
       </nav>
+
+      {/* Heritage Quiz & Review Modal overlay */}
+      {activeQuizHeritage && activeQuizTargetStatus && (() => {
+        const quizObj = HERITAGE_QUIZZES[activeQuizHeritage.id];
+        if (!quizObj) return null;
+        const quiz = i18n.language === 'ko' ? quizObj.ko : quizObj.en;
+        return (
+          <div className="modal-backdrop" onClick={() => {
+            setActiveQuizHeritage(null);
+            setActiveQuizTargetStatus(null);
+          }}>
+            <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <div className="modal-title">
+                  {activeQuizTargetStatus === 'visited' 
+                    ? (i18n.language === 'ko' ? '방문 인증 역사 퀴즈' : 'Visit Verification History Quiz')
+                    : (i18n.language === 'ko' ? '여행 계획 역사 퀴즈' : 'Travel Plan History Quiz')
+                  }
+                </div>
+                <button className="modal-close-btn" onClick={() => {
+                  setActiveQuizHeritage(null);
+                  setActiveQuizTargetStatus(null);
+                }}>
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="modal-quiz-meta">
+                {t(activeQuizHeritage.name)}
+              </div>
+              <div className="modal-quiz-question">
+                {quiz.question}
+              </div>
+              
+              <div className="modal-quiz-options">
+                {quiz.options.map((option, idx) => {
+                  const isCorrect = idx === quiz.correct_option_index;
+                  const isSelected = idx === heritageQuizSelectedIdx;
+                  
+                  let btnClass = "quiz-option-btn";
+                  if (heritageQuizAnswered) {
+                    if (isSelected) {
+                      btnClass += isCorrect ? " correct" : " incorrect";
+                    } else if (isCorrect) {
+                      btnClass += " reveal-correct";
+                    }
+                  }
+                  
+                  return (
+                    <button
+                      key={idx}
+                      className={btnClass}
+                      disabled={heritageQuizAnswered}
+                      onClick={() => handleHeritageQuizSubmit(idx)}
+                    >
+                      <span style={{ marginRight: '8px', opacity: 0.5 }}>{idx + 1}.</span>
+                      {option}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {heritageQuizAnswered && (
+                <div className={`modal-quiz-feedback ${heritageQuizSelectedIdx === quiz.correct_option_index ? 'correct' : 'incorrect'}`}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, marginBottom: '6px', fontSize: '0.95rem', color: heritageQuizSelectedIdx === quiz.correct_option_index ? 'var(--primary)' : 'var(--red-accent)' }}>
+                    {heritageQuizSelectedIdx === quiz.correct_option_index ? (
+                      <CheckCircle2 size={18} />
+                    ) : (
+                      <XCircle size={18} />
+                    )}
+                    {heritageQuizSelectedIdx === quiz.correct_option_index 
+                      ? (i18n.language === 'ko' ? '정답입니다!' : 'Correct!') 
+                      : (i18n.language === 'ko' ? '오답입니다.' : 'Incorrect')
+                    }
+                  </div>
+                  
+                  <p style={{ fontSize: '0.85rem', color: 'var(--surface-foreground)', lineHeight: 1.5 }}>
+                    {quiz.explanation}
+                  </p>
+                  
+                  {/* If visited flow, show review form. Otherwise, just show complete button */}
+                  {activeQuizTargetStatus === 'visited' ? (
+                    <div className="modal-review-form">
+                      <label style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--foreground)', display: 'block', marginBottom: '8px' }}>
+                        📝 {i18n.language === 'ko' ? '나의 탐방 후기 작성 (선택사항)' : 'Write Visit Review (Optional)'}
+                      </label>
+                      <textarea
+                        value={heritageQuizReviewText}
+                        onChange={(e) => setHeritageQuizReviewText(e.target.value)}
+                        className="heritage-review-textarea"
+                        placeholder={i18n.language === 'ko' 
+                          ? '유적지를 방문하고 느낀 점이나 역사적 배경에 대한 감상을 적어보세요.' 
+                          : 'Write your thoughts or impressions about visiting this historic site.'
+                        }
+                      />
+                      <button 
+                        className="lang-btn" 
+                        style={{ width: '100%', padding: '12px', marginTop: '1.25rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: 'pointer' }}
+                        onClick={handleHeritageQuizComplete}
+                      >
+                        {i18n.language === 'ko' ? '저장 및 완료' : 'Save and Complete'}
+                      </button>
+                    </div>
+                  ) : (
+                    <button 
+                      className="lang-btn" 
+                      style={{ width: '100%', padding: '12px', marginTop: '1.25rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: 'pointer' }}
+                      onClick={handleHeritageQuizComplete}
+                    >
+                      {i18n.language === 'ko' ? '확인 및 계획 등록' : 'Confirm & Register Plan'}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   )
 }
