@@ -10,14 +10,14 @@ const MASTER_CAMPSITES: Campsite[] = [
     id: 'moaksan',
     name: 'campsites.moaksan.name',
     description: 'campsites.moaksan.desc',
-    lat: 35.7336,
-    lng: 127.0928,
+    lat: 35.7535,
+    lng: 127.0658,
     era: 'joseon',
     tags: ['안전점검 완료', '#송광사'],
-    distanceToHistoric: 2.4,
+    distanceToHistoric: 4.1,
     nearbyHeritageIds: ['songgwangsa'],
     resveCl: '온라인야영장예약',
-    resveUrl: 'https://gocamping.or.kr'
+    resveUrl: ''
   },
   {
     id: 'hanok',

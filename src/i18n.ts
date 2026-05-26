@@ -54,9 +54,9 @@ const resources = {
       },
       campsites: {
         moaksan: {
-          name: "완주 모악산 오토캠핑장",
-          desc: "조선시대 유적지 중심 추천 (2.4km)",
-          detail: "모악산 자락 아래 위치한 울창하고 조용한 숲속 캠핑장입니다."
+          name: "김제 모악산 캠핑파크",
+          desc: "조선시대 유적지 인근 추천 (4.1km)",
+          detail: "모악산 자락 아래 하천이 흐르고 울창한 숲에 둘러싸인 조용한 캠핑장입니다."
         },
         hanok: {
           name: "전주 한옥마을 도란도란 카라반",
@@ -216,9 +216,9 @@ const resources = {
       },
       campsites: {
         moaksan: {
-          name: "Wanju Moaksan Auto Campground",
-          desc: "Joseon era historic site centered (2.4km)",
-          detail: "A dense, peaceful forest campsite located at the foot of Moaksan Mountain."
+          name: "Gimje Moaksan Camping Park",
+          desc: "Joseon era historic site centered (4.1km)",
+          detail: "A peaceful campground surrounded by dense forest at the foot of Moaksan Mountain with a nearby stream."
         },
         hanok: {
           name: "Jeonju Hanok Village Doran Doran Caravan",
