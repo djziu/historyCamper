@@ -9,7 +9,7 @@ const resources = {
       },
       tabs: {
         home: "큐레이션",
-        era: "시대매칭",
+        era: "역사캠핑지",
         route: "역사지도",
         safety: "안전·편의",
         quiz: "역사퀴즈"
@@ -19,7 +19,7 @@ const resources = {
         title2: "체류형 역사 탐방 큐레이션",
         desc: "안전한 캠핑과 함께 깊이 있는 전북 역사 여행을 떠나보세요.",
         card1: {
-          title: "시대별 역사 캠핑지 매칭",
+          title: "캠핑장 중심 역사 유적지 매칭",
           desc: "전북의 문화유산 데이터와 고캠핑 API를 연동하여 선택한 시대별 유적지 인근의 안전한 캠핑장을 추천합니다.",
           tag1: "고캠핑 연동",
           tag2: "백제~근대유산"
@@ -34,7 +34,7 @@ const resources = {
         }
       },
       era: {
-        title: "시대별 역사 캠핑지",
+        title: "캠핑장 중심 역사 유적지",
         view_heritage: "주변 유적지 보기",
         favorites: "즐겨찾기",
         empty_favorites: "즐겨찾기한 캠핑장이 없습니다. 마음에 드는 캠핑장의 버튼을 눌러 등록해 보세요!",
@@ -238,7 +238,7 @@ const resources = {
       },
       tabs: {
         home: "Curation",
-        era: "Era Match",
+        era: "History Campsites",
         route: "History Map",
         safety: "Safety Info",
         quiz: "History Quiz"
@@ -248,7 +248,7 @@ const resources = {
         title2: "Stay-type historical exploration curation",
         desc: "Embark on an in-depth journey through Jeonbuk's history with safe camping.",
         card1: {
-          title: "Era-based Historical Campsite Matching",
+          title: "Campsite-Centered Historical Site Matching",
           desc: "Recommends safe campsites near selected era-based historic sites by linking Jeonbuk's cultural heritage data and the GoCamping API.",
           tag1: "GoCamping Link",
           tag2: "Baekje~Modern Heritage"
@@ -263,7 +263,7 @@ const resources = {
         }
       },
       era: {
-        title: "Historical Campsites by Era",
+        title: "Campsite-Centered Historic Sites",
         view_heritage: "View Nearby Heritage",
         favorites: "Saved",
         empty_favorites: "No saved campsites yet. Add campsites to favorites by clicking the buttons on the card!",
