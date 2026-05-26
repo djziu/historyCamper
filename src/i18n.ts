@@ -10,7 +10,7 @@ const resources = {
       tabs: {
         home: "큐레이션",
         era: "시대매칭",
-        route: "맞춤동선",
+        route: "역사지도",
         safety: "안전·편의",
         quiz: "역사퀴즈"
       },
@@ -163,7 +163,7 @@ const resources = {
         },
       },
       route: {
-        title: "기점 기반 맞춤형 방문 경로",
+        title: "전라도 역사 유적지 지도",
         map: {
           marker_campsite: "캠핑장",
           marker_heritage: "유적지 (도슨트)",
@@ -239,7 +239,7 @@ const resources = {
       tabs: {
         home: "Curation",
         era: "Era Match",
-        route: "Custom Route",
+        route: "History Map",
         safety: "Safety Info",
         quiz: "History Quiz"
       },
@@ -396,7 +396,7 @@ const resources = {
         }
       },
       route: {
-        title: "Base-point Custom Visit Route",
+        title: "Jeolla Historical Heritage Map",
         map: {
           marker_campsite: "Campground",
           marker_heritage: "Heritage (Docent)",
