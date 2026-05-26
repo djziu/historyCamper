@@ -63,6 +63,11 @@ const resources = {
           desc: "조선시대 유적지 인근 추천 (0.5km)",
           detail: "전주 경기전, 오목대 인근 한옥마을 내에 위치한 편리한 도심 속 카라반 글램핑장입니다."
         },
+        gyoryongsan: {
+          name: "남원 교룡산 오토캠핑장",
+          desc: "조선시대 유적지 인근 추천 (30km 내)",
+          detail: "교룡산성 아래 자리 잡아 맑은 공기와 조용한 환경을 갖추고 있으며, 춘향전의 무대인 광한루원과 가깝습니다."
+        },
         mireuksa: {
           name: "익산 백제캠핑장",
           desc: "백제시대 유적지 인근 추천 (6.7km)",
@@ -73,55 +78,25 @@ const resources = {
           desc: "후백제 유적지 인근 추천 (3.3km)",
           detail: "아중호수의 고즈넉한 풍경을 바라보며 힐링할 수 있는 도심 인접 캠핑장입니다."
         },
+        geumsansa_camp: {
+          name: "김제 금산사 청소년야영장",
+          desc: "후백제 유적지 인근 추천 (30km 내)",
+          detail: "견훤왕이 유배되었던 유서 깊은 금산사 자락에 위치한 자연 친화적 야영장으로 힐링하기 좋습니다."
+        },
         geumma: {
           name: "익산 금마 에코캠핑장",
           desc: "고려시대 유적지 인근 추천 (1.9km)",
           detail: "금마저수지와 서동공원 옆에 위치하여 자연 생태와 역사 탐방을 동시에 즐기기 좋은 곳입니다."
         },
+        baekdudaegan: {
+          name: "남원 백두대간 레저오토캠핑장",
+          desc: "고려시대 유적지 인근 추천 (30km 내)",
+          detail: "백두대간 생태교육장 인근에 위치하며, 고려시대 웅장한 가람터인 만복사지와 지리산 탐방에 좋습니다."
+        },
         cheongamsan: {
           name: "군산 청암산 오토캠핑장",
           desc: "근대문화 유적지 인근 추천 (7.8km)",
           detail: "청암산 호수 인근의 깨끗하고 다채로운 편의시설을 갖춘 가족형 오토캠핑장입니다."
-        },
-        gomanaru: {
-          name: "공주 고마나루 오토캠핑장",
-          desc: "백제시대 유적지 인근 추천 (30km 내)",
-          detail: "웅진 백제의 숨결이 살아 숨 쉬는 금강변 고마나루 솔밭 옆의 쾌적한 캠핑장입니다."
-        },
-        baekmagang: {
-          name: "부여 백마강 레저파크 캠핑장",
-          desc: "백제시대 유적지 인근 추천 (30km 내)",
-          detail: "부여 백마강변에 위치하여 부소산성, 낙화암 등 백제 역사 탐방과 레저를 함께 즐길 수 있습니다."
-        },
-        munjangdae: {
-          name: "상주 문장대 오토캠핑장",
-          desc: "후백제 유적지 인근 추천 (30km 내)",
-          detail: "속리산 국립공원 자락, 견훤산성 인근에 위치하여 맑은 계곡과 역사 탐방을 동시에 즐길 수 있습니다."
-        },
-        goryeosan: {
-          name: "강화 고려산 캠핑장",
-          desc: "고려시대 유적지 인근 추천 (30km 내)",
-          detail: "고려 고종 시절 몽골 항쟁의 임시 수도였던 강화도 고려궁지 인근에서 조용한 산림욕과 힐링을 선사합니다."
-        },
-        nonsan_camp: {
-          name: "논산 오토캠핑장",
-          desc: "고려시대 유적지 인근 추천 (30km 내)",
-          detail: "동양 최대 석조 불상인 관촉사 은진미륵 인근에 위치하여 호젓하게 쉬어갈 수 있는 평화로운 캠핑장입니다."
-        },
-        nanji: {
-          name: "서울 난지캠핑장",
-          desc: "조선시대 유적지 인근 추천 (30km 내)",
-          detail: "한강변에서 바비큐와 캠핑을 즐기며, 서울 내 5대 궁궐 및 종묘 등 조선의 역사 중심지를 쉽게 방문할 수 있는 도심 캠핑장입니다."
-        },
-        gwanggyo: {
-          name: "수원 광교호수공원 가족캠핑장",
-          desc: "조선시대 유적지 인근 추천 (30km 내)",
-          detail: "정조 대왕의 꿈이 담긴 수원 화성 인근, 아름다운 광교호수공원 내에 조성되어 도심 편의와 역사 탐방을 고루 갖추고 있습니다."
-        },
-        songdo: {
-          name: "인천 송도스포츠파크 캠핑장",
-          desc: "근대문화 유적지 인근 추천 (30km 내)",
-          detail: "개항기 근대 서구 문화가 처음 들어온 인천 개항장 거리와 차이나타운을 연계 탐방하기 좋은 수도권 최고 레저형 캠핑장입니다."
         },
         mokpo_football: {
           name: "목포 국제축구센터 캠핑장",
@@ -146,6 +121,10 @@ const resources = {
           name: "풍남문",
           desc: "조선시대 전주부성의 남문이자 유일하게 남아있는 웅장한 성문"
         },
+        gwanghallu: {
+          name: "남원 광한루원",
+          desc: "조선 시대의 대표적인 정원으로 성춘향과 이몽룡의 사랑 이야기가 깃든 명승"
+        },
         mireuksa_site: {
           name: "익산 미륵사지",
           desc: "백제 무왕 때 창건된 동양 최대 크기의 유서 깊은 사찰 유적지"
@@ -158,9 +137,21 @@ const resources = {
           name: "전주 동고산성",
           desc: "후백제를 건국한 견훤왕의 궁성터이자 전주 전경을 조망할 수 있는 산성 유적지"
         },
+        seungamsan_fortress: {
+          name: "전주 승암산성 (치명자산)",
+          desc: "후백제 도성 방어를 위한 핵심 기지였던 전주 한옥마을 인근의 요새 유적지"
+        },
+        geumsansa: {
+          name: "김제 금산사",
+          desc: "후백제 견훤이 아들들에 의해 유배되었던 미륵 신앙의 중심 사찰"
+        },
         godori_buddha: {
           name: "익산 고도리 석조여래입상",
           desc: "고려 시대의 불상 양식을 잘 보여주는 익산 금마면의 보물 석조 여래 입상"
+        },
+        manboksa_site: {
+          name: "남원 만복사지",
+          desc: "고려 문종 시절 창건된 사찰 터로, 기이하고 웅장한 석조 유물들이 남아있는 사적"
         },
         modern_museum: {
           name: "군산 근대역사박물관",
@@ -170,78 +161,14 @@ const resources = {
           name: "군산 신흥동 일본식 가옥",
           desc: "일제강점기 일본인 지주의 생활상과 건축 양식을 보존하고 있는 등록문화재"
         },
-        gongsanseong: {
-          name: "공주 공산성",
-          desc: "백제 웅진 시기 도읍을 수호하던 웅장한 산성성곽"
-        },
-        muryeong_tomb: {
-          name: "공주 무령왕릉과 왕릉원",
-          desc: "백제 무령왕과 왕비의 무덤으로 삼국시대 고분 문화를 보여주는 사적"
-        },
-        busosanseong: {
-          name: "부여 부소산성",
-          desc: "백제 사비 시기 도성을 지키던 요새로 삼천궁녀 설화가 깃든 낙화암을 품은 산성"
-        },
-        jeonglimsa_site: {
-          name: "부여 정림사지",
-          desc: "백제 사비 시기 대표 사찰 터이자 국보 오층석탑이 우뚝 서있는 백제 유적"
-        },
-        neungsanri_tombs: {
-          name: "부여 왕릉원",
-          desc: "백제 사비 시대 왕과 왕족의 무덤군으로 백제 금동대향로가 출토된 유서 깊은 고분"
-        },
-        gyeonhwon_sanseong: {
-          name: "상주 견훤산성",
-          desc: "후백제 시기 견훤왕이 군사 요충지에 축조한 정교하고 튼튼한 삼국 양식 석성"
-        },
-        seungamsan_fortress: {
-          name: "전주 승암산성 (치명자산)",
-          desc: "후백제 도성 방어를 위한 핵심 기지였던 전주 한옥마을 인근의 요새 유적지"
-        },
-        goryeogung_site: {
-          name: "강화 고려궁지",
-          desc: "고려 시대 몽골의 침략에 맞서 강화도로 수도를 천도했을 때의 임시 궁궐 터"
-        },
-        gwanchoksa_buddha: {
-          name: "논산 관촉사 은진미륵",
-          desc: "고려 초기에 제작된 동양 최대 크기의 웅장한 보물 석조 미륵보살 입상"
-        },
-        gyeongbokgung: {
-          name: "서울 경복궁",
-          desc: "조선 왕조의 정궁이자 중심지인 경이로운 조선 역사와 건축의 결정체"
-        },
-        changdeokgung: {
-          name: "서울 창덕궁",
-          desc: "자연과 조화롭게 배치된 조선의 궁궐로 후원의 빼어난 정원미를 간직한 유네스코 세계유산"
-        },
-        jongmyo: {
-          name: "서울 종묘",
-          desc: "조선 시대 역대 왕과 왕비의 신주를 모시고 제사를 지내던 신성한 왕실 사당"
-        },
-        suwon_hwaseong: {
-          name: "수원 화성",
-          desc: "조선 정조 대왕이 군사, 상업 목적으로 설계한 과학적이고 예술적인 성곽"
-        },
-        mokpo_modern: {
-          name: "목포 근대역사관 1관",
-          desc: "구 목포일본영사관 건물로 목포의 개항 역사와 근대 숨결을 간직한 붉은 벽돌 유적"
-        },
-        incheon_open_port: {
-          name: "인천 개항장 거리",
-          desc: "1883년 개항 이후 각국 조계지가 설치되어 이국적인 근대식 건축물이 가득한 역사 거리"
-        },
-        daegu_modern: {
-          name: "대구 근대역사관",
-          desc: "구 조선식산은행 건물로 대구의 근대 금융 및 역사적 흐름을 보여주는 등록문화재"
-        }
       },
       route: {
         title: "기점 기반 맞춤형 방문 경로",
         map: {
           marker_campsite: "캠핑장",
           marker_heritage: "유적지 (도슨트)",
-          load_public: "전국 공공 캠핑장 표시 🗺️",
-          api_key_alert: "💡 API 키가 미등록 상태여서 전국 주요 공공 캠핑장 모의 데이터를 지도에 표시합니다. 실시간 고캠핑 데이터를 불러오려면 .env 파일에 VITE_GOCAMPING_API_KEY를 기입해 주세요.",
+          load_public: "전라도 공공 캠핑장 표시 🗺️",
+          api_key_alert: "💡 API 키가 미등록 상태여서 전라도 지역 주요 공공 캠핑장 모의 데이터를 지도에 표시합니다. 실시간 고캠핑 데이터를 불러오려면 .env 파일에 VITE_GOCAMPING_API_KEY를 기입해 주세요.",
           campsite_info: "공공 캠핑장 상세 정보",
           address: "주소",
           tel: "전화번호",
@@ -365,6 +292,11 @@ const resources = {
           desc: "Joseon era historic site centered (0.5km)",
           detail: "A convenient caravan campground located in Hanok Village near Gyeonggijeon and Omokdae."
         },
+        gyoryongsan: {
+          name: "Gyoryongsan Auto Campground, Namwon",
+          desc: "Joseon era historic site centered (Within 30km)",
+          detail: "Located under Gyoryongsanseong, offering fresh air, quiet forest, and proximity to Gwanghallu Garden."
+        },
         mireuksa: {
           name: "Iksan Baekje Campground",
           desc: "Baekje era historic site centered (6.7km)",
@@ -375,59 +307,29 @@ const resources = {
           desc: "Later Baekje era historic site centered (3.3km)",
           detail: "A peaceful lakeside campground near Ajung Lake, close to the city."
         },
+        geumsansa_camp: {
+          name: "Geumsansa Youth Campground, Gimje",
+          desc: "Later Baekje era historic site centered (Within 30km)",
+          detail: "A nature-friendly campground at the foot of historic Geumsansa Temple, where King Gyeon Hwon was confined."
+        },
         geumma: {
           name: "Iksan Geumma Eco Campground",
           desc: "Goryeo era historic site centered (1.9km)",
           detail: "Located next to Geumma Reservoir, ideal for nature and historical tour."
+        },
+        baekdudaegan: {
+          name: "Baekdu-daegan Leisure Auto Campground, Namwon",
+          desc: "Goryeo era historic site centered (Within 30km)",
+          detail: "Located near the Eco Center, great for exploring Goryeo's Manboksa Temple Site and Jirisan."
         },
         cheongamsan: {
           name: "Gunsan Cheongamsan Auto Campground",
           desc: "Modern era historic site centered (7.8km)",
           detail: "A family-friendly auto campground near Cheongamsan Lake with top-notch amenities."
         },
-        gomanaru: {
-          name: "Gomanaru Auto Campground, Gongju",
-          desc: "Recommended near Baekje era sites (Within 30km)",
-          detail: "A pleasant campground located next to Gomanaru Pine Forest along Geumgang River, where the spirit of Baekje lives."
-        },
-        baekmagang: {
-          name: "Baekma-gang Leisure Park Campground, Buyeo",
-          desc: "Recommended near Baekje era sites (Within 30km)",
-          detail: "Located along the Baekma River in Buyeo, perfect for historical exploration of Busosanseong and Nakhwaam."
-        },
-        munjangdae: {
-          name: "Munjangdae Auto Campground, Sangju",
-          desc: "Recommended near Later Baekje era sites (Within 30km)",
-          detail: "Located at the foot of Songnisan National Park near Gyeon Hwon Sanseong, offering clean valley waters and historical walks."
-        },
-        goryeosan: {
-          name: "Goryeosan Campground, Ganghwa",
-          desc: "Recommended near Goryeo era sites (Within 30km)",
-          detail: "Offers quiet forest bathing and healing near Goryeogung Palace Site, the temporary capital during the Goryeo-Mongol war."
-        },
-        nonsan_camp: {
-          name: "Nonsan Auto Campground",
-          desc: "Recommended near Goryeo era sites (Within 30km)",
-          detail: "Located near Gwanchoksa Temple Stone Maitreya, a peaceful campground where you can relax."
-        },
-        nanji: {
-          name: "Nanji Campground, Seoul",
-          desc: "Recommended near Joseon era sites (Within 30km)",
-          detail: "An urban campground along the Han River where you can enjoy BBQ and easily visit Joseon's historical center including the 5 palaces."
-        },
-        gwanggyo: {
-          name: "Gwanggyo Lake Park Family Campsite, Suwon",
-          desc: "Recommended near Joseon era sites (Within 30km)",
-          detail: "Built inside the beautiful Gwanggyo Lake Park near Suwon Hwaseong, reflecting King Jeongjo's grand vision."
-        },
-        songdo: {
-          name: "Songdo Sports Park Campground, Incheon",
-          desc: "Recommended near Modern era sites (Within 30km)",
-          detail: "A great leisure campground to explore Incheon's Open Port Street and Chinatown, where Western modern culture first entered."
-        },
         mokpo_football: {
           name: "Mokpo International Football Center Campground",
-          desc: "Recommended near Modern era sites (Within 30km)",
+          desc: "Modern era historic site centered (Within 30km)",
           detail: "Located near Mokpo Modern History Hall, a basecamp to experience the breathtaking view of Yudal Mountain and Mokpo's modern atmosphere."
         }
       },
@@ -448,6 +350,10 @@ const resources = {
           name: "Pungnammun Gate",
           desc: "The grand southern gate of Jeonju Castle, and the only remaining gate from the Joseon era."
         },
+        gwanghallu: {
+          name: "Gwanghallu Garden, Namwon",
+          desc: "A representative Joseon-era garden, famous for the love story of Chunhyang and Mongryong."
+        },
         mireuksa_site: {
           name: "Iksan Mireuksa Temple Site",
           desc: "The largest temple site in East Asia, founded during the reign of King Mu of Baekje."
@@ -460,9 +366,21 @@ const resources = {
           name: "Jeonju Donggosanseong Fortress",
           desc: "The palace site of King Gyeon Hwon, founder of Later Baekje, offering panoramic views of Jeonju."
         },
+        seungamsan_fortress: {
+          name: "Seungamsan Fortress (Chimyeongjasan), Jeonju",
+          desc: "A historic fortress defense outpost near Jeonju Hanok Village."
+        },
+        geumsansa: {
+          name: "Geumsansa Temple, Gimje",
+          desc: "The central temple of Maitreya belief, where King Gyeon Hwon was confined by his sons."
+        },
         godori_buddha: {
           name: "Iksan Godori Standing Stone Buddha",
           desc: "A Goryeo-era standing stone Buddha statue in Geumma-myeon, designated as a national treasure."
+        },
+        manboksa_site: {
+          name: "Manboksa Temple Site, Namwon",
+          desc: "A temple site founded during Goryeo King Munjong's reign, preserving magnificent stone relics."
         },
         modern_museum: {
           name: "Gunsan Modern History Museum",
@@ -472,69 +390,9 @@ const resources = {
           name: "Gunsan Sinheung-dong Japanese House",
           desc: "A registered cultural heritage preserving the lifestyle and architecture of a Japanese landlord during the colonial era."
         },
-        gongsanseong: {
-          name: "Gongsanseong Fortress, Gongju",
-          desc: "A magnificent mountain fortress protecting the capital during the Baekje Woongjin period."
-        },
-        muryeong_tomb: {
-          name: "Tomb of King Muryeong and Royal Tombs, Gongju",
-          desc: "The royal tombs showing the rich tomb culture of the Three Kingdoms period."
-        },
-        busosanseong: {
-          name: "Busosanseong Fortress, Buyeo",
-          desc: "A defense fortress protecting the capital Sabi, featuring Nakhwaam Cliff related to a historic legend."
-        },
-        jeonglimsa_site: {
-          name: "Jeonglimsa Temple Site, Buyeo",
-          desc: "A representative temple site of Baekje Sabi period, housing the National Treasure Five-story Stone Pagoda."
-        },
-        neungsanri_tombs: {
-          name: "Royal Tombs in Neungsan-ri, Buyeo",
-          desc: "The tombs of Baekje kings, from which the famous Baekje Gilt-bronze Incense Burner was excavated."
-        },
-        gyeonhwon_sanseong: {
-          name: "Gyeon Hwon Sanseong Fortress, Sangju",
-          desc: "A strong stone fortress built by King Gyeon Hwon at a military stronghold."
-        },
-        seungamsan_fortress: {
-          name: "Seungamsan Fortress (Chimyeongjasan), Jeonju",
-          desc: "A historic fortress defense outpost near Jeonju Hanok Village."
-        },
-        goryeogung_site: {
-          name: "Goryeogung Palace Site, Ganghwa",
-          desc: "The temporary palace site during the Goryeo dynasty's resistance against the Mongol invasion."
-        },
-        gwanchoksa_buddha: {
-          name: "Gwanchoksa Temple Stone Buddha, Nonsan",
-          desc: "The largest stone standing Buddha statue in East Asia, designated as a national treasure."
-        },
-        gyeongbokgung: {
-          name: "Gyeongbokgung Palace, Seoul",
-          desc: "The main royal palace of the Joseon Dynasty, representing Joseon's rich history and architectural essence."
-        },
-        changdeokgung: {
-          name: "Changdeokgung Palace, Seoul",
-          desc: "A Joseon palace built in harmony with nature, famous for its beautiful Secret Garden (Huwon)."
-        },
-        jongmyo: {
-          name: "Jongmyo Shrine, Seoul",
-          desc: "A sacred royal shrine housing spirit tablets of Joseon kings and queens."
-        },
-        suwon_hwaseong: {
-          name: "Suwon Hwaseong Fortress",
-          desc: "A scientific and artistic fortress designed by Joseon King Jeongjo for military and commercial purposes."
-        },
         mokpo_modern: {
           name: "Mokpo Modern History Hall 1",
           desc: "The former Japanese consulate building, preserving Mokpo's opening and modern history."
-        },
-        incheon_open_port: {
-          name: "Incheon Open Port Street",
-          desc: "A historic street filled with exotic modern buildings built after the opening of the port in 1883."
-        },
-        daegu_modern: {
-          name: "Daegu Modern History Museum",
-          desc: "A registered cultural heritage showcasing Daegu's modern financial and historical trajectory."
         }
       },
       route: {
@@ -542,8 +400,8 @@ const resources = {
         map: {
           marker_campsite: "Campground",
           marker_heritage: "Heritage (Docent)",
-          load_public: "Show Nationwide Public Campsites 🗺️",
-          api_key_alert: "💡 API key is not registered. Showing mock campsite data for nationwide region. To load real-time GoCamping API data, please write VITE_GOCAMPING_API_KEY in your .env file.",
+          load_public: "Show Jeolla Public Campsites 🗺️",
+          api_key_alert: "💡 API key is not registered. Showing mock campsite data for Jeolla region. To load real-time GoCamping API data, please write VITE_GOCAMPING_API_KEY in your .env file.",
           campsite_info: "Public Campsite Info",
           address: "Address",
           tel: "Tel",
