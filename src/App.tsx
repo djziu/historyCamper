@@ -44,6 +44,45 @@ const MASTER_CAMPSITES: Campsite[] = [
     nearbyHeritageIds: ['mireuksa_site', 'wanggungri'],
     resveCl: '온라인야영장예약',
     resveUrl: ''
+  },
+  {
+    id: 'ajung',
+    name: 'campsites.ajung.name',
+    description: 'campsites.ajung.desc',
+    lat: 35.8395,
+    lng: 127.1855,
+    era: 'later_baekje',
+    tags: ['호수뷰', '도심 인접', '#동고산성'],
+    distanceToHistoric: 3.3,
+    nearbyHeritageIds: ['donggosanseong'],
+    resveCl: '온라인야영장예약,전화',
+    resveUrl: ''
+  },
+  {
+    id: 'geumma',
+    name: 'campsites.geumma.name',
+    description: 'campsites.geumma.desc',
+    lat: 36.0022,
+    lng: 127.1351,
+    era: 'goryeo',
+    tags: ['생태공원 인접', '#석조여래입상'],
+    distanceToHistoric: 1.9,
+    nearbyHeritageIds: ['godori_buddha'],
+    resveCl: '온라인야영장예약',
+    resveUrl: ''
+  },
+  {
+    id: 'cheongamsan',
+    name: 'campsites.cheongamsan.name',
+    description: 'campsites.cheongamsan.desc',
+    lat: 35.9388,
+    lng: 126.7725,
+    era: 'modern',
+    tags: ['가족캠핑 추천', '#근대역사박물관', '#히로쓰가옥'],
+    distanceToHistoric: 7.8,
+    nearbyHeritageIds: ['modern_museum', 'hirotsu_house'],
+    resveCl: '온라인야영장예약,전화',
+    resveUrl: ''
   }
 ];
 
@@ -96,6 +135,38 @@ const MASTER_HERITAGES: HeritageSite[] = [
     lat: 35.9732,
     lng: 127.0638,
     era: 'baekje'
+  },
+  {
+    id: 'donggosanseong',
+    name: 'heritages.donggosanseong.name',
+    description: 'heritages.donggosanseong.desc',
+    lat: 35.8118,
+    lng: 127.1706,
+    era: 'later_baekje'
+  },
+  {
+    id: 'godori_buddha',
+    name: 'heritages.godori_buddha.name',
+    description: 'heritages.godori_buddha.desc',
+    lat: 35.9868,
+    lng: 127.1264,
+    era: 'goryeo'
+  },
+  {
+    id: 'modern_museum',
+    name: 'heritages.modern_museum.name',
+    description: 'heritages.modern_museum.desc',
+    lat: 35.9895,
+    lng: 126.7118,
+    era: 'modern'
+  },
+  {
+    id: 'hirotsu_house',
+    name: 'heritages.hirotsu_house.name',
+    description: 'heritages.hirotsu_house.desc',
+    lat: 35.9877,
+    lng: 126.7095,
+    era: 'modern'
   }
 ];
 
@@ -499,6 +570,206 @@ function App() {
     );
   };
 
+  // Helper to render a campsite card
+  const renderCampsiteCard = (campsite: any) => {
+    return (
+      <div key={campsite.id} className="card" style={{ marginBottom: 0, position: 'relative' }}>
+        <div className="list-item" style={{ borderBottom: 'none', padding: 0 }}>
+          <div className="list-icon historic" style={{ cursor: 'pointer' }} onClick={() => viewHeritageRoute(campsite.id)}>
+            <Tent size={24} />
+          </div>
+          <div className="list-content" style={{ width: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+              <div 
+                className="list-title" 
+                style={{ cursor: 'pointer', transition: 'color 0.2s', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}
+                onClick={() => viewHeritageRoute(campsite.id)}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                onMouseLeave={(e) => e.currentTarget.style.color = ''}
+              >
+                <span>{campsite.id.startsWith('public-') ? campsite.name : t(campsite.name)}</span>
+                {getReservationBadge(campsite)}
+              </div>
+            </div>
+            
+            <div className="list-desc">
+              {getCampsiteDistanceText(campsite)}
+            </div>
+            
+            <div className="tag-container" style={{ marginTop: '6px' }}>
+              {campsite.tags.map((tag: any, idx: number) => (
+                <span key={idx} className={`badge ${tag.startsWith('#') ? 'gold' : ''}`}>{tag}</span>
+              ))}
+            </div>
+
+            {/* Status buttons: [Plan to Visit] and [Visited] */}
+            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleStatus(campsite.id, 'planned');
+                }}
+                style={{
+                  flex: 1,
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  transition: 'all 0.2s',
+                  border: campsiteStatuses[campsite.id] === 'planned' ? '1px solid var(--gold)' : '1px solid var(--border)',
+                  background: campsiteStatuses[campsite.id] === 'planned' ? 'rgba(217, 119, 6, 0.08)' : 'var(--surface)',
+                  color: campsiteStatuses[campsite.id] === 'planned' ? 'var(--gold)' : 'var(--surface-foreground)'
+                }}
+              >
+                <span>📌</span>
+                {t('era.status_planned')}
+              </button>
+              
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleStatus(campsite.id, 'visited');
+                }}
+                style={{
+                  flex: 1,
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  transition: 'all 0.2s',
+                  border: campsiteStatuses[campsite.id] === 'visited' ? '1px solid var(--primary)' : '1px solid var(--border)',
+                  background: campsiteStatuses[campsite.id] === 'visited' ? 'rgba(22, 101, 52, 0.08)' : 'var(--surface)',
+                  color: campsiteStatuses[campsite.id] === 'visited' ? 'var(--primary)' : 'var(--surface-foreground)'
+                }}
+              >
+                <span>✅</span>
+                {t('era.status_visited')}
+              </button>
+            </div>
+
+            {/* Reservation Links (Naver / Kakao) for Reservable Campsites */}
+            {isCampsiteReservable(campsite) && (
+              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const queryName = campsite.id.startsWith('public-') ? campsite.name : t(campsite.name);
+                    window.open(`https://search.naver.com/search.naver?query=${encodeURIComponent(queryName + ' 예약')}`, '_blank');
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '8px 12px',
+                    background: 'rgba(22, 163, 74, 0.06)',
+                    border: '1px solid rgba(22, 163, 74, 0.2)',
+                    color: '#16a34a',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#16a34a';
+                    e.currentTarget.style.color = '#ffffff';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(22, 163, 74, 0.06)';
+                    e.currentTarget.style.color = '#16a34a';
+                  }}
+                >
+                  <span>🔍</span>
+                  {t('route.map.naver_booking')}
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const queryName = campsite.id.startsWith('public-') ? campsite.name : t(campsite.name);
+                    window.open(`https://map.kakao.com/?q=${encodeURIComponent(queryName)}`, '_blank');
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '8px 12px',
+                    background: 'rgba(202, 138, 4, 0.06)',
+                    border: '1px solid rgba(202, 138, 4, 0.2)',
+                    color: '#ca8a04',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#ca8a04';
+                    e.currentTarget.style.color = '#ffffff';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(202, 138, 4, 0.06)';
+                    e.currentTarget.style.color = '#ca8a04';
+                  }}
+                >
+                  <span>📍</span>
+                  {t('route.map.kakao_booking')}
+                </button>
+              </div>
+            )}
+
+            {/* Button to view dynamic heritage routes */}
+            <button
+              onClick={() => viewHeritageRoute(campsite.id)}
+              style={{
+                width: '100%',
+                marginTop: '8px',
+                padding: '10px',
+                background: 'rgba(22, 101, 52, 0.06)',
+                border: '1px solid rgba(22, 101, 52, 0.15)',
+                color: 'var(--primary)',
+                borderRadius: '8px',
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--primary)';
+                e.currentTarget.style.color = '#ffffff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(22, 101, 52, 0.06)';
+                e.currentTarget.style.color = 'var(--primary)';
+              }}
+            >
+              <MapIcon size={14} />
+              {t('era.view_heritage')}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Filter and sort campsites based on distance to user (computed locally)
   const filteredCampsites = allDisplayCampsites.filter(c => {
     if (statusFilter !== 'all' && campsiteStatuses[c.id] !== statusFilter) {
@@ -820,204 +1091,42 @@ function App() {
             )}
 
             {sortedCampsites.length > 0 ? (
-              <div className="era-grid">
-                {sortedCampsites.map(campsite => (
-                  <div key={campsite.id} className="card" style={{ marginBottom: 0, position: 'relative' }}>
-                    <div className="list-item" style={{ borderBottom: 'none', padding: 0 }}>
-                      <div className="list-icon historic" style={{ cursor: 'pointer' }} onClick={() => viewHeritageRoute(campsite.id)}>
-                        <Tent size={24} />
+              activeEra === 'all' && statusFilter === 'all' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  {['baekje', 'later_baekje', 'goryeo', 'joseon', 'modern', 'all'].map(eraId => {
+                    const eraCamps = sortedCampsites.filter(c => c.era === eraId);
+                    if (eraCamps.length === 0) return null;
+                    
+                    const eraLabel = Eras.find(e => e.id === eraId)?.label || (i18n.language === 'ko' ? '일반' : 'General');
+                    return (
+                      <div key={eraId} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        <h4 style={{ 
+                          fontSize: '1rem', 
+                          fontWeight: 800, 
+                          color: 'var(--primary)', 
+                          borderLeft: '4px solid var(--primary)', 
+                          paddingLeft: '8px',
+                          marginTop: '0.5rem',
+                          marginBottom: '0.25rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                          <span>⏳</span> {eraLabel} {i18n.language === 'ko' ? '시대 캠핑지' : 'Era Campsites'}
+                          <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--surface-foreground)' }}>({eraCamps.length})</span>
+                        </h4>
+                        <div className="era-grid">
+                          {eraCamps.map(campsite => renderCampsiteCard(campsite))}
+                        </div>
                       </div>
-                      <div className="list-content" style={{ width: '100%' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
-                          <div 
-                            className="list-title" 
-                            style={{ cursor: 'pointer', transition: 'color 0.2s', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}
-                            onClick={() => viewHeritageRoute(campsite.id)}
-                            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
-                            onMouseLeave={(e) => e.currentTarget.style.color = ''}
-                          >
-                            <span>{campsite.id.startsWith('public-') ? campsite.name : t(campsite.name)}</span>
-                            {getReservationBadge(campsite)}
-                          </div>
-                        </div>
-                        
-                        <div className="list-desc">
-                          {getCampsiteDistanceText(campsite)}
-                        </div>
-                        
-                        <div className="tag-container" style={{ marginTop: '6px' }}>
-                          {campsite.tags.map((tag, idx) => (
-                            <span key={idx} className={`badge ${tag.startsWith('#') ? 'gold' : ''}`}>{tag}</span>
-                          ))}
-                        </div>
-
-                        {/* Status buttons: [Plan to Visit] and [Visited] */}
-                        <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleStatus(campsite.id, 'planned');
-                            }}
-                            style={{
-                              flex: 1,
-                              padding: '8px 12px',
-                              borderRadius: '8px',
-                              fontSize: '0.8rem',
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '4px',
-                              transition: 'all 0.2s',
-                              border: campsiteStatuses[campsite.id] === 'planned' ? '1px solid var(--gold)' : '1px solid var(--border)',
-                              background: campsiteStatuses[campsite.id] === 'planned' ? 'rgba(217, 119, 6, 0.08)' : 'var(--surface)',
-                              color: campsiteStatuses[campsite.id] === 'planned' ? 'var(--gold)' : 'var(--surface-foreground)'
-                            }}
-                          >
-                            <span>📌</span>
-                            {t('era.status_planned')}
-                          </button>
-                          
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleStatus(campsite.id, 'visited');
-                            }}
-                            style={{
-                              flex: 1,
-                              padding: '8px 12px',
-                              borderRadius: '8px',
-                              fontSize: '0.8rem',
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '4px',
-                              transition: 'all 0.2s',
-                              border: campsiteStatuses[campsite.id] === 'visited' ? '1px solid var(--primary)' : '1px solid var(--border)',
-                              background: campsiteStatuses[campsite.id] === 'visited' ? 'rgba(22, 101, 52, 0.08)' : 'var(--surface)',
-                              color: campsiteStatuses[campsite.id] === 'visited' ? 'var(--primary)' : 'var(--surface-foreground)'
-                            }}
-                          >
-                            <span>✅</span>
-                            {t('era.status_visited')}
-                          </button>
-                        </div>
-
-                        {/* Reservation Links (Naver / Kakao) for Reservable Campsites */}
-                        {isCampsiteReservable(campsite) && (
-                          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const queryName = campsite.id.startsWith('public-') ? campsite.name : t(campsite.name);
-                                window.open(`https://search.naver.com/search.naver?query=${encodeURIComponent(queryName + ' 예약')}`, '_blank');
-                              }}
-                              style={{
-                                flex: 1,
-                                padding: '8px 12px',
-                                background: 'rgba(22, 163, 74, 0.06)',
-                                border: '1px solid rgba(22, 163, 74, 0.2)',
-                                color: '#16a34a',
-                                borderRadius: '8px',
-                                fontWeight: 700,
-                                fontSize: '0.8rem',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '4px',
-                                transition: 'all 0.2s'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.background = '#16a34a';
-                                e.currentTarget.style.color = '#ffffff';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(22, 163, 74, 0.06)';
-                                e.currentTarget.style.color = '#16a34a';
-                              }}
-                            >
-                              <span>🔍</span>
-                              {t('route.map.naver_booking')}
-                            </button>
-
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const queryName = campsite.id.startsWith('public-') ? campsite.name : t(campsite.name);
-                                window.open(`https://map.kakao.com/?q=${encodeURIComponent(queryName)}`, '_blank');
-                              }}
-                              style={{
-                                flex: 1,
-                                padding: '8px 12px',
-                                background: 'rgba(202, 138, 4, 0.06)',
-                                border: '1px solid rgba(202, 138, 4, 0.2)',
-                                color: '#ca8a04',
-                                borderRadius: '8px',
-                                fontWeight: 700,
-                                fontSize: '0.8rem',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '4px',
-                                transition: 'all 0.2s'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.background = '#ca8a04';
-                                e.currentTarget.style.color = '#ffffff';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(202, 138, 4, 0.06)';
-                                e.currentTarget.style.color = '#ca8a04';
-                              }}
-                            >
-                              <span>📍</span>
-                              {t('route.map.kakao_booking')}
-                            </button>
-                          </div>
-                        )}
-
-                        {/* Button to view dynamic heritage routes */}
-                        <button
-                          onClick={() => viewHeritageRoute(campsite.id)}
-                          style={{
-                            width: '100%',
-                            marginTop: '8px',
-                            padding: '10px',
-                            background: 'rgba(22, 101, 52, 0.06)',
-                            border: '1px solid rgba(22, 101, 52, 0.15)',
-                            color: 'var(--primary)',
-                            borderRadius: '8px',
-                            fontWeight: 700,
-                            fontSize: '0.85rem',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '4px',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'var(--primary)';
-                            e.currentTarget.style.color = '#ffffff';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'rgba(22, 101, 52, 0.06)';
-                            e.currentTarget.style.color = 'var(--primary)';
-                          }}
-                        >
-                          <MapIcon size={14} />
-                          {t('era.view_heritage')}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="era-grid">
+                  {sortedCampsites.map(campsite => renderCampsiteCard(campsite))}
+                </div>
+              )
             ) : (
               <div className="card" style={{ textAlign: 'center', padding: '3rem 1.5rem', marginBottom: 0 }}>
                 <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>

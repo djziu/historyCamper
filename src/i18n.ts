@@ -67,6 +67,21 @@ const resources = {
           name: "익산 백제캠핑장",
           desc: "백제시대 유적지 인근 추천 (6.7km)",
           detail: "익산 미륵사지 유적지와 인접하여 역사 탐방과 캠핑을 즐기기 가장 좋은 캠핑장입니다."
+        },
+        ajung: {
+          name: "전주 아중호수 캠핑장",
+          desc: "후백제 유적지 인근 추천 (3.3km)",
+          detail: "아중호수의 고즈넉한 풍경을 바라보며 힐링할 수 있는 도심 인접 캠핑장입니다."
+        },
+        geumma: {
+          name: "익산 금마 에코캠핑장",
+          desc: "고려시대 유적지 인근 추천 (1.9km)",
+          detail: "금마저수지와 서동공원 옆에 위치하여 자연 생태와 역사 탐방을 동시에 즐기기 좋은 곳입니다."
+        },
+        cheongamsan: {
+          name: "군산 청암산 오토캠핑장",
+          desc: "근대문화 유적지 인근 추천 (7.8km)",
+          detail: "청암산 호수 인근의 깨끗하고 다채로운 편의시설을 갖춘 가족형 오토캠핑장입니다."
         }
       },
       heritages: {
@@ -93,6 +108,22 @@ const resources = {
         wanggungri: {
           name: "익산 왕궁리 유적",
           desc: "백제 무왕 시절 왕궁터로, 국보 오층석탑과 유물이 발견된 사적"
+        },
+        donggosanseong: {
+          name: "전주 동고산성",
+          desc: "후백제를 건국한 견훤왕의 궁성터이자 전주 전경을 조망할 수 있는 산성 유적지"
+        },
+        godori_buddha: {
+          name: "익산 고도리 석조여래입상",
+          desc: "고려 시대의 불상 양식을 잘 보여주는 익산 금마면의 보물 석조 여래 입상"
+        },
+        modern_museum: {
+          name: "군산 근대역사박물관",
+          desc: "군산의 근대 역사와 해양 물류 문화를 체험할 수 있는 대표 박물관"
+        },
+        hirotsu_house: {
+          name: "군산 신흥동 일본식 가옥",
+          desc: "일제강점기 일본인 지주의 생활상과 건축 양식을 보존하고 있는 등록문화재"
         }
       },
       route: {
@@ -229,6 +260,21 @@ const resources = {
           name: "Iksan Baekje Campground",
           desc: "Baekje era historic site centered (6.7km)",
           detail: "A campground near Iksan Mireuksa Temple Site, perfect for historical exploration and camping."
+        },
+        ajung: {
+          name: "Jeonju Ajung Lake Campground",
+          desc: "Later Baekje era historic site centered (3.3km)",
+          detail: "A peaceful lakeside campground near Ajung Lake, close to the city."
+        },
+        geumma: {
+          name: "Iksan Geumma Eco Campground",
+          desc: "Goryeo era historic site centered (1.9km)",
+          detail: "Located next to Geumma Reservoir, ideal for nature and historical tour."
+        },
+        cheongamsan: {
+          name: "Gunsan Cheongamsan Auto Campground",
+          desc: "Modern era historic site centered (7.8km)",
+          detail: "A family-friendly auto campground near Cheongamsan Lake with top-notch amenities."
         }
       },
       heritages: {
@@ -255,6 +301,22 @@ const resources = {
         wanggungri: {
           name: "Iksan Wanggung-ri Ruins",
           desc: "The historic royal palace site of King Mu, home to the National Treasure Five-story Stone Pagoda."
+        },
+        donggosanseong: {
+          name: "Jeonju Donggosanseong Fortress",
+          desc: "The palace site of King Gyeon Hwon, founder of Later Baekje, offering panoramic views of Jeonju."
+        },
+        godori_buddha: {
+          name: "Iksan Godori Standing Stone Buddha",
+          desc: "A Goryeo-era standing stone Buddha statue in Geumma-myeon, designated as a national treasure."
+        },
+        modern_museum: {
+          name: "Gunsan Modern History Museum",
+          desc: "A representative museum showcasing Gunsan's modern history and maritime logistics culture."
+        },
+        hirotsu_house: {
+          name: "Gunsan Sinheung-dong Japanese House",
+          desc: "A registered cultural heritage preserving the lifestyle and architecture of a Japanese landlord during the colonial era."
         }
       },
       route: {
