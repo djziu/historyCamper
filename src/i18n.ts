@@ -59,14 +59,14 @@ const resources = {
           detail: "모악산 자락 아래 위치한 울창하고 조용한 숲속 캠핑장입니다."
         },
         hanok: {
-          name: "전주 한옥마을 글램핑",
-          desc: "조선시대 유적지 중심 추천 (1.1km)",
-          detail: "전주 경기전과 전동성당 인근의 편리한 도심 속 글램핑장입니다."
+          name: "전주 한옥마을 도란도란 카라반",
+          desc: "조선시대 유적지 인근 추천 (0.5km)",
+          detail: "전주 경기전, 오목대 인근 한옥마을 내에 위치한 편리한 도심 속 카라반 글램핑장입니다."
         },
         mireuksa: {
-          name: "익산 미륵사지 오토캠핑장",
-          desc: "백제시대 유적지 중심 추천 (0.5km)",
-          detail: "국보 미륵사지 석탑이 바로 앞에 있는 역사 캠핑을 즐기기 가장 좋은 캠핑장입니다."
+          name: "익산 백제캠핑장",
+          desc: "백제시대 유적지 인근 추천 (6.7km)",
+          detail: "익산 미륵사지 유적지와 인접하여 역사 탐방과 캠핑을 즐기기 가장 좋은 캠핑장입니다."
         }
       },
       heritages: {
@@ -221,14 +221,14 @@ const resources = {
           detail: "A dense, peaceful forest campsite located at the foot of Moaksan Mountain."
         },
         hanok: {
-          name: "Jeonju Hanok Village Glamping",
-          desc: "Joseon era historic site centered (1.1km)",
-          detail: "A convenient glamping site located near Gyeonggijeon and Jeondong Cathedral in Jeonju."
+          name: "Jeonju Hanok Village Doran Doran Caravan",
+          desc: "Joseon era historic site centered (0.5km)",
+          detail: "A convenient caravan campground located in Hanok Village near Gyeonggijeon and Omokdae."
         },
         mireuksa: {
-          name: "Iksan Mireuksa Temple Site Campground",
-          desc: "Baekje era historic site centered (0.5km)",
-          detail: "The best historical campsite located right in front of the National Treasure Mireuksa Stone Pagoda."
+          name: "Iksan Baekje Campground",
+          desc: "Baekje era historic site centered (6.7km)",
+          detail: "A campground near Iksan Mireuksa Temple Site, perfect for historical exploration and camping."
         }
       },
       heritages: {

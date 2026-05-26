@@ -23,27 +23,27 @@ const MASTER_CAMPSITES: Campsite[] = [
     id: 'hanok',
     name: 'campsites.hanok.name',
     description: 'campsites.hanok.desc',
-    lat: 35.8145,
-    lng: 127.1504,
+    lat: 35.8125,
+    lng: 127.1558,
     era: 'joseon',
     tags: ['거리순 1위', '#경기전', '#풍남문', '#오목대'],
-    distanceToHistoric: 1.1,
+    distanceToHistoric: 0.5,
     nearbyHeritageIds: ['gyeonggijeon', 'omokdae', 'pungnammun'],
-    resveCl: '전화',
+    resveCl: '온라인야영장예약,전화',
     resveUrl: ''
   },
   {
     id: 'mireuksa',
     name: 'campsites.mireuksa.name',
     description: 'campsites.mireuksa.desc',
-    lat: 36.0082,
-    lng: 127.0315,
+    lat: 35.9892,
+    lng: 127.1009,
     era: 'baekje',
-    tags: ['안전점검 완료', '유적지 초인접', '#미륵사지'],
-    distanceToHistoric: 0.5,
+    tags: ['안전점검 완료', '유적지 근접', '#미륵사지'],
+    distanceToHistoric: 6.7,
     nearbyHeritageIds: ['mireuksa_site', 'wanggungri'],
     resveCl: '온라인야영장예약',
-    resveUrl: 'https://gocamping.or.kr'
+    resveUrl: ''
   }
 ];
 
