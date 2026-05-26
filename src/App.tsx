@@ -725,6 +725,9 @@ function App() {
   const [heritageQuizAnswered, setHeritageQuizAnswered] = useState(false);
   const [heritageQuizSelectedIdx, setHeritageQuizSelectedIdx] = useState<number | null>(null);
   const [heritageQuizReviewText, setHeritageQuizReviewText] = useState('');
+  
+  // Selected campsite for route modal layer
+  const [activeRouteCampsiteId, setActiveRouteCampsiteId] = useState<string | null>(null);
 
   // Status filter: 'all' | 'planned' | 'visited'
   const [statusFilter, setStatusFilter] = useState<'all' | 'planned' | 'visited'>('all');
@@ -1352,10 +1355,10 @@ function App() {
     }
   }, [selectedCampsiteId]);
 
-  // Navigate to route tab and load clicked campsite
+  // Open detailed route modal layer and load clicked campsite
   const viewHeritageRoute = (campsiteId: string) => {
     setSelectedCampsiteId(campsiteId);
-    setActiveTab('route');
+    setActiveRouteCampsiteId(campsiteId);
   };
 
   // Request browser location permission and center map (client-side only, no server updates)
@@ -2640,6 +2643,281 @@ function App() {
                   )}
                 </div>
               )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Campsite Route & Map Modal Layer */}
+      {activeRouteCampsiteId && (() => {
+        const campsite = allDisplayCampsites.find(c => c.id === activeRouteCampsiteId);
+        if (!campsite) return null;
+
+        const routeHeritages = MASTER_HERITAGES.filter(h => campsite.nearbyHeritageIds.includes(h.id));
+        const routePolylinePaths = routeHeritages.map(h => [
+          { lat: campsite.lat, lng: campsite.lng },
+          { lat: h.lat, lng: h.lng }
+        ]);
+
+        return (
+          <div className="modal-backdrop" onClick={() => setActiveRouteCampsiteId(null)}>
+            <div className="route-modal-card" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <div className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  ⛺ {campsite.id.startsWith('public-') ? campsite.name : t(campsite.name)}
+                </div>
+                <button className="modal-close-btn" onClick={() => setActiveRouteCampsiteId(null)}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="route-layout">
+                {/* Kakao Map Component */}
+                <div className="route-map-container">
+                  <Map
+                    center={{ lat: campsite.lat, lng: campsite.lng }}
+                    style={{ width: "100%", height: "100%" }}
+                    level={campsite.id.startsWith('public-') ? 9 : (campsite.id === 'mireuksa' ? 6 : 8)}
+                  >
+                    {/* Campsite Marker */}
+                    <MapMarker
+                      position={{ lat: campsite.lat, lng: campsite.lng }}
+                      image={{
+                        src: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
+                        size: { width: 24, height: 35 }
+                      }}
+                    >
+                      <div style={{ padding: "3px 6px", color: "black", fontSize: "0.75rem", textAlign: "center", borderRadius: "4px", fontWeight: "bold" }}>
+                        ⛺ {campsite.id.startsWith('public-') ? campsite.name : t(campsite.name)}
+                      </div>
+                    </MapMarker>
+
+                    {/* Nearby Heritage Markers */}
+                    {routeHeritages.map(heritage => (
+                      <MapMarker key={heritage.id} position={{ lat: heritage.lat, lng: heritage.lng }}>
+                        <div style={{ padding: "3px 6px", color: "black", fontSize: "0.75rem", textAlign: "center", fontWeight: 'bold' }}>
+                          🏛️ {t(heritage.name)}
+                        </div>
+                      </MapMarker>
+                    ))}
+
+                    {/* Connection lines */}
+                    {routePolylinePaths.map((path, idx) => (
+                      <Polyline
+                        key={idx}
+                        path={[path]}
+                        strokeWeight={4}
+                        strokeColor={"#166534"}
+                        strokeOpacity={0.8}
+                        strokeStyle={"dashed"}
+                      />
+                    ))}
+                  </Map>
+                </div>
+
+                {/* Timeline Info Panel */}
+                <div className="card gold-accent route-info-container" style={{ marginBottom: 0 }}>
+                  <div className="card-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <MapPin size={20} color="var(--gold)"/>
+                      {t('route.card.title', { campsiteName: campsite.id.startsWith('public-') ? campsite.name : t(campsite.name) })}
+                    </div>
+                    
+                    {/* Campsite statuses planned/visited toggle */}
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button
+                        onClick={() => toggleStatus(campsite.id, 'planned')}
+                        style={{
+                          padding: '4px 8px',
+                          background: campsiteStatuses[campsite.id] === 'planned' ? 'var(--gold)' : 'none',
+                          color: campsiteStatuses[campsite.id] === 'planned' ? 'white' : 'var(--surface-foreground)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '6px',
+                          fontSize: '0.75rem',
+                          cursor: 'pointer',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        📌 {t('era.status_planned')}
+                      </button>
+                      <button
+                        onClick={() => toggleStatus(campsite.id, 'visited')}
+                        style={{
+                          padding: '4px 8px',
+                          background: campsiteStatuses[campsite.id] === 'visited' ? 'var(--primary)' : 'none',
+                          color: campsiteStatuses[campsite.id] === 'visited' ? 'white' : 'var(--surface-foreground)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '6px',
+                          fontSize: '0.75rem',
+                          cursor: 'pointer',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        ✅ {t('era.status_visited')}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="route-timeline" style={{ position: 'relative', paddingLeft: '1.5rem', marginTop: '1rem' }}>
+                    <div className="timeline-line"></div>
+                    
+                    {/* Day 1 Check-in */}
+                    <div className="timeline-item">
+                      <div className="timeline-dot"></div>
+                      <div className="timeline-content">
+                        <div className="time">DAY 1 - 14:00</div>
+                        <div className="title">
+                          {campsite.id.startsWith('public-') ? campsite.name : t(campsite.name)} {i18n.language === 'ko' ? '체크인' : 'Check-in'}
+                        </div>
+                        <div className="desc">
+                          {campsite.id.startsWith('public-') ? campsite.description : t(campsite.description)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Heritage steps */}
+                    {routeHeritages.length > 0 ? (
+                      routeHeritages.map((heritage, index) => (
+                        <div className="timeline-item" key={heritage.id}>
+                          <div className="timeline-dot" style={{
+                            background: heritageStatuses[heritage.id] === 'visited' ? 'var(--primary)' : (heritageStatuses[heritage.id] === 'planned' ? 'var(--gold)' : 'var(--border)')
+                          }}></div>
+                          <div className="timeline-content">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                              <div>
+                                <div className="time">
+                                  {index === 0 ? "DAY 1 - 16:00" : `DAY 2 - 10:00`}
+                                </div>
+                                <div className="title" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                  <span>{t(heritage.name)}</span>
+                                  {heritageStatuses[heritage.id] === 'planned' && (
+                                    <span style={{ fontSize: '0.7rem', padding: '2px 6px', background: 'rgba(217, 119, 6, 0.1)', color: 'var(--gold)', border: '1px solid rgba(217, 119, 6, 0.2)', borderRadius: '4px', fontWeight: 'bold' }}>
+                                      📌 {t('era.status_planned')}
+                                    </span>
+                                  )}
+                                  {heritageStatuses[heritage.id] === 'visited' && (
+                                    <span style={{ fontSize: '0.7rem', padding: '2px 6px', background: 'rgba(22, 101, 52, 0.1)', color: 'var(--primary)', border: '1px solid rgba(22, 101, 52, 0.2)', borderRadius: '4px', fontWeight: 'bold' }}>
+                                      ✅ {t('era.status_visited')}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <div style={{ display: 'flex', gap: '6px' }}>
+                                <button
+                                  onClick={() => handleHeritageStatusClick(heritage, 'planned')}
+                                  style={{
+                                    padding: '5px 8px',
+                                    borderRadius: '6px',
+                                    fontSize: '0.72rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    border: heritageStatuses[heritage.id] === 'planned' ? '1px solid var(--gold)' : '1px solid var(--border)',
+                                    background: heritageStatuses[heritage.id] === 'planned' ? 'rgba(217, 119, 6, 0.08)' : 'var(--surface)',
+                                    color: heritageStatuses[heritage.id] === 'planned' ? 'var(--gold)' : 'var(--surface-foreground)'
+                                  }}
+                                >
+                                  📌 {i18n.language === 'ko' ? '갈 예정' : 'Plan'}
+                                </button>
+                                <button
+                                  onClick={() => handleHeritageStatusClick(heritage, 'visited')}
+                                  style={{
+                                    padding: '5px 8px',
+                                    borderRadius: '6px',
+                                    fontSize: '0.72rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    border: heritageStatuses[heritage.id] === 'visited' ? '1px solid var(--primary)' : '1px solid var(--border)',
+                                    background: heritageStatuses[heritage.id] === 'visited' ? 'rgba(22, 101, 52, 0.08)' : 'var(--surface)',
+                                    color: heritageStatuses[heritage.id] === 'visited' ? 'var(--primary)' : 'var(--surface-foreground)'
+                                  }}
+                                >
+                                  ✅ {i18n.language === 'ko' ? '갔다옴' : 'Visited'}
+                                </button>
+                              </div>
+                            </div>
+                            
+                            <div className="desc" style={{ marginTop: '6px' }}>{t(heritage.description)}</div>
+
+                            {/* Review Box */}
+                            {heritageStatuses[heritage.id] === 'visited' && (
+                              <div className="heritage-review-box">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                  <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    📝 {i18n.language === 'ko' ? '나의 탐방 후기' : 'My Visit Review'}
+                                  </span>
+                                  <div style={{ display: 'flex', gap: '8px' }}>
+                                    {editingHeritageId === heritage.id ? (
+                                      <>
+                                        <button 
+                                          onClick={() => handleSaveEditedReview(heritage.id)}
+                                          style={{ border: 'none', background: 'none', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                                        >
+                                          {i18n.language === 'ko' ? '저장' : 'Save'}
+                                        </button>
+                                        <button 
+                                          onClick={() => setEditingHeritageId(null)}
+                                          style={{ border: 'none', background: 'none', color: '#64748b', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                                        >
+                                          {i18n.language === 'ko' ? '취소' : 'Cancel'}
+                                        </button>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <button 
+                                          onClick={() => {
+                                            setEditingHeritageId(heritage.id);
+                                            setEditingReviewText(heritageReviews[heritage.id] || '');
+                                          }}
+                                          style={{ border: 'none', background: 'none', color: 'var(--gold)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                                        >
+                                          {i18n.language === 'ko' ? '수정' : 'Edit'}
+                                        </button>
+                                        <button 
+                                          onClick={() => handleDeleteReview(heritage.id)}
+                                          style={{ border: 'none', background: 'none', color: 'var(--red-accent)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                                        >
+                                          {i18n.language === 'ko' ? '삭제' : 'Delete'}
+                                        </button>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {editingHeritageId === heritage.id ? (
+                                  <textarea
+                                    value={editingReviewText}
+                                    onChange={(e) => setEditingReviewText(e.target.value)}
+                                    className="heritage-review-textarea"
+                                    placeholder={i18n.language === 'ko' ? '이 유적지에 대한 탐방 후기를 작성해 보세요.' : 'Write your review about this historic site.'}
+                                  />
+                                ) : (
+                                  <p style={{ fontSize: '0.85rem', color: 'var(--foreground)', fontStyle: heritageReviews[heritage.id] ? 'normal' : 'italic', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+                                    {heritageReviews[heritage.id] || (i18n.language === 'ko' ? '작성된 후기가 없습니다. [수정]을 눌러 등록해 보세요!' : 'No review written. Click [Edit] to write one!')}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="timeline-item">
+                        <div className="timeline-dot" style={{ background: 'var(--border)' }}></div>
+                        <div className="timeline-content">
+                          <div className="time">DAY 1 - 16:00</div>
+                          <div className="title">{i18n.language === 'ko' ? '자유 캠핑 및 힐링' : 'Free Camping & Relaxation'}</div>
+                          <div className="desc">
+                            {i18n.language === 'ko' 
+                              ? '특별히 지정된 주변 역사 연계 코스가 없는 일반 야영지입니다. 자연 속에서 편안한 캠핑을 즐겨보세요.' 
+                              : 'This is a general public campsite without pre-configured historical routes. Enjoy cozy camping in nature.'}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         );
