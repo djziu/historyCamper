@@ -109,7 +109,8 @@ const resources = {
           my_location: "내 위치",
           find_my_location: "내 위치 찾기 🎯",
           distance_from_me: "내 위치에서 {{distance}}km",
-          gps_error: "위치 정보를 가져올 수 없습니다. 브라우저의 위치 권한을 허용해 주세요."
+          gps_error: "위치 정보를 가져올 수 없습니다. 브라우저의 위치 권한을 허용해 주세요.",
+          reservable_only: "예약 가능만 보기 📅"
         },
         card: {
           title: "{{campsiteName}} 기점 탐방 코스",
@@ -268,7 +269,8 @@ const resources = {
           my_location: "My Location",
           find_my_location: "Find My Location 🎯",
           distance_from_me: "{{distance}}km from me",
-          gps_error: "Failed to retrieve location. Please allow location permissions in your browser."
+          gps_error: "Failed to retrieve location. Please allow location permissions in your browser.",
+          reservable_only: "Reservable Only 📅"
         },
         card: {
           title: "Exploration Course based on {{campsiteName}}",

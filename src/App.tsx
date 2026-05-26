@@ -15,7 +15,9 @@ const MASTER_CAMPSITES: Campsite[] = [
     era: 'joseon',
     tags: ['안전점검 완료', '#송광사'],
     distanceToHistoric: 2.4,
-    nearbyHeritageIds: ['songgwangsa']
+    nearbyHeritageIds: ['songgwangsa'],
+    resveCl: '온라인야영장예약',
+    resveUrl: 'https://gocamping.or.kr'
   },
   {
     id: 'hanok',
@@ -26,7 +28,9 @@ const MASTER_CAMPSITES: Campsite[] = [
     era: 'joseon',
     tags: ['거리순 1위', '#경기전', '#풍남문', '#오목대'],
     distanceToHistoric: 1.1,
-    nearbyHeritageIds: ['gyeonggijeon', 'omokdae', 'pungnammun']
+    nearbyHeritageIds: ['gyeonggijeon', 'omokdae', 'pungnammun'],
+    resveCl: '전화',
+    resveUrl: ''
   },
   {
     id: 'mireuksa',
@@ -37,7 +41,9 @@ const MASTER_CAMPSITES: Campsite[] = [
     era: 'baekje',
     tags: ['안전점검 완료', '유적지 초인접', '#미륵사지'],
     distanceToHistoric: 0.5,
-    nearbyHeritageIds: ['mireuksa_site', 'wanggungri']
+    nearbyHeritageIds: ['mireuksa_site', 'wanggungri'],
+    resveCl: '온라인야영장예약',
+    resveUrl: 'https://gocamping.or.kr'
   }
 ];
 
@@ -95,18 +101,18 @@ const MASTER_HERITAGES: HeritageSite[] = [
 
 // Mock Jeolla region public campsites data (Fallback for Open API)
 const MOCK_JEOLLA_CAMPS = [
-  { id: 'public-mock-1', name: '전주 교동 오토캠핑장', addr: '전북 전주시 완산구 교동 12-3', lat: 35.8115, lng: 127.1585, tel: '063-222-1111', induty: '일반야영장', description: '전주 한옥마을 도보 거리에 위치한 도심 속 야영장.' },
-  { id: 'public-mock-2', name: '완주 대둔산 캠핑파크', addr: '전북 완주군 운주면 산북리 55', lat: 36.1245, lng: 127.3120, tel: '063-263-0000', induty: '일반야영장, 글램핑', description: '대둔산 도립공원 자락에 위치한 수려한 경관의 캠핑장.' },
-  { id: 'public-mock-3', name: '익산 웅포관광지 곰개나루 캠핑장', addr: '전북 익산시 웅포면 웅포리 738', lat: 36.0745, lng: 126.8580, tel: '063-859-3846', induty: '일반야영장, 오토캠핑', description: '금강변의 아름다운 낙조를 감상할 수 있는 가족 야영장.' },
-  { id: 'public-mock-4', name: '군산 청암산 오토캠핑장', addr: '전북 군산시 회현면 세제길 27', lat: 35.9388, lng: 126.7725, tel: '063-465-3357', induty: '오토캠핑장', description: '청암산 호수공원 인근의 깨끗하고 넓은 오토캠핑장.' },
-  { id: 'public-mock-5', name: '고창 선운산도립공원 야영장', addr: '전북 고창군 아산면 선운사로 205', lat: 35.4988, lng: 126.6185, tel: '063-560-8600', induty: '일반야영장', description: '선운산의 사계절 아름다움을 만끽할 수 있는 자연 친화 야영장.' },
-  { id: 'public-mock-6', name: '부안 고사포야영장', addr: '전북 부안군 변산면 변산로 2065-1', lat: 35.6845, lng: 126.4715, tel: '063-582-7888', induty: '일반야영장', description: '변산반도 국립공원 고사포 해수욕장 송림 속 야영장.' },
-  { id: 'public-mock-7', name: '남원 지리산백무동야영장', addr: '전북 남원시 아영면 지리산로', lat: 35.3785, lng: 127.5855, tel: '055-970-1000', induty: '일반야영장', description: '지리산 천왕봉 코스 기점에 있는 계곡 옆 야영장.' },
-  { id: 'public-mock-8', name: '여수 더스타 오토캠핑장', addr: '전남 여수시 돌산읍 평사리 12-4', lat: 34.6855, lng: 127.7985, tel: '061-644-0000', induty: '오토캠핑, 카라반', description: '돌산 바다가 한눈에 내려다보이는 오션뷰 오토캠핑장.' },
-  { id: 'public-mock-9', name: '순천만 국가정원 글램핑', addr: '전남 순천시 홍내동 11-2', lat: 34.9255, lng: 127.5020, tel: '061-744-1111', induty: '글램핑', description: '순천만 습지와 국가정원 관광에 최적화된 럭셔리 글램핑.' },
-  { id: 'public-mock-10', name: '담양 메타프로방스 카라반', addr: '전남 담양군 담양읍 깊은실길 22', lat: 35.3288, lng: 127.0088, tel: '061-380-0000', induty: '카라반', description: '담양 메타세쿼이아길 바로 옆 유럽풍 프로방스 마을 카라반.' },
-  { id: 'public-mock-11', name: '장성 백양사 가인야영장', addr: '전남 장성군 북하면 백양로 1114', lat: 35.4385, lng: 126.8785, tel: '061-392-7288', induty: '일반야영장', description: '내장산 국립공원 백양사 지구에 위치한 수려한 계곡 야영장.' },
-  { id: 'public-mock-12', name: '보성 율포솔밭오토캠핑장', addr: '전남 보성군 회천면 우암길 24', lat: 34.7015, lng: 127.0815, tel: '061-850-8600', induty: '오토캠핑, 카라반', description: '보성 율포 솔밭 해수욕장 백사장 인근의 소나무 숲 캠핑장.' }
+  { id: 'public-mock-1', name: '전주 교동 오토캠핑장', addr: '전북 전주시 완산구 교동 12-3', lat: 35.8115, lng: 127.1585, tel: '063-222-1111', induty: '일반야영장', description: '전주 한옥마을 도보 거리에 위치한 도심 속 야영장.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' },
+  { id: 'public-mock-2', name: '완주 대둔산 캠핑파크', addr: '전북 완주군 운주면 산북리 55', lat: 36.1245, lng: 127.3120, tel: '063-263-0000', induty: '일반야영장, 글램핑', description: '대둔산 도립공원 자락에 위치한 수려한 경관의 캠핑장.', resveCl: '전화', resveUrl: '' },
+  { id: 'public-mock-3', name: '익산 웅포관광지 곰개나루 캠핑장', addr: '전북 익산시 웅포면 웅포리 738', lat: 36.0745, lng: 126.8580, tel: '063-859-3846', induty: '일반야영장, 오토캠핑', description: '금강변의 아름다운 낙조를 감상할 수 있는 가족 야영장.', resveCl: '온라인야영장예약,전화', resveUrl: 'https://gocamping.or.kr' },
+  { id: 'public-mock-4', name: '군산 청암산 오토캠핑장', addr: '전북 군산시 회현면 세제길 27', lat: 35.9388, lng: 126.7725, tel: '063-465-3357', induty: '오토캠핑장', description: '청암산 호수공원 인근의 깨끗하고 넓은 오토캠핑장.', resveCl: '', resveUrl: '' },
+  { id: 'public-mock-5', name: '고창 선운산도립공원 야영장', addr: '전북 고창군 아산면 선운사로 205', lat: 35.4988, lng: 126.6185, tel: '063-560-8600', induty: '일반야영장', description: '선운산의 사계절 아름다움을 만끽할 수 있는 자연 친화 야영장.', resveCl: '현장', resveUrl: '' },
+  { id: 'public-mock-6', name: '부안 고사포야영장', addr: '전북 부안군 변산면 변산로 2065-1', lat: 35.6845, lng: 126.4715, tel: '063-582-7888', induty: '일반야영장', description: '변산반도 국립공원 고사포 해수욕장 송림 속 야영장.', resveCl: '', resveUrl: '' },
+  { id: 'public-mock-7', name: '남원 지리산백무동야영장', addr: '전북 남원시 아영면 지리산로', lat: 35.3785, lng: 127.5855, tel: '055-970-1000', induty: '일반야영장', description: '지리산 천왕봉 코스 기점에 있는 계곡 옆 야영장.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' },
+  { id: 'public-mock-8', name: '여수 더스타 오토캠핑장', addr: '전남 여수시 돌산읍 평사리 12-4', lat: 34.6855, lng: 127.7985, tel: '061-644-0000', induty: '오토캠핑, 카라반', description: '돌산 바다가 한눈에 내려다보이는 오션뷰 오토캠핑장.', resveCl: '', resveUrl: '' },
+  { id: 'public-mock-9', name: '순천만 국가정원 글램핑', addr: '전남 순천시 홍내동 11-2', lat: 34.9255, lng: 127.5020, tel: '061-744-1111', induty: '글램핑', description: '순천만 습지와 국가정원 관광에 최적화된 럭셔리 글램핑.', resveCl: '전화', resveUrl: '' },
+  { id: 'public-mock-10', name: '담양 메타프로방스 카라반', addr: '전남 담양군 담양읍 깊은실길 22', lat: 35.3288, lng: 127.0088, tel: '061-380-0000', induty: '카라반', description: '담양 메타세쿼이아길 바로 옆 유럽풍 프로방스 마을 카라반.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' },
+  { id: 'public-mock-11', name: '장성 백양사 가인야영장', addr: '전남 장성군 북하면 백양로 1114', lat: 35.4385, lng: 126.8785, tel: '061-392-7288', induty: '일반야영장', description: '내장산 국립공원 백양사 지구에 위치한 수려한 계곡 야영장.', resveCl: '', resveUrl: '' },
+  { id: 'public-mock-12', name: '보성 율포솔밭오토캠핑장', addr: '전남 보성군 회천면 우암길 24', lat: 34.7015, lng: 127.0815, tel: '061-850-8600', induty: '오토캠핑, 카라반', description: '보성 율포 솔밭 해수욕장 백사장 인근의 소나무 숲 캠핑장.', resveCl: '온라인야영장예약,현장', resveUrl: 'https://gocamping.or.kr' }
 ];
 
 // Mock Quiz Data - Korean
@@ -204,6 +210,7 @@ function App() {
   const isGocampingConfigured = !!(gocampingApiKey && gocampingApiKey !== 'your-gocamping-decoding-service-key');
 
   const [showPublicCamps, setShowPublicCamps] = useState(false);
+  const [showReservableOnly, setShowReservableOnly] = useState(false);
   const [publicCamps, setPublicCamps] = useState<any[]>([]);
   const [loadingPublicCamps, setLoadingPublicCamps] = useState(false);
   const [activeInfoWindowCampId, setActiveInfoWindowCampId] = useState<string | null>(null);
@@ -372,7 +379,9 @@ function App() {
             lng: parseFloat(item.mapX),
             tel: item.tel || '',
             induty: item.induty || '일반야영장',
-            description: item.intro || item.lineIntro || ''
+            description: item.intro || item.lineIntro || '',
+            resveCl: item.resveCl || '',
+            resveUrl: item.resveUrl || ''
           })).filter((item: any) => !isNaN(item.lat) && !isNaN(item.lng));
 
           setPublicCamps(filtered);
@@ -440,7 +449,9 @@ function App() {
           era: 'all',
           tags: [found.induty || '공공 캠핑장', '공공 데이터'],
           distanceToHistoric: 0,
-          nearbyHeritageIds: []
+          nearbyHeritageIds: [],
+          resveCl: found.resveCl || '',
+          resveUrl: found.resveUrl || ''
         });
       }
     }
@@ -455,12 +466,48 @@ function App() {
     { lat: h.lat, lng: h.lng }
   ]);
 
+  // Helper to determine if campsite is reservable
+  const isCampsiteReservable = (camp: any) => {
+    const cl = camp.resveCl || '';
+    const url = camp.resveUrl || '';
+    return (cl.trim() !== '' && cl !== '정보없음') || url.trim() !== '';
+  };
+
+  // Helper to render the reservation status badge
+  const getReservationBadge = (camp: any) => {
+    const cl = camp.resveCl || '';
+    const url = camp.resveUrl || '';
+    const isReservable = (cl.trim() !== '' && cl !== '정보없음') || url.trim() !== '';
+
+    if (!isReservable) {
+      return (
+        <span className="badge" style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', color: 'var(--red-accent)', borderColor: 'rgba(239, 68, 68, 0.15)', borderWidth: '1px', borderStyle: 'solid', display: 'inline-flex', alignItems: 'center', padding: '2px 6px', fontSize: '0.7rem' }}>
+          ❌ {i18n.language === 'ko' ? '예약 정보없음' : 'No Booking'}
+        </span>
+      );
+    }
+
+    let method = cl;
+    if (!method && url) {
+      method = i18n.language === 'ko' ? '온라인' : 'Online';
+    }
+
+    return (
+      <span className="badge" style={{ backgroundColor: 'rgba(22, 101, 52, 0.08)', color: 'var(--primary)', borderColor: 'rgba(22, 101, 52, 0.15)', borderWidth: '1px', borderStyle: 'solid', display: 'inline-flex', alignItems: 'center', gap: '2px', padding: '2px 6px', fontSize: '0.7rem' }}>
+        📅 {i18n.language === 'ko' ? `예약 (${method})` : `Book (${method})`}
+      </span>
+    );
+  };
+
   // Filter and sort campsites based on distance to user (computed locally)
   const filteredCampsites = allDisplayCampsites.filter(c => {
     if (statusFilter !== 'all' && campsiteStatuses[c.id] !== statusFilter) {
       return false;
     }
     if (statusFilter === 'all' && activeEra !== 'all' && c.era !== activeEra) {
+      return false;
+    }
+    if (showReservableOnly && !isCampsiteReservable(c)) {
       return false;
     }
     return true;
@@ -730,8 +777,18 @@ function App() {
               )}
             </div>
 
-            {/* Quick GPS search bar triggers locally */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+            {/* Filter and GPS bar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--primary)' }}>
+                <input 
+                  type="checkbox" 
+                  checked={showReservableOnly} 
+                  onChange={(e) => setShowReservableOnly(e.target.checked)}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                />
+                {t('route.map.reservable_only')}
+              </label>
+
               <button
                 onClick={handleFindMyLocation}
                 style={{
@@ -774,12 +831,13 @@ function App() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
                           <div 
                             className="list-title" 
-                            style={{ cursor: 'pointer', transition: 'color 0.2s' }}
+                            style={{ cursor: 'pointer', transition: 'color 0.2s', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}
                             onClick={() => viewHeritageRoute(campsite.id)}
                             onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
                             onMouseLeave={(e) => e.currentTarget.style.color = ''}
                           >
-                            {campsite.id.startsWith('public-') ? campsite.name : t(campsite.name)}
+                            <span>{campsite.id.startsWith('public-') ? campsite.name : t(campsite.name)}</span>
+                            {getReservationBadge(campsite)}
                           </div>
                         </div>
                         
@@ -848,6 +906,44 @@ function App() {
                           </button>
                         </div>
 
+                        {/* Reservation Link if available */}
+                        {campsite.resveUrl && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open(campsite.resveUrl, '_blank');
+                            }}
+                            style={{
+                              width: '100%',
+                              marginTop: '8px',
+                              padding: '8px 12px',
+                              background: 'rgba(217, 119, 6, 0.06)',
+                              border: '1px solid rgba(217, 119, 6, 0.15)',
+                              color: 'var(--gold)',
+                              borderRadius: '8px',
+                              fontWeight: 700,
+                              fontSize: '0.8rem',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'var(--gold)';
+                              e.currentTarget.style.color = '#ffffff';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'rgba(217, 119, 6, 0.06)';
+                              e.currentTarget.style.color = 'var(--gold)';
+                            }}
+                          >
+                            <span>📅</span>
+                            {i18n.language === 'ko' ? '실시간 예약 사이트 이동' : 'Go to Booking Site'}
+                          </button>
+                        )}
+
                         {/* Button to view dynamic heritage routes */}
                         <button
                           onClick={() => viewHeritageRoute(campsite.id)}
@@ -910,21 +1006,33 @@ function App() {
             
             {/* Open API Toggle controller */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', padding: '10px', background: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                <input 
-                  type="checkbox" 
-                  checked={showPublicCamps} 
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setShowPublicCamps(checked);
-                    if (checked) {
-                      fetchPublicCamps();
-                    }
-                  }}
-                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                />
-                {t('route.map.load_public')}
-              </label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'center' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={showPublicCamps} 
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setShowPublicCamps(checked);
+                      if (checked) {
+                        fetchPublicCamps();
+                      }
+                    }}
+                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                  />
+                  {t('route.map.load_public')}
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--primary)' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={showReservableOnly} 
+                    onChange={(e) => setShowReservableOnly(e.target.checked)}
+                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                  />
+                  {t('route.map.reservable_only')}
+                </label>
+              </div>
 
               {/* Local GPS Finder button */}
               <button
@@ -1019,7 +1127,10 @@ function App() {
                   )}
 
                   {/* Render public campsites markers from Open API if enabled */}
-                  {showPublicCamps && publicCamps.filter(camp => camp.id !== selectedCampsite.id).map(camp => (
+                  {showPublicCamps && publicCamps
+                    .filter(camp => camp.id !== selectedCampsite.id)
+                    .filter(camp => !showReservableOnly || isCampsiteReservable(camp))
+                    .map(camp => (
                     <MapMarker
                       key={camp.id}
                       position={{ lat: camp.lat, lng: camp.lng }}
@@ -1059,8 +1170,39 @@ function App() {
                             </div>
                           )}
                           {camp.induty && (
-                            <div style={{ marginBottom: '10px', lineHeight: 1.4 }}>
+                            <div style={{ marginBottom: '6px', lineHeight: 1.4 }}>
                               <strong>⛺ {t('route.map.induty')}:</strong> {camp.induty}
+                            </div>
+                          )}
+                          <div style={{ marginBottom: '6px', lineHeight: 1.4 }}>
+                            <strong>📅 {i18n.language === 'ko' ? '예약 방법' : 'Reservation'}:</strong> {camp.resveCl || (camp.resveUrl ? (i18n.language === 'ko' ? '온라인' : 'Online') : (i18n.language === 'ko' ? '정보없음' : 'No Info'))}
+                          </div>
+                          {camp.resveUrl && (
+                            <div style={{ marginBottom: '10px' }}>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  window.open(camp.resveUrl, '_blank');
+                                }}
+                                style={{
+                                  width: '100%',
+                                  padding: '6px 8px',
+                                  background: 'rgba(217, 119, 6, 0.08)',
+                                  border: '1px solid var(--gold)',
+                                  color: 'var(--gold)',
+                                  borderRadius: '6px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 800,
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '4px'
+                                }}
+                              >
+                                <span>📅</span>
+                                {i18n.language === 'ko' ? '예약 바로가기' : 'Go to Booking'}
+                              </button>
                             </div>
                           )}
                           
@@ -1170,6 +1312,31 @@ function App() {
                 
                 <div className="card-text">
                   {t('route.card.desc', { campsiteName: selectedCampsite.id.startsWith('public-') ? selectedCampsite.name : t(selectedCampsite.name) })}
+                </div>
+
+                {/* Show reservation info badge & button in route details */}
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '10px', marginBottom: '5px' }}>
+                  {getReservationBadge(selectedCampsite)}
+                  {selectedCampsite.resveUrl && (
+                    <button
+                      onClick={() => window.open(selectedCampsite.resveUrl, '_blank')}
+                      style={{
+                        padding: '2px 8px',
+                        background: 'none',
+                        border: '1px solid var(--gold)',
+                        color: 'var(--gold)',
+                        borderRadius: '20px',
+                        fontSize: '0.7rem',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '2px'
+                      }}
+                    >
+                      <span>🔗</span> {i18n.language === 'ko' ? '예약 링크' : 'Booking Link'}
+                    </button>
+                  )}
                 </div>
 
                 <button 

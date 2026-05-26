@@ -34,6 +34,8 @@ export interface Campsite {
   tags: string[];
   distanceToHistoric: number;
   nearbyHeritageIds: string[];
+  resveCl?: string;
+  resveUrl?: string;
 }
 
 export interface HeritageSite {
