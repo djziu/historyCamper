@@ -906,42 +906,79 @@ function App() {
                           </button>
                         </div>
 
-                        {/* Reservation Link if available */}
-                        {campsite.resveUrl && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              window.open(campsite.resveUrl, '_blank');
-                            }}
-                            style={{
-                              width: '100%',
-                              marginTop: '8px',
-                              padding: '8px 12px',
-                              background: 'rgba(217, 119, 6, 0.06)',
-                              border: '1px solid rgba(217, 119, 6, 0.15)',
-                              color: 'var(--gold)',
-                              borderRadius: '8px',
-                              fontWeight: 700,
-                              fontSize: '0.8rem',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '4px',
-                              transition: 'all 0.2s'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.background = 'var(--gold)';
-                              e.currentTarget.style.color = '#ffffff';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.background = 'rgba(217, 119, 6, 0.06)';
-                              e.currentTarget.style.color = 'var(--gold)';
-                            }}
-                          >
-                            <span>📅</span>
-                            {i18n.language === 'ko' ? '실시간 예약 사이트 이동' : 'Go to Booking Site'}
-                          </button>
+                        {/* Reservation Links (Naver / Kakao) for Reservable Campsites */}
+                        {isCampsiteReservable(campsite) && (
+                          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const queryName = campsite.id.startsWith('public-') ? campsite.name : t(campsite.name);
+                                window.open(`https://search.naver.com/search.naver?query=${encodeURIComponent(queryName + ' 예약')}`, '_blank');
+                              }}
+                              style={{
+                                flex: 1,
+                                padding: '8px 12px',
+                                background: 'rgba(22, 163, 74, 0.06)',
+                                border: '1px solid rgba(22, 163, 74, 0.2)',
+                                color: '#16a34a',
+                                borderRadius: '8px',
+                                fontWeight: 700,
+                                fontSize: '0.8rem',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '4px',
+                                transition: 'all 0.2s'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#16a34a';
+                                e.currentTarget.style.color = '#ffffff';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(22, 163, 74, 0.06)';
+                                e.currentTarget.style.color = '#16a34a';
+                              }}
+                            >
+                              <span>🔍</span>
+                              {t('route.map.naver_booking')}
+                            </button>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const queryName = campsite.id.startsWith('public-') ? campsite.name : t(campsite.name);
+                                window.open(`https://map.kakao.com/?q=${encodeURIComponent(queryName)}`, '_blank');
+                              }}
+                              style={{
+                                flex: 1,
+                                padding: '8px 12px',
+                                background: 'rgba(202, 138, 4, 0.06)',
+                                border: '1px solid rgba(202, 138, 4, 0.2)',
+                                color: '#ca8a04',
+                                borderRadius: '8px',
+                                fontWeight: 700,
+                                fontSize: '0.8rem',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '4px',
+                                transition: 'all 0.2s'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#ca8a04';
+                                e.currentTarget.style.color = '#ffffff';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(202, 138, 4, 0.06)';
+                                e.currentTarget.style.color = '#ca8a04';
+                              }}
+                            >
+                              <span>📍</span>
+                              {t('route.map.kakao_booking')}
+                            </button>
+                          </div>
                         )}
 
                         {/* Button to view dynamic heritage routes */}
@@ -1177,19 +1214,19 @@ function App() {
                           <div style={{ marginBottom: '6px', lineHeight: 1.4 }}>
                             <strong>📅 {i18n.language === 'ko' ? '예약 방법' : 'Reservation'}:</strong> {camp.resveCl || (camp.resveUrl ? (i18n.language === 'ko' ? '온라인' : 'Online') : (i18n.language === 'ko' ? '정보없음' : 'No Info'))}
                           </div>
-                          {camp.resveUrl && (
-                            <div style={{ marginBottom: '10px' }}>
+                          {isCampsiteReservable(camp) && (
+                            <div style={{ display: 'flex', gap: '4px', marginBottom: '10px' }}>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  window.open(camp.resveUrl, '_blank');
+                                  window.open(`https://search.naver.com/search.naver?query=${encodeURIComponent(camp.name + ' 예약')}`, '_blank');
                                 }}
                                 style={{
-                                  width: '100%',
+                                  flex: 1,
                                   padding: '6px 8px',
-                                  background: 'rgba(217, 119, 6, 0.08)',
-                                  border: '1px solid var(--gold)',
-                                  color: 'var(--gold)',
+                                  background: 'rgba(22, 163, 74, 0.08)',
+                                  border: '1px solid rgba(22, 163, 74, 0.2)',
+                                  color: '#16a34a',
                                   borderRadius: '6px',
                                   fontSize: '0.75rem',
                                   fontWeight: 800,
@@ -1197,11 +1234,33 @@ function App() {
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  gap: '4px'
+                                  gap: '2px'
                                 }}
                               >
-                                <span>📅</span>
-                                {i18n.language === 'ko' ? '예약 바로가기' : 'Go to Booking'}
+                                {t('route.map.naver_booking')}
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  window.open(`https://map.kakao.com/?q=${encodeURIComponent(camp.name)}`, '_blank');
+                                }}
+                                style={{
+                                  flex: 1,
+                                  padding: '6px 8px',
+                                  background: 'rgba(202, 138, 4, 0.08)',
+                                  border: '1px solid rgba(202, 138, 4, 0.2)',
+                                  color: '#ca8a04',
+                                  borderRadius: '6px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 800,
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '2px'
+                                }}
+                              >
+                                {t('route.map.kakao_booking')}
                               </button>
                             </div>
                           )}
@@ -1317,25 +1376,52 @@ function App() {
                 {/* Show reservation info badge & button in route details */}
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '10px', marginBottom: '5px' }}>
                   {getReservationBadge(selectedCampsite)}
-                  {selectedCampsite.resveUrl && (
-                    <button
-                      onClick={() => window.open(selectedCampsite.resveUrl, '_blank')}
-                      style={{
-                        padding: '2px 8px',
-                        background: 'none',
-                        border: '1px solid var(--gold)',
-                        color: 'var(--gold)',
-                        borderRadius: '20px',
-                        fontSize: '0.7rem',
-                        cursor: 'pointer',
-                        fontWeight: 'bold',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '2px'
-                      }}
-                    >
-                      <span>🔗</span> {i18n.language === 'ko' ? '예약 링크' : 'Booking Link'}
-                    </button>
+                  {isCampsiteReservable(selectedCampsite) && (
+                    <>
+                      <button
+                        onClick={() => {
+                          const queryName = selectedCampsite.id.startsWith('public-') ? selectedCampsite.name : t(selectedCampsite.name);
+                          window.open(`https://search.naver.com/search.naver?query=${encodeURIComponent(queryName + ' 예약')}`, '_blank');
+                        }}
+                        style={{
+                          padding: '2px 8px',
+                          background: 'none',
+                          border: '1px solid #16a34a',
+                          color: '#16a34a',
+                          borderRadius: '20px',
+                          fontSize: '0.7rem',
+                          cursor: 'pointer',
+                          fontWeight: 'bold',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '2px'
+                        }}
+                      >
+                        <span>🔍</span> {t('route.map.naver_booking')}
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          const queryName = selectedCampsite.id.startsWith('public-') ? selectedCampsite.name : t(selectedCampsite.name);
+                          window.open(`https://map.kakao.com/?q=${encodeURIComponent(queryName)}`, '_blank');
+                        }}
+                        style={{
+                          padding: '2px 8px',
+                          background: 'none',
+                          border: '1px solid #ca8a04',
+                          color: '#ca8a04',
+                          borderRadius: '20px',
+                          fontSize: '0.7rem',
+                          cursor: 'pointer',
+                          fontWeight: 'bold',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '2px'
+                        }}
+                      >
+                        <span>📍</span> {t('route.map.kakao_booking')}
+                      </button>
+                    </>
                   )}
                 </div>
 
