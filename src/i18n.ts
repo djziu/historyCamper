@@ -45,6 +45,7 @@ const resources = {
         empty_visited: "다녀온 곳으로 등록한 캠핑장이 없습니다. 캠핑장 카드 하단의 [✅ 다녀옴] 버튼을 눌러 등록해 보세요!",
         eras: {
           all: "전체",
+          prehistoric: "선사",
           baekje: "백제",
           later_baekje: "후백제",
           goryeo: "고려",
@@ -161,6 +162,30 @@ const resources = {
           name: "군산 신흥동 일본식 가옥",
           desc: "일제강점기 일본인 지주의 생활상과 건축 양식을 보존하고 있는 등록문화재"
         },
+        mokpo_modern: {
+          name: "목포 근대역사관 1관",
+          desc: "구 목포일본영사관 건물로, 목포의 개항과 근대 역사를 보존하고 있는 근대 서양식 건축물"
+        },
+        gochang_dolmen: {
+          name: "고창 고인돌 유적",
+          desc: "유네스코 세계문화유산으로 지정된 아시아 거석문화의 정수이자 선사시대 대표 고인돌 유적지"
+        },
+        suncheon_nagan: {
+          name: "순천 낙안읍성",
+          desc: "성곽과 전통 초가집이 고스란히 보존되어 주민들이 거주하고 있는 조선 시대 민속 성곽 마을"
+        },
+        damyang_soswaewon: {
+          name: "담양 소쇄원",
+          desc: "자연 계곡의 아름다움을 그대로 살려 조성한 조선 중기의 영남·호남 조경 문화를 대표하는 전통 정원"
+        },
+        yeosu_jinnamgwan: {
+          name: "여수 진남관",
+          desc: "임진왜란 당시 이순신 장군이 전라좌수영 본영이자 지휘소로 사용했던 기념비적인 국보 목조 건축물"
+        },
+        haenam_daehungsa: {
+          name: "해남 대흥사",
+          desc: "유네스코 세계문화유산이자 서산대사의 의발이 소장되어 호국불교의 중심지로 꼽히는 명산의 대사찰"
+        }
       },
       route: {
         title: "전라도 역사 유적지 지도",
@@ -274,6 +299,7 @@ const resources = {
         empty_visited: "No visited campsites yet. Click the [✅ Visited] button on a campground card!",
         eras: {
           all: "All",
+          prehistoric: "Prehistoric",
           baekje: "Baekje",
           later_baekje: "Later Baekje",
           goryeo: "Goryeo",
@@ -393,6 +419,26 @@ const resources = {
         mokpo_modern: {
           name: "Mokpo Modern History Hall 1",
           desc: "The former Japanese consulate building, preserving Mokpo's opening and modern history."
+        },
+        gochang_dolmen: {
+          name: "Gochang Dolmen Site",
+          desc: "A UNESCO World Heritage site representing Bronze Age megalithic culture and ancient dolmens."
+        },
+        suncheon_nagan: {
+          name: "Suncheon Naganeupseong Walled Town",
+          desc: "A living Joseon-era fortress village where residents live in traditional thatched-roof houses."
+        },
+        damyang_soswaewon: {
+          name: "Damyang Soswaewon Garden",
+          desc: "A scenic private garden reflecting Joseon Dynasty's ecocentric philosophy and architecture."
+        },
+        yeosu_jinnamgwan: {
+          name: "Yeosu Jinnamgwan Hall",
+          desc: "A National Treasure wooden building that was the headquarters for Jeolla-jwa-suyeong and Admiral Yi."
+        },
+        haenam_daehungsa: {
+          name: "Haenam Daehungsa Temple",
+          desc: "A UNESCO World Heritage mountain temple holding Master Seosan's robes and patriotic legacy."
         }
       },
       route: {

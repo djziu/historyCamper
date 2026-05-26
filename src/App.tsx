@@ -259,6 +259,46 @@ const MASTER_HERITAGES: HeritageSite[] = [
     lat: 34.7865,
     lng: 126.3811,
     era: 'modern'
+  },
+  {
+    id: 'gochang_dolmen',
+    name: 'heritages.gochang_dolmen.name',
+    description: 'heritages.gochang_dolmen.desc',
+    lat: 35.4478,
+    lng: 126.6496,
+    era: 'prehistoric'
+  },
+  {
+    id: 'suncheon_nagan',
+    name: 'heritages.suncheon_nagan.name',
+    description: 'heritages.suncheon_nagan.desc',
+    lat: 34.9038,
+    lng: 127.3364,
+    era: 'joseon'
+  },
+  {
+    id: 'damyang_soswaewon',
+    name: 'heritages.damyang_soswaewon.name',
+    description: 'heritages.damyang_soswaewon.desc',
+    lat: 35.1904,
+    lng: 127.0094,
+    era: 'joseon'
+  },
+  {
+    id: 'yeosu_jinnamgwan',
+    name: 'heritages.yeosu_jinnamgwan.name',
+    description: 'heritages.yeosu_jinnamgwan.desc',
+    lat: 34.7419,
+    lng: 127.7346,
+    era: 'joseon'
+  },
+  {
+    id: 'haenam_daehungsa',
+    name: 'heritages.haenam_daehungsa.name',
+    description: 'heritages.haenam_daehungsa.desc',
+    lat: 34.4764,
+    lng: 126.6178,
+    era: 'goryeo'
   }
 ];
 
@@ -657,6 +697,126 @@ const HERITAGE_QUIZZES: Record<string, { ko: HeritageQuiz; en: HeritageQuiz }> =
       correct_option_index: 1,
       explanation: "Mokpo Modern History Hall 1 is the former Japanese Consulate built in 1900. It is one of the oldest modern Western-style buildings in Mokpo, designed using red bricks and Renaissance architectural elements."
     }
+  },
+  gochang_dolmen: {
+    ko: {
+      question: "고창 고인돌 유적은 유네스코 세계문화유산으로 지정된 대표적인 선사시대 유적입니다. 이곳에 조밀하게 분포한 고인돌은 청동기 시대의 어떤 성격을 보여주는 무덤인가요?",
+      options: [
+        "지배계급의 무덤이자 거석문화의 상징",
+        "불교 식장 제례를 위한 탑",
+        "기우제를 지내던 제단",
+        "사료를 저장하던 창고"
+      ],
+      correct_option_index: 0,
+      explanation: "고창 고인돌 유적은 청동기 시대의 대표적인 무덤 형식인 고인돌이 단일 구역 내에 세계에서 가장 조밀하게 분포한 곳입니다. 이는 당시 지배 계급의 발생과 거석문화의 발전 양상을 잘 보여줍니다."
+    },
+    en: {
+      question: "The Gochang Dolmen Site is a UNESCO World Heritage site. What type of prehistoric structure are these dolmens primarily considered?",
+      options: [
+        "Tombs of the ruling class and symbols of megalithic culture",
+        "Towers for Buddhist cremation rituals",
+        "Altars for praying for rain",
+        "Storehouses for grain storage"
+      ],
+      correct_option_index: 0,
+      explanation: "The Gochang Dolmen Site features the world's densest concentration of prehistoric dolmens in a single area. They serve as tombs of the ruling class and clear evidence of megalithic culture during the Bronze Age."
+    }
+  },
+  suncheon_nagan: {
+    ko: {
+      question: "순천 낙안읍성(사적)이 다른 성곽 유적들과 비교하여 가지는 독특한 특징으로 옳은 것은 무엇인가요?",
+      options: [
+        "성 내부에 왕의 침전이 대규모로 남아있다.",
+        "실제 주민들이 초가집에서 생활하며 전통 생활 양식을 이어가는 민속마을이다.",
+        "백제 무왕 때 흙으로 쌓아 만든 토성이다.",
+        "화강암을 정교하게 깎아 만든 아치형 다리만 남아있다."
+      ],
+      correct_option_index: 1,
+      explanation: "순천 낙안읍성은 조선 시대 성곽뿐만 아니라 관아와 민가(초가집)가 원형대로 보존되어 있으며, 현재까지도 주민들이 직접 살아가고 있는 살아있는 민속 마을이자 문화유산입니다."
+    },
+    en: {
+      question: "What is a unique characteristic of Suncheon Naganeupseong Walled Town compared to other historic fortress sites?",
+      options: [
+        "It houses a massive royal bedchamber inside.",
+        "It is a living folk village where local residents still reside in traditional thatched houses.",
+        "It is an earthen fortress built during King Mu of Baekje's reign.",
+        "Only a sophisticated granite arched bridge remains."
+      ],
+      correct_option_index: 1,
+      explanation: "Naganeupseong is a historic Joseon fortress town where the local government offices and traditional thatched-roof houses are preserved, and local residents still live, making it a living heritage site."
+    }
+  },
+  damyang_soswaewon: {
+    ko: {
+      question: "조선 중기 조광조의 제자인 양산보가 지은 담양 소쇄원의 조경 미학적 특징을 가장 잘 설명한 것은 무엇인가요?",
+      options: [
+        "화려한 단청과 대칭 구조를 자랑하는 인공 정원",
+        "자연의 훼손을 최소화하고 계곡과 바위, 나무가 인공 건축물과 조화를 이루는 별서 정원",
+        "중국 황실의 정원 방식을 모방한 평지 정원",
+        "일본식 돌과 모래 위주의 고산수식 정원"
+      ],
+      correct_option_index: 1,
+      explanation: "담양 소쇄원은 조선 중기 선비 양산보가 기묘사화 이후 은둔하며 가꾼 한국 전통 정원(별서정원)으로, 계곡을 자연스럽게 살려 자연과 인공 정자가 물아일체의 조화를 이루는 뛰어난 차경 기법과 친자연주의 미학을 보여줍니다."
+    },
+    en: {
+      question: "Which of the following best describes the landscaping aesthetic of Damyang Soswaewon Garden constructed by Yang San-bo?",
+      options: [
+        "An artificial garden boasting brilliant colors and symmetrical structures",
+        "A villa garden that minimizes damage to nature, harmonizing valleys, rocks, and trees with traditional pavilions",
+        "A flat garden imitating the Chinese lifestyle of scholar Yang San-bo",
+        "A Japanese Zen garden consisting mainly of stones and sand"
+      ],
+      correct_option_index: 1,
+      explanation: "Soswaewon is a classic Korean traditional villa garden built by scholar Yang San-bo during the Joseon Dynasty. It features an ecocentric design that keeps the natural creek and surroundings intact, demonstrating outstanding harmony between nature and human architecture."
+    }
+  },
+  yeosu_jinnamgwan: {
+    ko: {
+      question: "여수 진남관(국보)은 임진왜란 당시 이순신 장군이 전라좌수영의 본영으로 사용하던 건물을 중건한 역사적 목조 건물입니다. 이 건물의 주된 역할은 무엇이었나요?",
+      options: [
+        "임금의 어진을 봉안하고 제사를 지내던 사당",
+        "전라좌수영의 삼도수군통제영 지휘소 및 객사",
+        "의병들의 훈련소와 무기 제조 공장",
+        "외국 사신들을 맞이하던 연회장"
+      ],
+      correct_option_index: 1,
+      explanation: "여수 진남관은 전라좌수영의 본영이자 삼도수군통제영 지휘소로 사용되었던 곳으로, 현존하는 관아용 객사 건물 중 국내에서 가장 큰 규모를 자랑하는 기념비적인 목조 건축물입니다."
+    },
+    en: {
+      question: "What was the primary historical function of Yeosu Jinnamgwan Hall, a National Treasure that served as the base of Admiral Yi Sun-sin's naval force?",
+      options: [
+        "A shrine to enshrine and perform rituals for royal portraits",
+        "The guest house and military command center of the Jeolla-jwa-suyeong naval headquarters",
+        "A training camp and weapons factory for righteous armies",
+        "A banquet hall to welcome foreign diplomats"
+      ],
+      correct_option_index: 1,
+      explanation: "Yeosu Jinnamgwan was used as the headquarters of the Jeolla-jwa-suyeong naval base and command post. It is the largest surviving wooden government guest house building in Korea, carrying significant historical legacy from the Imjin War."
+    }
+  },
+  haenam_daehungsa: {
+    ko: {
+      question: "해남 대흥사는 유네스코 세계문화유산 '산사, 한국의 산지승원' 중 하나로 등재된 유서 깊은 사찰입니다. 임진왜란 때 승병을 이끌었으며 이 사찰에 그의 의발이 보관되어 있는 조선의 위대한 승려는 누구인가요?",
+      options: [
+        "원효대사",
+        "의상대사",
+        "서산대사",
+        "자장율사"
+      ],
+      correct_option_index: 2,
+      explanation: "해남 대흥사는 임진왜란 당시 승병장으로 큰 활약을 펼쳤던 서산대사의 유언에 따라 그의 의발(옷과 발우)이 전해진 곳으로, 조선 후기 불교 문화의 중심지이자 호국 불교의 상징적인 장소입니다."
+    },
+    en: {
+      question: "Haenam Daehungsa Temple is a UNESCO World Heritage mountain temple. Which great Joseon monk led the Buddhist righteous army during the Imjin War and had his robes and alms bowl preserved here?",
+      options: [
+        "Master Wonhyo",
+        "Master Uisang",
+        "Master Seosan",
+        "Master Jajang"
+      ],
+      correct_option_index: 2,
+      explanation: "Following the final wishes of Master Seosan, who led the Buddhist militia during the Imjin War, his monastic robes and alms bowl were housed at Haenam Daehungsa, making it a symbolic center of national protection and Buddhism in the late Joseon Dynasty."
+    }
   }
 };
 
@@ -756,6 +916,7 @@ function App() {
 
   const Eras = [
     { id: 'all', label: t('era.eras.all') },
+    { id: 'prehistoric', label: t('era.eras.prehistoric') },
     { id: 'baekje', label: t('era.eras.baekje') },
     { id: 'later_baekje', label: t('era.eras.later_baekje') },
     { id: 'goryeo', label: t('era.eras.goryeo') },
@@ -2113,7 +2274,7 @@ function App() {
                       })()}
                     </div>
                   ) : (
-                    ['baekje', 'later_baekje', 'goryeo', 'joseon', 'modern'].map(eraId => {
+                    ['prehistoric', 'baekje', 'later_baekje', 'goryeo', 'joseon', 'modern'].map(eraId => {
                       const eraHeritages = MASTER_HERITAGES.filter(h => h.era === eraId);
                       if (eraHeritages.length === 0) return null;
                       const eraLabel = Eras.find(e => e.id === eraId)?.label || eraId;
@@ -2316,9 +2477,12 @@ function App() {
                         </label>
                         <select className="quiz-filter-select" value={filterEra} onChange={e => setFilterEra(e.target.value)}>
                           <option value="all">{t('quiz.all')}</option>
-                          <option value="joseon">{t('era.eras.joseon')}</option>
+                          <option value="prehistoric">{t('era.eras.prehistoric')}</option>
                           <option value="baekje">{t('era.eras.baekje')}</option>
+                          <option value="later_baekje">{t('era.eras.later_baekje')}</option>
                           <option value="goryeo">{t('era.eras.goryeo')}</option>
+                          <option value="joseon">{t('era.eras.joseon')}</option>
+                          <option value="modern">{t('era.eras.modern')}</option>
                         </select>
                       </div>
 
