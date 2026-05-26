@@ -83,6 +83,123 @@ const MASTER_CAMPSITES: Campsite[] = [
     nearbyHeritageIds: ['modern_museum', 'hirotsu_house'],
     resveCl: '온라인야영장예약,전화',
     resveUrl: ''
+  },
+  {
+    id: 'gomanaru',
+    name: 'campsites.gomanaru.name',
+    description: 'campsites.gomanaru.desc',
+    lat: 36.4678,
+    lng: 127.1022,
+    era: 'baekje',
+    tags: ['솔밭야영', '#공산성', '#무령왕릉'],
+    distanceToHistoric: 2.1,
+    nearbyHeritageIds: ['gongsanseong', 'muryeong_tomb'],
+    resveCl: '온라인야영장예약,전화',
+    resveUrl: ''
+  },
+  {
+    id: 'baekmagang',
+    name: 'campsites.baekmagang.name',
+    description: 'campsites.baekmagang.desc',
+    lat: 36.2698,
+    lng: 126.8995,
+    era: 'baekje',
+    tags: ['강변뷰', '#부소산성', '#정림사지', '#왕릉원'],
+    distanceToHistoric: 2.7,
+    nearbyHeritageIds: ['busosanseong', 'jeonglimsa_site', 'neungsanri_tombs'],
+    resveCl: '온라인야영장예약',
+    resveUrl: ''
+  },
+  {
+    id: 'munjangdae',
+    name: 'campsites.munjangdae.name',
+    description: 'campsites.munjangdae.desc',
+    lat: 36.4522,
+    lng: 127.9733,
+    era: 'later_baekje',
+    tags: ['계곡 인접', '속리산', '#견훤산성'],
+    distanceToHistoric: 3.8,
+    nearbyHeritageIds: ['gyeonhwon_sanseong'],
+    resveCl: '전화',
+    resveUrl: ''
+  },
+  {
+    id: 'goryeosan',
+    name: 'campsites.goryeosan.name',
+    description: 'campsites.goryeosan.desc',
+    lat: 37.7262,
+    lng: 126.4385,
+    era: 'goryeo',
+    tags: ['숲속 캠핑', '조용한 분위기', '#고려궁지'],
+    distanceToHistoric: 4.8,
+    nearbyHeritageIds: ['goryeogung_site'],
+    resveCl: '온라인야영장예약,전화',
+    resveUrl: ''
+  },
+  {
+    id: 'nonsan_camp',
+    name: 'campsites.nonsan_camp.name',
+    description: 'campsites.nonsan_camp.desc',
+    lat: 36.1750,
+    lng: 127.1120,
+    era: 'goryeo',
+    tags: ['산림욕', '#은진미륵'],
+    distanceToHistoric: 1.8,
+    nearbyHeritageIds: ['gwanchoksa_buddha'],
+    resveCl: '온라인야영장예약',
+    resveUrl: ''
+  },
+  {
+    id: 'nanji',
+    name: 'campsites.nanji.name',
+    description: 'campsites.nanji.desc',
+    lat: 37.5702,
+    lng: 126.8732,
+    era: 'joseon',
+    tags: ['한강뷰', '도심지 야영', '#경복궁', '#창덕궁', '#종묘'],
+    distanceToHistoric: 9.3,
+    nearbyHeritageIds: ['gyeongbokgung', 'changdeokgung', 'jongmyo'],
+    resveCl: '온라인야영장예약',
+    resveUrl: ''
+  },
+  {
+    id: 'gwanggyo',
+    name: 'campsites.gwanggyo.name',
+    description: 'campsites.gwanggyo.desc',
+    lat: 37.2722,
+    lng: 127.0601,
+    era: 'joseon',
+    tags: ['호수공원', '시설 상급', '#수원화성'],
+    distanceToHistoric: 4.8,
+    nearbyHeritageIds: ['suwon_hwaseong'],
+    resveCl: '온라인야영장예약',
+    resveUrl: ''
+  },
+  {
+    id: 'songdo',
+    name: 'campsites.songdo.name',
+    description: 'campsites.songdo.desc',
+    lat: 37.3712,
+    lng: 126.6022,
+    era: 'modern',
+    tags: ['대형 레저', '#개항장거리'],
+    distanceToHistoric: 11.4,
+    nearbyHeritageIds: ['incheon_open_port'],
+    resveCl: '온라인야영장예약,전화',
+    resveUrl: ''
+  },
+  {
+    id: 'mokpo_football',
+    name: 'campsites.mokpo_football.name',
+    description: 'campsites.mokpo_football.desc',
+    lat: 34.8218,
+    lng: 126.4182,
+    era: 'modern',
+    tags: ['가족야영', '#목포근대역사관'],
+    distanceToHistoric: 4.1,
+    nearbyHeritageIds: ['mokpo_modern'],
+    resveCl: '온라인야영장예약',
+    resveUrl: ''
   }
 ];
 
@@ -167,11 +284,139 @@ const MASTER_HERITAGES: HeritageSite[] = [
     lat: 35.9877,
     lng: 126.7095,
     era: 'modern'
+  },
+  {
+    id: 'gongsanseong',
+    name: 'heritages.gongsanseong.name',
+    description: 'heritages.gongsanseong.desc',
+    lat: 36.4601,
+    lng: 127.1264,
+    era: 'baekje'
+  },
+  {
+    id: 'muryeong_tomb',
+    name: 'heritages.muryeong_tomb.name',
+    description: 'heritages.muryeong_tomb.desc',
+    lat: 36.4605,
+    lng: 127.1147,
+    era: 'baekje'
+  },
+  {
+    id: 'busosanseong',
+    name: 'heritages.busosanseong.name',
+    description: 'heritages.busosanseong.desc',
+    lat: 36.2912,
+    lng: 126.9142,
+    era: 'baekje'
+  },
+  {
+    id: 'jeonglimsa_site',
+    name: 'heritages.jeonglimsa_site.name',
+    description: 'heritages.jeonglimsa_site.desc',
+    lat: 36.2789,
+    lng: 126.9141,
+    era: 'baekje'
+  },
+  {
+    id: 'neungsanri_tombs',
+    name: 'heritages.neungsanri_tombs.name',
+    description: 'heritages.neungsanri_tombs.desc',
+    lat: 36.2683,
+    lng: 126.9328,
+    era: 'baekje'
+  },
+  {
+    id: 'gyeonhwon_sanseong',
+    name: 'heritages.gyeonhwon_sanseong.name',
+    description: 'heritages.gyeonhwon_sanseong.desc',
+    lat: 36.4820,
+    lng: 127.9944,
+    era: 'later_baekje'
+  },
+  {
+    id: 'seungamsan_fortress',
+    name: 'heritages.seungamsan_fortress.name',
+    description: 'heritages.seungamsan_fortress.desc',
+    lat: 35.8112,
+    lng: 127.1654,
+    era: 'later_baekje'
+  },
+  {
+    id: 'goryeogung_site',
+    name: 'heritages.goryeogung_site.name',
+    description: 'heritages.goryeogung_site.desc',
+    lat: 37.7511,
+    lng: 126.4844,
+    era: 'goryeo'
+  },
+  {
+    id: 'gwanchoksa_buddha',
+    name: 'heritages.gwanchoksa_buddha.name',
+    description: 'heritages.gwanchoksa_buddha.desc',
+    lat: 36.1868,
+    lng: 127.0986,
+    era: 'goryeo'
+  },
+  {
+    id: 'gyeongbokgung',
+    name: 'heritages.gyeongbokgung.name',
+    description: 'heritages.gyeongbokgung.desc',
+    lat: 37.5796,
+    lng: 126.9770,
+    era: 'joseon'
+  },
+  {
+    id: 'changdeokgung',
+    name: 'heritages.changdeokgung.name',
+    description: 'heritages.changdeokgung.desc',
+    lat: 37.5794,
+    lng: 126.9910,
+    era: 'joseon'
+  },
+  {
+    id: 'jongmyo',
+    name: 'heritages.jongmyo.name',
+    description: 'heritages.jongmyo.desc',
+    lat: 37.5746,
+    lng: 126.9941,
+    era: 'joseon'
+  },
+  {
+    id: 'suwon_hwaseong',
+    name: 'heritages.suwon_hwaseong.name',
+    description: 'heritages.suwon_hwaseong.desc',
+    lat: 37.2897,
+    lng: 127.0118,
+    era: 'joseon'
+  },
+  {
+    id: 'mokpo_modern',
+    name: 'heritages.mokpo_modern.name',
+    description: 'heritages.mokpo_modern.desc',
+    lat: 34.7865,
+    lng: 126.3811,
+    era: 'modern'
+  },
+  {
+    id: 'incheon_open_port',
+    name: 'heritages.incheon_open_port.name',
+    description: 'heritages.incheon_open_port.desc',
+    lat: 37.4727,
+    lng: 126.6212,
+    era: 'modern'
+  },
+  {
+    id: 'daegu_modern',
+    name: 'heritages.daegu_modern.name',
+    description: 'heritages.daegu_modern.desc',
+    lat: 35.8718,
+    lng: 128.5911,
+    era: 'modern'
   }
 ];
 
-// Mock Jeolla region public campsites data (Fallback for Open API)
-const MOCK_JEOLLA_CAMPS = [
+// Mock nationwide region public campsites data (Fallback for Open API)
+const MOCK_NATIONWIDE_CAMPS = [
   { id: 'public-mock-1', name: '전주 교동 오토캠핑장', addr: '전북 전주시 완산구 교동 12-3', lat: 35.8115, lng: 127.1585, tel: '063-222-1111', induty: '일반야영장', description: '전주 한옥마을 도보 거리에 위치한 도심 속 야영장.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' },
   { id: 'public-mock-2', name: '완주 대둔산 캠핑파크', addr: '전북 완주군 운주면 산북리 55', lat: 36.1245, lng: 127.3120, tel: '063-263-0000', induty: '일반야영장, 글램핑', description: '대둔산 도립공원 자락에 위치한 수려한 경관의 캠핑장.', resveCl: '전화', resveUrl: '' },
   { id: 'public-mock-3', name: '익산 웅포관광지 곰개나루 캠핑장', addr: '전북 익산시 웅포면 웅포리 738', lat: 36.0745, lng: 126.8580, tel: '063-859-3846', induty: '일반야영장, 오토캠핑', description: '금강변의 아름다운 낙조를 감상할 수 있는 가족 야영장.', resveCl: '온라인야영장예약,전화', resveUrl: 'https://gocamping.or.kr' },
@@ -183,7 +428,17 @@ const MOCK_JEOLLA_CAMPS = [
   { id: 'public-mock-9', name: '순천만 국가정원 글램핑', addr: '전남 순천시 홍내동 11-2', lat: 34.9255, lng: 127.5020, tel: '061-744-1111', induty: '글램핑', description: '순천만 습지와 국가정원 관광에 최적화된 럭셔리 글램핑.', resveCl: '전화', resveUrl: '' },
   { id: 'public-mock-10', name: '담양 메타프로방스 카라반', addr: '전남 담양군 담양읍 깊은실길 22', lat: 35.3288, lng: 127.0088, tel: '061-380-0000', induty: '카라반', description: '담양 메타세쿼이아길 바로 옆 유럽풍 프로방스 마을 카라반.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' },
   { id: 'public-mock-11', name: '장성 백양사 가인야영장', addr: '전남 장성군 북하면 백양로 1114', lat: 35.4385, lng: 126.8785, tel: '061-392-7288', induty: '일반야영장', description: '내장산 국립공원 백양사 지구에 위치한 수려한 계곡 야영장.', resveCl: '', resveUrl: '' },
-  { id: 'public-mock-12', name: '보성 율포솔밭오토캠핑장', addr: '전남 보성군 회천면 우암길 24', lat: 34.7015, lng: 127.0815, tel: '061-850-8600', induty: '오토캠핑, 카라반', description: '보성 율포 솔밭 해수욕장 백사장 인근의 소나무 숲 캠핑장.', resveCl: '온라인야영장예약,현장', resveUrl: 'https://gocamping.or.kr' }
+  { id: 'public-mock-12', name: '보성 율포솔밭오토캠핑장', addr: '전남 보성군 회천면 우암길 24', lat: 34.7015, lng: 127.0815, tel: '061-850-8600', induty: '오토캠핑, 카라반', description: '보성 율포 솔밭 해수욕장 백사장 인근의 소나무 숲 캠핑장.', resveCl: '온라인야영장예약,현장', resveUrl: 'https://gocamping.or.kr' },
+  { id: 'public-mock-13', name: '인천 영흥도 솔밭캠핑장', addr: '인천 옹진군 영흥면 내리 8-2', lat: 37.2515, lng: 126.4985, tel: '032-899-2114', induty: '일반야영장', description: '영흥도 서쪽 해변 소나무 숲속에 위치한 오션뷰 캠핑장.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' },
+  { id: 'public-mock-14', name: '공주 계룡산 오토캠핑장', addr: '충남 공주시 반포면 학봉리 12-5', lat: 36.3545, lng: 127.2120, tel: '041-856-7700', induty: '오토캠핑', description: '국립공원 계룡산 자락에 안겨 맑은 공기와 절경을 즐기는 캠핑장.', resveCl: '전화', resveUrl: '' },
+  { id: 'public-mock-15', name: '부여 만수산자연휴양림 야영장', addr: '충남 부여군 외산면 삼용리 산41-3', lat: 36.2145, lng: 126.7380, tel: '041-830-2348', induty: '일반야영장', description: '만수산 골짜기의 울창한 천연림 속에 자리 잡아 시원하고 쾌적한 휴식처.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' },
+  { id: 'public-mock-16', name: '상주 성주봉자연휴양림 야영장', addr: '경북 상주시 은척면 남곡리 산50', lat: 36.4185, lng: 128.0085, tel: '054-541-6512', induty: '일반야영장', description: '성주봉 산마루 아래 맑은 계곡물과 울창한 숲이 어우러진 숲속 야영장.', resveCl: '현장', resveUrl: '' },
+  { id: 'public-mock-17', name: '강화도 함허동천 야영장', addr: '인천 강화군 화도면 사기리 산86', lat: 37.6185, lng: 126.4715, tel: '032-930-7066', induty: '일반야영장', description: '마니산 기슭 계곡을 끼고 들어서 구름 한 점 없는 맑은 하늘을 벗 삼는 곳.', resveCl: '온라인야영장예약,현장', resveUrl: 'https://gocamping.or.kr' },
+  { id: 'public-mock-18', name: '논산 탑정호 오토캠핑장', addr: '충남 논산시 가야곡면 종연리 117', lat: 36.1915, lng: 127.1585, tel: '041-746-5114', induty: '오토캠핑', description: '아름다운 출렁다리가 있는 탑정호 호숫가에 위치한 전망 좋은 야영장.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' },
+  { id: 'public-mock-19', name: '서울 중랑캠핑숲', addr: '서울 중랑구 망우동 241-20', lat: 37.6045, lng: 127.1085, tel: '02-434-4371', induty: '오토캠핑', description: '도심 속에서 자연을 그대로 느끼는 생태 학습 및 여가 활용형 프리미엄 캠핑장.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' },
+  { id: 'public-mock-20', name: '수원 매송오토캠핑장', addr: '경기 수원시 권선구 매송고색로 52', lat: 37.2488, lng: 126.9288, tel: '031-228-2000', induty: '오토캠핑', description: '도시 외곽 한적하고 넓은 부지에 안전하고 쾌적하게 조성된 시립 오토캠핑장.', resveCl: '', resveUrl: '' },
+  { id: 'public-mock-21', name: '목포 대반동 카라반파크', addr: '전남 목포시 죽교동 440-5', lat: 34.7925, lng: 126.3685, tel: '061-270-8430', induty: '카라반, 글램핑', description: '목포대교가 눈앞에 펼쳐지는 환상적인 밤바다 오션뷰 카라반 야영지.', resveCl: '전화', resveUrl: '' },
+  { id: 'public-mock-22', name: '대구 팔공산 동화지구 야영장', addr: '대구 동구 용수동 72-5', lat: 36.0125, lng: 128.7020, tel: '053-980-0300', induty: '일반야영장', description: '팔공산 올레길 입구, 소나무와 참나무가 어우러진 계곡 옆 도심 근교 야영장.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' }
 ];
 
 // Mock Quiz Data - Korean
@@ -428,7 +683,7 @@ function App() {
         const isDev = import.meta.env.DEV;
         // Use Vite Proxy in local dev mode to bypass CORS
         const baseUrl = isDev ? '/api-gocamping' : 'https://apis.data.go.kr';
-        const url = `${baseUrl}/B551011/GoCamping/basedList?serviceKey=${gocampingApiKey}&numOfRows=1000&pageNo=1&MobileOS=ETC&MobileApp=historyCamper&_type=json`;
+        const url = `${baseUrl}/B551011/GoCamping/basedList?serviceKey=${gocampingApiKey}&numOfRows=2500&pageNo=1&MobileOS=ETC&MobileApp=historyCamper&_type=json`;
 
         console.log("Fetching GoCamping Public API:", url);
         const response = await fetch(url);
@@ -438,11 +693,8 @@ function App() {
         const items = result?.response?.body?.items?.item;
 
         if (Array.isArray(items)) {
-          // Filter Jeolla province
-          const filtered = items.filter((item: any) => {
-            const doNm = item.doNm || '';
-            return doNm.includes('전라') || doNm.includes('전북') || doNm.includes('전남');
-          }).map((item: any) => ({
+          // Map all items from GoCamping API without regional filtering
+          const mapped = items.map((item: any) => ({
             id: `public-${item.contentId}`,
             name: item.facltNm,
             addr: item.addr1 || item.addr2 || '',
@@ -455,22 +707,27 @@ function App() {
             resveUrl: item.resveUrl || ''
           })).filter((item: any) => !isNaN(item.lat) && !isNaN(item.lng));
 
-          setPublicCamps(filtered);
+          setPublicCamps(mapped);
         } else {
           throw new Error("Invalid API response format");
         }
       } catch (err) {
-        console.error("Failed to load GoCamping API, falling back to mock Jeolla list:", err);
-        setPublicCamps(MOCK_JEOLLA_CAMPS);
+        console.error("Failed to load GoCamping API, falling back to mock nationwide list:", err);
+        setPublicCamps(MOCK_NATIONWIDE_CAMPS);
       } finally {
         setLoadingPublicCamps(false);
       }
     } else {
       // Fallback to local mock dataset if API key isn't provided
-      setPublicCamps(MOCK_JEOLLA_CAMPS);
+      setPublicCamps(MOCK_NATIONWIDE_CAMPS);
       setLoadingPublicCamps(false);
     }
   };
+
+  // Automatically fetch public campsites on mount to populate the historical eras
+  useEffect(() => {
+    fetchPublicCamps();
+  }, []);
 
   // Load Quiz Data
   useEffect(() => {
@@ -505,26 +762,51 @@ function App() {
     loadQuizzes();
   }, [i18n.language]);
 
-  // Master merge displaying campsites - includes historical ones + any bookmarked public campsites
+  // Master merge displaying campsites - includes historical ones + ALL public campsites (dynamically matched to historical eras)
   const allDisplayCampsites = [...MASTER_CAMPSITES];
-  Object.keys(campsiteStatuses).forEach(id => {
-    if (id.startsWith('public-')) {
-      const found = publicCamps.find(c => c.id === id) || MOCK_JEOLLA_CAMPS.find(c => c.id === id);
-      if (found && !allDisplayCampsites.some(c => c.id === id)) {
-        allDisplayCampsites.push({
-          id: found.id,
-          name: found.name,
-          description: found.addr,
-          lat: found.lat,
-          lng: found.lng,
-          era: 'all',
-          tags: [found.induty || '공공 캠핑장', '공공 데이터'],
-          distanceToHistoric: 0,
-          nearbyHeritageIds: [],
-          resveCl: found.resveCl || '',
-          resveUrl: found.resveUrl || ''
-        });
+  
+  const targetPublicSource = publicCamps.length > 0 ? publicCamps : MOCK_NATIONWIDE_CAMPS;
+  
+  targetPublicSource.forEach(found => {
+    const publicId = found.id;
+    if (!allDisplayCampsites.some(c => c.id === publicId)) {
+      // Find the closest historical site to dynamically map the era
+      let closestHeritage: any = null;
+      let minDistance = 99999;
+      
+      MASTER_HERITAGES.forEach(h => {
+        const dist = calculateHaversineDistance(found.lat, found.lng, h.lat, h.lng);
+        if (dist < minDistance) {
+          minDistance = dist;
+          closestHeritage = h;
+        }
+      });
+
+      // If the campground is within 30km of a historic site, associate it with that era!
+      const isNearHistoric = closestHeritage && minDistance <= 30;
+      const mappedEra = isNearHistoric ? closestHeritage.era : 'all';
+      const heritageName = isNearHistoric ? (i18n.language === 'ko' ? t(closestHeritage.name) : closestHeritage.name) : '';
+      
+      const tags = [found.induty || (i18n.language === 'ko' ? '공공 캠핑장' : 'Public Camp')];
+      if (isNearHistoric) {
+        tags.push(`#${heritageName}`);
+      } else {
+        tags.push(i18n.language === 'ko' ? '공공 데이터' : 'Public Data');
       }
+
+      allDisplayCampsites.push({
+        id: found.id,
+        name: found.name,
+        description: found.addr,
+        lat: found.lat,
+        lng: found.lng,
+        era: mappedEra,
+        tags: tags,
+        distanceToHistoric: isNearHistoric ? minDistance : 0,
+        nearbyHeritageIds: isNearHistoric ? [closestHeritage.id] : [],
+        resveCl: found.resveCl || '',
+        resveUrl: found.resveUrl || ''
+      });
     }
   });
 
