@@ -299,6 +299,62 @@ const MASTER_HERITAGES: HeritageSite[] = [
     lat: 34.4764,
     lng: 126.6178,
     era: 'goryeo'
+  },
+  {
+    id: 'suncheon_seonamsa',
+    name: 'heritages.suncheon_seonamsa.name',
+    description: 'heritages.suncheon_seonamsa.desc',
+    lat: 34.9961,
+    lng: 127.3292,
+    era: 'goryeo'
+  },
+  {
+    id: 'hwasun_dolmen',
+    name: 'heritages.hwasun_dolmen.name',
+    description: 'heritages.hwasun_dolmen.desc',
+    lat: 34.9897,
+    lng: 126.9328,
+    era: 'prehistoric'
+  },
+  {
+    id: 'gochang_eupseong',
+    name: 'heritages.gochang_eupseong.name',
+    description: 'heritages.gochang_eupseong.desc',
+    lat: 35.4332,
+    lng: 126.7042,
+    era: 'joseon'
+  },
+  {
+    id: 'gurye_hwayeomsa',
+    name: 'heritages.gurye_hwayeomsa.name',
+    description: 'heritages.gurye_hwayeomsa.desc',
+    lat: 35.2575,
+    lng: 127.4975,
+    era: 'goryeo'
+  },
+  {
+    id: 'jangseong_pilam',
+    name: 'heritages.jangseong_pilam.name',
+    description: 'heritages.jangseong_pilam.desc',
+    lat: 35.3117,
+    lng: 126.7786,
+    era: 'joseon'
+  },
+  {
+    id: 'gangjin_koryo',
+    name: 'heritages.gangjin_koryo.name',
+    description: 'heritages.gangjin_koryo.desc',
+    lat: 34.5028,
+    lng: 126.7864,
+    era: 'goryeo'
+  },
+  {
+    id: 'wando_cheonghaejin',
+    name: 'heritages.wando_cheonghaejin.name',
+    description: 'heritages.wando_cheonghaejin.desc',
+    lat: 34.3312,
+    lng: 126.7584,
+    era: 'goryeo'
   }
 ];
 
@@ -816,6 +872,124 @@ const HERITAGE_QUIZZES: Record<string, { ko: HeritageQuiz; en: HeritageQuiz }> =
       ],
       correct_option_index: 2,
       explanation: "Following the final wishes of Master Seosan, who led the Buddhist militia during the Imjin War, his monastic robes and alms bowl were housed at Haenam Daehungsa, making it a symbolic center of national protection and Buddhism in the late Joseon Dynasty."
+    }
+  },
+  suncheon_seonamsa: {
+    ko: {
+      question: "순천 선암사(사적)의 대표적인 보물이자, 자연 계곡과 무지개 모양의 화강암이 아름답게 조화를 이루는 아치형 석조 다리의 이름은 무엇인가요?",
+      options: ["승선교", "극락교", "수피아교", "오작교"],
+      correct_option_index: 0,
+      explanation: "순천 선암사 승선교(보물)는 자연 계곡 위에 화강암으로 축조한 아름다운 무지개 모양(홍예교)의 석조 아치교입니다. 기단부와 계곡 바위가 완벽한 조화를 이루는 한국 전통 석조 건축의 걸작입니다."
+    },
+    en: {
+      question: "What is the name of the famous Treasure and rainbow-shaped granite arch stone bridge at Suncheon Seonamsa Temple?",
+      options: ["Seungseongyo", "Geungnakgyo", "Supiagyo", "Ojakgyo"],
+      correct_option_index: 0,
+      explanation: "Seungseongyo Bridge (Treasure) at Seonamsa Temple is a beautiful rainbow-shaped stone arch bridge built over a natural valley stream. It is a masterpiece of Korean traditional stone architecture."
+    }
+  },
+  hwasun_dolmen: {
+    ko: {
+      question: "화순 고인돌 유적은 강화, 고창과 함께 유네스코 세계문화유산에 등재되었습니다. 이곳의 특징으로 가장 알맞은 것은 무엇인가요?",
+      options: [
+        "석기 제작용 채석장과 고인돌 축조 과정이 고스란히 남은 거대한 돌 채석 채취지가 함께 보존되어 있다.",
+        "성곽 내부에 위치해 있다.",
+        "왕릉의 호석으로 사용되었다.",
+        "모두 지상 벽돌 무덤 형태를 띤다."
+      ],
+      correct_option_index: 0,
+      explanation: "화순 고인돌 유적은 산기슭 계곡을 따라 수많은 고인돌이 분포되어 있으며, 특히 고인돌을 만들기 위해 돌을 떼어내던 채석장(돌을 캐던 곳)이 유일하게 함께 보존되어 있어 축조 기술 연구에 매우 중요한 세계유산입니다."
+    },
+    en: {
+      question: "Which of the following is correct about the Hwasun Dolmen Site, a UNESCO World Heritage site?",
+      options: [
+        "It preserves massive stone quarry sites showing how stones were cut and dolmens were constructed.",
+        "It is located inside a fortress town.",
+        "It was used as protective stones for royal tombs.",
+        "They are all above-ground brick tombs."
+      ],
+      correct_option_index: 0,
+      explanation: "The Hwasun Dolmen Site preserves a unique stone quarry where large slabs of stone were cut and moved to build the dolmens, making it a critical archaeological site for understanding ancient engineering."
+    }
+  },
+  gochang_eupseong: {
+    ko: {
+      question: "고창읍성(모양성)에서 전해지는 전통 풍습으로, 돌을 머리에 이고 성곽을 돌며 무병장수와 사후 극락행을 기원하는 민속 행사는 무엇인가요?",
+      options: ["답성놀이 (성밟기)", "차전놀이", "놋다리밟기", "고싸움놀이"],
+      correct_option_index: 0,
+      explanation: "고창읍성에서는 머리에 돌을 이고 성곽을 도는 '답성놀이(성밟기)' 풍습이 유명합니다. 한 바퀴 돌면 다리병이 낫고, 두 바퀴 돌면 무병장수하며, 세 바퀴 돌면 극락에 간다는 설화가 전해집니다."
+    },
+    en: {
+      question: "What is the name of the traditional folk custom at Gochang Eupseong Fortress where people walk along the fortress walls carrying a stone on their heads to pray for health and longevity?",
+      options: ["Dapseongnori (Wall Walking)", "Chajeonnori", "Notdaribapgi", "Gossaumnori"],
+      correct_option_index: 0,
+      explanation: "Gochang Eupseong is famous for 'Dapseongnori' (Fortress Wall Walking). According to local legend, walking around the wall once cures leg ailments, twice ensures a long and healthy life, and three times guarantees entry to paradise."
+    }
+  },
+  gurye_hwayeomsa: {
+    ko: {
+      question: "지리산 자락에 위치한 천년고찰 구례 화엄사(사적)의 대표적인 국보 건축물로, 현존하는 목조 건물 중 최고의 웅장함과 층고를 자랑하며 2층 구조의 대웅전 격인 이 전각의 이름은 무엇인가요?",
+      options: ["각황전", "대웅전", "극락전", "범종각"],
+      correct_option_index: 0,
+      explanation: "구례 화엄사 각황전(국보)은 조선 숙종 대에 중건된 중층(2층) 구조의 웅장한 법당으로, 당시 불교 목조 건축의 정수를 보여주는 대표적인 건축물입니다."
+    },
+    en: {
+      question: "What is the name of the National Treasure wooden building at Gurye Hwaeomsa Temple, famous for its magnificent scale and double-story structure?",
+      options: ["Gakhwangjeon", "Daeungjeon", "Geungnakjeon", "Beomjonggak"],
+      correct_option_index: 0,
+      explanation: "Gakhwangjeon Hall (National Treasure) of Hwaeomsa Temple is a double-story wooden building rebuilt during the reign of King Sukjong of the Joseon Dynasty, representing the pinnacle of late Joseon Buddhist architecture."
+    }
+  },
+  jangseong_pilam: {
+    ko: {
+      question: "장성 필암서원은 유네스코 세계문화유산 '한국의 서원' 중 하나로 등재된 유서 깊은 교육 기관입니다. 이곳은 조선 중기의 어느 유학자이자 사림의 영수를 기리기 위해 건립되었나요?",
+      options: ["하서 김인후", "퇴계 이황", "율곡 이이", "남명 조식"],
+      correct_option_index: 0,
+      explanation: "장성 필암서원은 조선 중기 문신이자 유학자인 하서 김인후(1510~1560)를 추모하고 후학을 양성하기 위해 선조 대에 창건된 사액서원입니다."
+    },
+    en: {
+      question: "Jangseong Pilam Seowon is a UNESCO World Heritage site. Which Joseon Confucian scholar is this academy built to enshrine?",
+      options: ["Haseo Kim In-hu", "Toegye Yi Hwang", "Yulgok Yi I", "Nammyeong Jo Sik"],
+      correct_option_index: 0,
+      explanation: "Pilam Seowon is a private Confucian academy founded in 1590 to enshrine the academic legacy and memory of Haseo Kim In-hu, one of the most prominent neo-Confucian scholars of the mid-Joseon period."
+    }
+  },
+  gangjin_koryo: {
+    ko: {
+      question: "강진 대구면 일대에 분포한 강진 고려청자 요지(사적)가 한국 요업사(도자기 역사)에서 차지하는 의의는 무엇인가요?",
+      options: [
+        "한반도 최대 규모의 백제 토기 가마터",
+        "고려청자 전성기인 10~14세기 동안 우수한 비색 청자를 대규모로 생산하던 핵심 가마터 유적",
+        "조선 후기 분청사기를 제작하던 곳",
+        "일제강점기 옹기 가마터"
+      ],
+      correct_option_index: 1,
+      explanation: "강진 고려청자 요지는 전국에서 가장 많은 가마터가 집중된 곳으로, 고려 청자 생산량의 절대다수를 담당했으며 비색 청자 및 상감 청자의 발상지이자 최대 제작지입니다."
+    },
+    en: {
+      question: "What is the historical significance of the Gangjin Celadon Kiln Sites in Korean ceramic history?",
+      options: [
+        "The largest Baekje earthenware kiln site on the Korean Peninsula",
+        "The core kiln site that mass-produced premium jade-green celadon during the peak Goryeo period (10th to 14th centuries)",
+        "A production center of Buncheong ware in late Joseon",
+        "An Onggi earthenware kiln site under the Japanese colonial rule"
+      ],
+      correct_option_index: 1,
+      explanation: "The Gangjin Celadon Kiln Sites represent the absolute center of Goryeo celadon production, where numerous historic kilns are concentrated, generating top-tier jade-green and inlaid celadon works."
+    }
+  },
+  wando_cheonghaejin: {
+    ko: {
+      question: "완도 청해진 유적(사적)은 9세기 당나라와 왜, 한반도를 잇는 해상 무역을 지배했던 역사적 인물 장보고가 설치한 해군기지이자 무역 거점입니다. 이 인물의 직책이자 청해진의 우두머리를 일컫는 호칭은 무엇인가요?",
+      options: ["청해진 대사", "수군통제사", "해상방어사", "동북면병마사"],
+      correct_option_index: 0,
+      explanation: "통일신라 후기 완도에 청해진을 설치한 장보고는 흥덕왕에 의해 '청해진 대사'로 임명되어 당나라와 왜를 잇는 황해의 제해권을 장악하고 국제 해상 무역을 주도하였습니다."
+    },
+    en: {
+      question: "The Wando Cheonghaejin Archaeological Site was a maritime trade base established in the 9th century. What was the title of its founder, Jang Bogo?",
+      options: ["Commissioner of Cheonghaejin", "Commander-in-Chief of Naval Forces", "Maritime Defense Commander", "Dongbuk-myeon Military Governor"],
+      correct_option_index: 0,
+      explanation: "Jang Bogo established Cheonghaejin on Wando Island during the late Unified Silla period and was appointed 'Commissioner of Cheonghaejin' (Cheonghaejin Daesa) by King Heungdeok, dominating maritime trade between Tang China, Japan, and Silla."
     }
   }
 };

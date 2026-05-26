@@ -185,6 +185,34 @@ const resources = {
         haenam_daehungsa: {
           name: "해남 대흥사",
           desc: "유네스코 세계문화유산이자 서산대사의 의발이 소장되어 호국불교의 중심지로 꼽히는 명산의 대사찰"
+        },
+        suncheon_seonamsa: {
+          name: "순천 선암사",
+          desc: "유네스코 세계문화유산인 태고종의 본산이자 보물 승선교로 이름난 천년고찰"
+        },
+        hwasun_dolmen: {
+          name: "화순 고인돌 유적",
+          desc: "유네스코 세계문화유산이자 채석장 유적이 함께 남아있어 고대 토목 기술을 보여주는 고인돌군"
+        },
+        gochang_eupseong: {
+          name: "고창읍성",
+          desc: "조선 단종 시절 왜침을 막기 위해 축성한 성벽으로, 돌을 머리에 이고 도는 답성놀이가 전해지는 유적"
+        },
+        gurye_hwayeomsa: {
+          name: "구례 화엄사",
+          desc: "지리산 자락의 천년고찰로, 국보 각황전과 웅장한 사사자 삼층석탑을 소장한 호국불교 유적지"
+        },
+        jangseong_pilam: {
+          name: "장성 필암서원",
+          desc: "유네스코 세계문화유산 '한국의 서원' 중 하나로, 하서 김인후 선생을 모신 대표 사액서원"
+        },
+        gangjin_koryo: {
+          name: "강진 고려청자 요지",
+          desc: "고려 전성기 최고급 비색 청자 및 상감 청자를 대규모로 생산하던 가마터가 집중된 요업 유적지"
+        },
+        wando_cheonghaejin: {
+          name: "완도 청해진 유적",
+          desc: "9세기 해상왕 장보고가 완도에 설치하여 동아시아 해상 무역을 지배했던 역사적인 무역 요새지"
         }
       },
       route: {
@@ -439,6 +467,34 @@ const resources = {
         haenam_daehungsa: {
           name: "Haenam Daehungsa Temple",
           desc: "A UNESCO World Heritage mountain temple holding Master Seosan's robes and patriotic legacy."
+        },
+        suncheon_seonamsa: {
+          name: "Suncheon Seonamsa Temple",
+          desc: "A UNESCO World Heritage ancient temple, the head temple of Taego Order, famous for the Treasure Seungseongyo Bridge."
+        },
+        hwasun_dolmen: {
+          name: "Hwasun Dolmen Site",
+          desc: "A UNESCO World Heritage site featuring prehistoric dolmens and historic stone quarries."
+        },
+        gochang_eupseong: {
+          name: "Gochang Eupseong Fortress",
+          desc: "A Joseon-era fortress wall built to prevent Japanese invasion, famous for the stone-carrying walking custom."
+        },
+        gurye_hwayeomsa: {
+          name: "Gurye Hwaeomsa Temple",
+          desc: "A thousand-year-old temple on Jirisan Mountain, preserving National Treasure Gakhwangjeon Hall."
+        },
+        jangseong_pilam: {
+          name: "Jangseong Pilam Seowon",
+          desc: "A UNESCO World Heritage private Confucian academy built to commemorate neo-Confucian scholar Kim In-hu."
+        },
+        gangjin_koryo: {
+          name: "Gangjin Celadon Kiln Sites",
+          desc: "A historic archaeological area where premium jade-green celadon kilns of the Goryeo Dynasty are concentrated."
+        },
+        wando_cheonghaejin: {
+          name: "Wando Cheonghaejin Archaeological Site",
+          desc: "A maritime fortress established by Jang Bogo in the 9th century to dominate East Asian trade."
         }
       },
       route: {
