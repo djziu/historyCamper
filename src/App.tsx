@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Tent, Compass, Map as MapIcon, ShieldCheck, MapPin, Clock, Flame, Accessibility, Info, Star, Award, CheckCircle2, XCircle, AlertCircle, Database, X } from 'lucide-react'
+import { Tent, Compass, Map as MapIcon, ShieldCheck, MapPin, Clock, Star, Award, CheckCircle2, XCircle, AlertCircle, Database, X, BookOpen } from 'lucide-react'
 import { Map, MapMarker, Polyline, useKakaoLoader } from 'react-kakao-maps-sdk'
 import { useTranslation } from 'react-i18next'
 import { supabase, isSupabaseConfigured, QuizQuestion, Campsite, HeritageSite } from './supabaseClient'
@@ -13,9 +13,9 @@ const MASTER_CAMPSITES: Campsite[] = [
     lat: 35.7535,
     lng: 127.0658,
     era: 'joseon',
-    tags: ['안전점검 완료', '#송광사'],
+    tags: ['안전점검 완료', '#송광사', '#마이산탑사', '#화암사'],
     distanceToHistoric: 4.1,
-    nearbyHeritageIds: ['songgwangsa'],
+    nearbyHeritageIds: ['songgwangsa', 'byeokgolje', 'maisan_tapsa', 'hwaamsa', 'jeoksangsanseong'],
     resveCl: '온라인야영장예약',
     resveUrl: ''
   },
@@ -26,9 +26,9 @@ const MASTER_CAMPSITES: Campsite[] = [
     lat: 35.8125,
     lng: 127.1558,
     era: 'joseon',
-    tags: ['거리순 1위', '#경기전', '#풍남문', '#오목대'],
+    tags: ['거리순 1위', '#경기전', '#풍남문', '#오목대', '#전주향교'],
     distanceToHistoric: 0.5,
-    nearbyHeritageIds: ['gyeonggijeon', 'omokdae', 'pungnammun'],
+    nearbyHeritageIds: ['gyeonggijeon', 'omokdae', 'pungnammun', 'jeonju_hyanggyo'],
     resveCl: '온라인야영장예약,전화',
     resveUrl: ''
   },
@@ -39,9 +39,9 @@ const MASTER_CAMPSITES: Campsite[] = [
     lat: 35.4218,
     lng: 127.3522,
     era: 'joseon',
-    tags: ['공기 맑음', '조용한 분위기', '#광한루원'],
+    tags: ['공기 맑음', '조용한 분위기', '#광한루원', '#만인의총'],
     distanceToHistoric: 3.1,
-    nearbyHeritageIds: ['gwanghallu'],
+    nearbyHeritageIds: ['gwanghallu', 'maninui_chong'],
     resveCl: '온라인야영장예약,전화',
     resveUrl: ''
   },
@@ -52,9 +52,9 @@ const MASTER_CAMPSITES: Campsite[] = [
     lat: 35.9892,
     lng: 127.1009,
     era: 'baekje',
-    tags: ['안전점검 완료', '유적지 근접', '#미륵사지'],
+    tags: ['안전점검 완료', '유적지 근접', '#미륵사지', '#쌍릉'],
     distanceToHistoric: 6.7,
-    nearbyHeritageIds: ['mireuksa_site', 'wanggungri'],
+    nearbyHeritageIds: ['mireuksa_site', 'wanggungri', 'ssangneung'],
     resveCl: '온라인야영장예약',
     resveUrl: ''
   },
@@ -65,9 +65,9 @@ const MASTER_CAMPSITES: Campsite[] = [
     lat: 35.8395,
     lng: 127.1855,
     era: 'later_baekje',
-    tags: ['호수뷰', '도심 인접', '#동고산성'],
+    tags: ['호수뷰', '도심 인접', '#동고산성', '#전주향교'],
     distanceToHistoric: 3.3,
-    nearbyHeritageIds: ['donggosanseong', 'seungamsan_fortress'],
+    nearbyHeritageIds: ['donggosanseong', 'seungamsan_fortress', 'jeonju_hyanggyo'],
     resveCl: '온라인야영장예약,전화',
     resveUrl: ''
   },
@@ -78,9 +78,9 @@ const MASTER_CAMPSITES: Campsite[] = [
     lat: 35.7360,
     lng: 127.0515,
     era: 'later_baekje',
-    tags: ['자연 친화적', '계곡 인근', '#금산사'],
+    tags: ['자연 친화적', '계곡 인근', '#금산사', '#황토현전적지'],
     distanceToHistoric: 0.2,
-    nearbyHeritageIds: ['geumsansa'],
+    nearbyHeritageIds: ['geumsansa', 'byeokgolje', 'hwangtojae', 'museongseowon', 'pihyangjeong'],
     resveCl: '온라인야영장예약,전화',
     resveUrl: ''
   },
@@ -91,9 +91,9 @@ const MASTER_CAMPSITES: Campsite[] = [
     lat: 36.0022,
     lng: 127.1351,
     era: 'goryeo',
-    tags: ['생태공원 인접', '#석조여래입상'],
+    tags: ['생태공원 인접', '#석조여래입상', '#쌍릉'],
     distanceToHistoric: 1.9,
-    nearbyHeritageIds: ['godori_buddha'],
+    nearbyHeritageIds: ['godori_buddha', 'ssangneung'],
     resveCl: '온라인야영장예약',
     resveUrl: ''
   },
@@ -104,9 +104,9 @@ const MASTER_CAMPSITES: Campsite[] = [
     lat: 35.5022,
     lng: 127.5028,
     era: 'goryeo',
-    tags: ['생태탐방', '지리산 인접', '#만복사지'],
+    tags: ['생태탐방', '지리산 인접', '#만복사지', '#실상사'],
     distanceToHistoric: 14.5,
-    nearbyHeritageIds: ['manboksa_site'],
+    nearbyHeritageIds: ['manboksa_site', 'silsangsa', 'sangiam'],
     resveCl: '온라인야영장예약',
     resveUrl: ''
   },
@@ -117,23 +117,10 @@ const MASTER_CAMPSITES: Campsite[] = [
     lat: 35.9388,
     lng: 126.7725,
     era: 'modern',
-    tags: ['가족캠핑 추천', '#근대역사박물관', '#히로쓰가옥'],
+    tags: ['가족캠핑 추천', '#근대역사박물관', '#히로쓰가옥', '#내소사', '#선운사'],
     distanceToHistoric: 7.8,
-    nearbyHeritageIds: ['modern_museum', 'hirotsu_house'],
+    nearbyHeritageIds: ['modern_museum', 'hirotsu_house', 'naesosa', 'seonunsa', 'gochang_eupseong', 'gochang_dolmen'],
     resveCl: '온라인야영장예약,전화',
-    resveUrl: ''
-  },
-  {
-    id: 'mokpo_football',
-    name: 'campsites.mokpo_football.name',
-    description: 'campsites.mokpo_football.desc',
-    lat: 34.8218,
-    lng: 126.4182,
-    era: 'modern',
-    tags: ['가족야영', '#목포근대역사관'],
-    distanceToHistoric: 4.1,
-    nearbyHeritageIds: ['mokpo_modern'],
-    resveCl: '온라인야영장예약',
     resveUrl: ''
   }
 ];
@@ -253,67 +240,11 @@ const MASTER_HERITAGES: HeritageSite[] = [
     era: 'modern'
   },
   {
-    id: 'mokpo_modern',
-    name: 'heritages.mokpo_modern.name',
-    description: 'heritages.mokpo_modern.desc',
-    lat: 34.7865,
-    lng: 126.3811,
-    era: 'modern'
-  },
-  {
     id: 'gochang_dolmen',
     name: 'heritages.gochang_dolmen.name',
     description: 'heritages.gochang_dolmen.desc',
     lat: 35.4478,
     lng: 126.6496,
-    era: 'prehistoric'
-  },
-  {
-    id: 'suncheon_nagan',
-    name: 'heritages.suncheon_nagan.name',
-    description: 'heritages.suncheon_nagan.desc',
-    lat: 34.9038,
-    lng: 127.3364,
-    era: 'joseon'
-  },
-  {
-    id: 'damyang_soswaewon',
-    name: 'heritages.damyang_soswaewon.name',
-    description: 'heritages.damyang_soswaewon.desc',
-    lat: 35.1904,
-    lng: 127.0094,
-    era: 'joseon'
-  },
-  {
-    id: 'yeosu_jinnamgwan',
-    name: 'heritages.yeosu_jinnamgwan.name',
-    description: 'heritages.yeosu_jinnamgwan.desc',
-    lat: 34.7419,
-    lng: 127.7346,
-    era: 'joseon'
-  },
-  {
-    id: 'haenam_daehungsa',
-    name: 'heritages.haenam_daehungsa.name',
-    description: 'heritages.haenam_daehungsa.desc',
-    lat: 34.4764,
-    lng: 126.6178,
-    era: 'goryeo'
-  },
-  {
-    id: 'suncheon_seonamsa',
-    name: 'heritages.suncheon_seonamsa.name',
-    description: 'heritages.suncheon_seonamsa.desc',
-    lat: 34.9961,
-    lng: 127.3292,
-    era: 'goryeo'
-  },
-  {
-    id: 'hwasun_dolmen',
-    name: 'heritages.hwasun_dolmen.name',
-    description: 'heritages.hwasun_dolmen.desc',
-    lat: 34.9897,
-    lng: 126.9328,
     era: 'prehistoric'
   },
   {
@@ -325,38 +256,117 @@ const MASTER_HERITAGES: HeritageSite[] = [
     era: 'joseon'
   },
   {
-    id: 'gurye_hwayeomsa',
-    name: 'heritages.gurye_hwayeomsa.name',
-    description: 'heritages.gurye_hwayeomsa.desc',
-    lat: 35.2575,
-    lng: 127.4975,
-    era: 'goryeo'
-  },
-  {
-    id: 'jangseong_pilam',
-    name: 'heritages.jangseong_pilam.name',
-    description: 'heritages.jangseong_pilam.desc',
-    lat: 35.3117,
-    lng: 126.7786,
+    id: 'museongseowon',
+    name: 'heritages.museongseowon.name',
+    description: 'heritages.museongseowon.desc',
+    lat: 35.6174,
+    lng: 126.9604,
     era: 'joseon'
   },
   {
-    id: 'gangjin_koryo',
-    name: 'heritages.gangjin_koryo.name',
-    description: 'heritages.gangjin_koryo.desc',
-    lat: 34.5028,
-    lng: 126.7864,
+    id: 'naesosa',
+    name: 'heritages.naesosa.name',
+    description: 'heritages.naesosa.desc',
+    lat: 35.6322,
+    lng: 126.5828,
+    era: 'joseon'
+  },
+  {
+    id: 'byeokgolje',
+    name: 'heritages.byeokgolje.name',
+    description: 'heritages.byeokgolje.desc',
+    lat: 35.7915,
+    lng: 126.8522,
+    era: 'baekje'
+  },
+  {
+    id: 'jeoksangsanseong',
+    name: 'heritages.jeoksangsanseong.name',
+    description: 'heritages.jeoksangsanseong.desc',
+    lat: 35.9734,
+    lng: 127.6712,
+    era: 'joseon'
+  },
+  {
+    id: 'pihyangjeong',
+    name: 'heritages.pihyangjeong.name',
+    description: 'heritages.pihyangjeong.desc',
+    lat: 35.6985,
+    lng: 126.8672,
+    era: 'joseon'
+  },
+  {
+    id: 'silsangsa',
+    name: 'heritages.silsangsa.name',
+    description: 'heritages.silsangsa.desc',
+    lat: 35.3934,
+    lng: 127.6255,
     era: 'goryeo'
   },
   {
-    id: 'wando_cheonghaejin',
-    name: 'heritages.wando_cheonghaejin.name',
-    description: 'heritages.wando_cheonghaejin.desc',
-    lat: 34.3312,
-    lng: 126.7584,
+    id: 'ssangneung',
+    name: 'heritages.ssangneung.name',
+    description: 'heritages.ssangneung.desc',
+    lat: 35.9812,
+    lng: 127.0585,
+    era: 'baekje'
+  },
+  {
+    id: 'sangiam',
+    name: 'heritages.sangiam.name',
+    description: 'heritages.sangiam.desc',
+    lat: 35.6322,
+    lng: 127.4215,
     era: 'goryeo'
-  }
-];
+  },
+  {
+    id: 'maisan_tapsa',
+    name: 'heritages.maisan_tapsa.name',
+    description: 'heritages.maisan_tapsa.desc',
+    lat: 35.7624,
+    lng: 127.4208,
+    era: 'joseon'
+  },
+  {
+    id: 'jeonju_hyanggyo',
+    name: 'heritages.jeonju_hyanggyo.name',
+    description: 'heritages.jeonju_hyanggyo.desc',
+    lat: 35.8122,
+    lng: 127.1555,
+    era: 'joseon'
+  },
+  {
+    id: 'hwangtojae',
+    name: 'heritages.hwangtojae.name',
+    description: 'heritages.hwangtojae.desc',
+    lat: 35.6980,
+    lng: 126.8152,
+    era: 'joseon'
+  },
+  {
+    id: 'seonunsa',
+    name: 'heritages.seonunsa.name',
+    description: 'heritages.seonunsa.desc',
+    lat: 35.4988,
+    lng: 126.6185,
+    era: 'goryeo'
+  },
+  {
+    id: 'maninui_chong',
+    name: 'heritages.maninui_chong.name',
+    description: 'heritages.maninui_chong.desc',
+    lat: 35.4190,
+    lng: 127.3820,
+    era: 'joseon'
+  },
+  {
+    id: 'hwaamsa',
+    name: 'heritages.hwaamsa.name',
+    description: 'heritages.hwaamsa.desc',
+    lat: 36.0153,
+    lng: 127.2084,
+    era: 'goryeo'
+  }];
 
 // Mock Jeolla region public campsites data (Fallback for Open API)
 const MOCK_JEOLLA_CAMPS = [
@@ -367,84 +377,14 @@ const MOCK_JEOLLA_CAMPS = [
   { id: 'public-mock-5', name: '고창 선운산도립공원 야영장', addr: '전북 고창군 아산면 선운사로 205', lat: 35.4988, lng: 126.6185, tel: '063-560-8600', induty: '일반야영장', description: '선운산의 사계절 아름다움을 만끽할 수 있는 자연 친화 야영장.', resveCl: '현장', resveUrl: '' },
   { id: 'public-mock-6', name: '부안 고사포야영장', addr: '전북 부안군 변산면 변산로 2065-1', lat: 35.6845, lng: 126.4715, tel: '063-582-7888', induty: '일반야영장', description: '변산반도 국립공원 고사포 해수욕장 송림 속 야영장.', resveCl: '', resveUrl: '' },
   { id: 'public-mock-7', name: '남원 지리산백무동야영장', addr: '전북 남원시 아영면 지리산로', lat: 35.3785, lng: 127.5855, tel: '055-970-1000', induty: '일반야영장', description: '지리산 천왕봉 코스 기점에 있는 계곡 옆 야영장.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' },
-  { id: 'public-mock-8', name: '여수 더스타 오토캠핑장', addr: '전남 여수시 돌산읍 평사리 12-4', lat: 34.6855, lng: 127.7985, tel: '061-644-0000', induty: '오토캠핑, 카라반', description: '돌산 바다가 한눈에 내려다보이는 오션뷰 오토캠핑장.', resveCl: '', resveUrl: '' },
-  { id: 'public-mock-9', name: '순천만 국가정원 글램핑', addr: '전남 순천시 홍내동 11-2', lat: 34.9255, lng: 127.5020, tel: '061-744-1111', induty: '글램핑', description: '순천만 습지와 국가정원 관광에 최적화된 럭셔리 글램핑.', resveCl: '전화', resveUrl: '' },
-  { id: 'public-mock-10', name: '담양 메타프로방스 카라반', addr: '전남 담양군 담양읍 깊은실길 22', lat: 35.3288, lng: 127.0088, tel: '061-380-0000', induty: '카라반', description: '담양 메타세쿼이아길 바로 옆 유럽풍 프로방스 마을 카라반.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' },
-  { id: 'public-mock-11', name: '장성 백양사 가인야영장', addr: '전남 장성군 북하면 백양로 1114', lat: 35.4385, lng: 126.8785, tel: '061-392-7288', induty: '일반야영장', description: '내장산 국립공원 백양사 지구에 위치한 수려한 계곡 야영장.', resveCl: '', resveUrl: '' },
-  { id: 'public-mock-12', name: '보성 율포솔밭오토캠핑장', addr: '전남 보성군 회천면 우암길 24', lat: 34.7015, lng: 127.0815, tel: '061-850-8600', induty: '오토캠핑, 카라반', description: '보성 율포 솔밭 해수욕장 백사장 인근의 소나무 숲 캠핑장.', resveCl: '온라인야영장예약,현장', resveUrl: 'https://gocamping.or.kr' },
   { id: 'public-mock-13', name: '남원 백두대간 캠핑장', addr: '전북 남원시 운봉읍 바래봉길 10', lat: 35.4415, lng: 127.5312, tel: '063-630-0000', induty: '일반야영장', description: '지리산 바래봉 자락에 위치해 시원하고 자연 친화적인 야영지.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' },
   { id: 'public-mock-14', name: '임실 옥정호 산들바람 캠핑장', addr: '전북 임실군 운암면 국사봉로 23', lat: 35.6120, lng: 127.1215, tel: '063-640-0000', induty: '오토캠핑', description: '아름다운 옥정호 호수 뷰를 감상할 수 있는 호숫가 야영지.', resveCl: '전화', resveUrl: '' },
   { id: 'public-mock-15', name: '진안 운일암반일암 국민여가캠핑장', addr: '전북 진안군 주천면 동상주천로 1928', lat: 35.9188, lng: 127.2845, tel: '063-430-8359', induty: '일반야영장, 오토캠핑', description: '기암절벽과 맑은 계곡물이 흐르는 운일암반일암 계곡 옆 야영장.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' },
   { id: 'public-mock-16', name: '무주 덕유산 국민여가캠핑장', addr: '전북 무주군 설천면 백련사로 2', lat: 35.8912, lng: 127.7685, tel: '063-322-1097', induty: '일반야영장, 카라반', description: '덕유산 국립공원 입구 구천동 계곡 옆에 펼쳐진 대규모 야영장.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' },
-  { id: 'public-mock-17', name: '완주 자연을닮은 캠핑장', addr: '전북 완주군 소양면 해학로 12-4', lat: 35.8855, lng: 127.2515, tel: '063-240-0000', induty: '일반야영장, 글램핑', description: '완주 소양 고즈넉한 산자락 아래 위치하여 힐링하기 최적의 장소.', resveCl: '전화', resveUrl: '' },
-  { id: 'public-mock-18', name: '영광 불갑산 상사화야영장', addr: '전남 영광군 불갑면 불갑사로 32', lat: 35.2515, lng: 126.5412, tel: '061-350-0000', induty: '일반야영장', description: '불갑사 도립공원 인근 상사화 축제장 옆에 조성된 조용한 캠핑 공간.', resveCl: '현장', resveUrl: '' },
-  { id: 'public-mock-19', name: '해남 땅끝 오토캠핑장', addr: '전남 해남군 송지면 땅끝해안로 17', lat: 34.3015, lng: 126.5312, tel: '061-530-5733', induty: '오토캠핑, 카라반', description: '한반도 최남단 땅끝마을 바다 바로 앞에 펼쳐진 아름다운 카라반 야영지.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' },
-  { id: 'public-mock-20', name: '구례 지리산피아골 오토캠핑장', addr: '전남 구례군 토지면 피아골로 12', lat: 35.2612, lng: 127.5685, tel: '061-780-2733', induty: '오토캠핑', description: '지리산 피아골 단풍 계곡 아래 맑고 웅장한 자연 속에 위치한 야영장.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' },
-  { id: 'public-mock-21', name: '고흥 나로우주해수욕장 야영장', addr: '전남 고흥군 동일면 우주로 15', lat: 34.4612, lng: 127.4385, tel: '061-830-5114', induty: '일반야영장', description: '울창한 소나무 숲과 나로우주해수욕장 모래사장이 맞닿아 있는 야영장.', resveCl: '현장', resveUrl: '' },
-  { id: 'public-mock-22', name: '장흥 천관산자연휴양림 야영장', addr: '전남 장흥군 관산읍 칠관로 23', lat: 34.5488, lng: 126.9185, tel: '061-867-6974', induty: '일반야영장', description: '천관산 기슭에 자리 잡아 맑은 공기와 조용한 숲속에서 힐링할 수 있는 야영지.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' }
+  { id: 'public-mock-17', name: '완주 자연을닮은 캠핑장', addr: '전북 완주군 소양면 해학로 12-4', lat: 35.8855, lng: 127.2515, tel: '063-240-0000', induty: '일반야영장, 글램핑', description: '완주 소양 고즈넉한 산자락 아래 위치하여 힐링하기 최적의 장소.', resveCl: '전화', resveUrl: '' }
 ];
 
-// Mock Quiz Data - Korean
-const MOCK_QUIZZES_KO: QuizQuestion[] = [
-  {
-    id: 1,
-    era: 'joseon',
-    region: '전주',
-    question: '태조 이성계의 어진(초상화)을 모시고 있는 전주의 대표적인 유적지는 어디일까요?',
-    options: ['경기전', '풍남문', '오목대', '전주향교'],
-    correct_option_index: 0,
-    explanation: '전주 경기전(慶基殿)은 조선 태조 이성계의 어진을 봉안하고 있는 유서 깊은 유적지입니다.'
-  },
-  {
-    id: 2,
-    era: 'joseon',
-    region: '완주',
-    question: '완주 송광사에 있는 조선 시대 대표적인 불교 건축물로, 보물 제1243호로 지정된 것은 무엇일까요?',
-    options: ['대웅전', '지장전', '극락전', '미륵전'],
-    correct_option_index: 0,
-    explanation: '완주 송광사 대웅전은 조선 중기 불교 목조건축의 뛰어난 가치를 간직한 보물 문화재입니다.'
-  },
-  {
-    id: 3,
-    era: 'baekje',
-    region: '익산',
-    question: '백제 무왕이 창건한 동양 최대의 절터로, 국보 제11호 미륵사지 석탑이 있는 곳은 어디일까요?',
-    options: ['익산 미륵사지', '부여 정림사지', '공주 무령왕릉', '익산 왕궁리유적'],
-    correct_option_index: 0,
-    explanation: '익산 미륵사지는 백제 무왕 때 창건되어 3탑 3금당의 독특한 가람배치를 보여주는 유적입니다.'
-  }
-];
-
-// Mock Quiz Data - English
-const MOCK_QUIZZES_EN: QuizQuestion[] = [
-  {
-    id: 1,
-    era: 'joseon',
-    region: 'Jeonju',
-    question: 'Where is the representative historic site in Jeonju that houses the portrait of King Taejo Yi Seong-gye?',
-    options: ['Gyeonggijeon', 'Pungnammun', 'Omokdae', 'Jeonju Hyanggyo'],
-    correct_option_index: 0,
-    explanation: 'Gyeonggijeon in Jeonju is a historical site built to enshrine the portrait of King Taejo, the founder of the Joseon Dynasty.'
-  },
-  {
-    id: 2,
-    era: 'joseon',
-    region: 'Wanju',
-    question: 'What is the representative Joseon era Buddhist building in Wanju Songgwangsa Temple, designated as Treasure No. 1243?',
-    options: ['Daeungjeon Hall', 'Jijangjeon Hall', 'Geukrakjeon Hall', 'Mireukjeon Hall'],
-    correct_option_index: 0,
-    explanation: 'Songgwangsa Daeungjeon in Wanju is a national treasure that shows the outstanding value of mid-Joseon Buddhist wooden architecture.'
-  },
-  {
-    id: 3,
-    era: 'baekje',
-    region: 'Iksan',
-    question: 'Where is the largest temple site in East Asia founded by King Mu of Baekje, home to the Stone Pagoda of Mireuksa Temple Site (National Treasure No. 11)?',
-    options: ['Iksan Mireuksa Temple Site', 'Buyeo Jeongrimsa Temple Site', 'Gongju Tomb of King Muryeong', 'Iksan Wanggung-ri Ruins'],
-    correct_option_index: 0,
-    explanation: 'Mireuksa Temple Site in Iksan was founded during the reign of King Mu of Baekje and is a unique site showcasing three pagodas and three main halls.'
-  }
-];
+// Mock Quiz Data - Korean & English are dynamically generated below HERITAGE_QUIZZES to support all 30 Jeonbuk heritage sites.
 
 interface HeritageQuiz {
   question: string;
@@ -454,6 +394,292 @@ interface HeritageQuiz {
 }
 
 const HERITAGE_QUIZZES: Record<string, { ko: HeritageQuiz; en: HeritageQuiz }> = {
+  maisan_tapsa: {
+    ko: {
+      question: "진안 마이산 탑사에 약 80여 개의 돌탑을 쌓아 올렸으며, 비바람에도 무너지지 않는 신비한 탑사 풍경을 일군 조선 후기 처사는 누구인가요?",
+      options: ["이갑용 처사", "임경업 장군", "서산대사", "원효대사"],
+      correct_option_index: 0,
+      explanation: "진안 마이산 탑사는 이갑용 처사가 1800년대 후반부터 평생 동안 접착제나 시멘트 없이 자연석만으로 80여 개의 돌탑을 쌓아 올린 신비로운 역사 유적입니다."
+    },
+    en: {
+      question: "Who is the late Joseon lay devotee who built about 80 stone pagodas at Jinan Maisan Tapsa Temple that stand firm without collapsing?",
+      options: ["Lay devotee Lee Gap-yong", "General Im Gyeong-eop", "Master Seosan", "Master Wonhyo"],
+      correct_option_index: 0,
+      explanation: "Jinan Maisan Tapsa Temple features about 80 stone pagodas built solely from natural stones without glue or cement by lay devotee Lee Gap-yong from the late 1800s."
+    }
+  },
+  jeonju_hyanggyo: {
+    ko: {
+      question: "조선시대 전라도의 대표적인 교육기관이었던 전주향교에는 공자를 비롯한 성현들의 위패를 모신 전각이 있습니다. 이 전각의 이름은 무엇인가요?",
+      options: ["대성전", "명륜당", "동무", "서무"],
+      correct_option_index: 0,
+      explanation: "전주향교 대성전(보물)은 공자를 비롯한 유교 성현들의 위패를 모시고 제사를 지내는 전주향교의 핵심 전각입니다."
+    },
+    en: {
+      question: "What is the name of the main hall in Jeonju Hyanggyo that houses the memorial tablets of Confucius and other ancient sages?",
+      options: ["Daeseongjeon", "Myeongryundang", "Dongmu", "Seomu"],
+      correct_option_index: 0,
+      explanation: "Daeseongjeon Hall (Treasure) of Jeonju Hyanggyo is the central shrine enshrining the memorial tablets of Confucius and other Confucian sages."
+    }
+  },
+  hwangtojae: {
+    ko: {
+      question: "1894년 전봉준이 이끄는 동학농민군이 전라감영의 관군을 상대로 첫 대승을 거두었던 전투의 장소이자, 현재 사적으로 지정된 이곳은 어디일까요?",
+      options: ["황토현 전적지", "우금치 전적지", "황룡촌 전적지", "백산 전적지"],
+      correct_option_index: 0,
+      explanation: "정읍 황토현 전적(사적)은 1894년 동학농민군이 관군과의 첫 전면전에서 대승을 거둠으로써 동학농민혁명이 전국적으로 확산되는 결정적 계기가 된 격전지입니다."
+    },
+    en: {
+      question: "Where is the historic battlefield where the Donghak Peasant Army led by Jeon Bong-jun won its first major victory against the government forces in 1894?",
+      options: ["Hwangtojae Battleground", "Ugeumchi Battleground", "Hwangryongchon Battleground", "Baeksan Battleground"],
+      correct_option_index: 0,
+      explanation: "The Hwangtojae Battleground (Historic Site) is where the Donghak Peasant Army defeated government troops in their first full-scale battle, triggering the nationwide expansion of the revolution."
+    }
+  },
+  seonunsa: {
+    ko: {
+      question: "고창 선운사는 천연기념물로 지정된 동백나무 숲으로도 유명합니다. 대웅보전(보물) 뒤편에 위치한 이 동백나무 숲은 주로 어떤 실용적 목적으로 조성되었다고 전해지나요?",
+      options: [
+        "사찰에 화재가 발생했을 때 불길을 막는 방화림 역할",
+        "동백기름을 만들어 왕실에 상공하기 위한 용도",
+        "왜구의 침입을 감시하기 위한 은폐막",
+        "차나무 그늘을 만들기 위한 용도"
+      ],
+      correct_option_index: 0,
+      explanation: "선운사 대웅전 뒤편 산기슭에는 약 3천여 그루 of 동백나무가 숲을 이루고 있습니다. 동백나무의 두껍고 수분이 많은 잎은 산불이나 화재 시 불길이 전각으로 번지는 것을 막아주는 천연 방화림 역할을 했습니다."
+    },
+    en: {
+      question: "Gochang Seonunsa Temple is famous for its natural monument camellia forest. For what practical purpose was this forest behind the main hall planted?",
+      options: [
+        "To act as a firebreak forest to block wildfires from spreading to pavilions",
+        "To produce camellia oil to offer to the royal family",
+        "To serve as a camouflage screen to monitor Japanese pirate raids",
+        "To provide shade for tea trees"
+      ],
+      correct_option_index: 0,
+      explanation: "The camellia forest of Seonunsa acts as a natural firebreak. The thick, moisture-rich leaves of the camellias helped block forest fires from spreading to the temple buildings."
+    }
+  },
+  maninui_chong: {
+    ko: {
+      question: "조선 선조 때 정유재란 당시, 남원성 전투에서 침략한 왜군에 맞서 싸우다 순국한 민·관·군 의사들의 유해를 함께 모신 호국 무덤의 이름은 무엇인가요?",
+      options: ["만인의총", "칠백의총", "칠천량묘", "삼백의총"],
+      correct_option_index: 0,
+      explanation: "남원 만인의총(사적)은 1597년 정유재란 당시 왜군에 맞서 최후까지 남원성을 지키다 순절한 피난민, 관군, 의병 등 약 1만여 명의 호국영령들을 한곳에 합장하여 모신 무덤입니다."
+    },
+    en: {
+      question: "What is the name of the historic tomb in Namwon that enshrines the remains of the soldiers, citizens, and righteous volunteers who died fighting Japanese invaders in the 1597 battle?",
+      options: ["Maninui Chong", "Chilbaegui Chong", "Chilcheonryang Grave", "Sambaegui Chong"],
+      correct_option_index: 0,
+      explanation: "Namwon Maninui Chong (Historic Site) is a collective tomb enshrining about 10,000 patriotic souls who sacrificed their lives defending Namwon Castle during the 1597 Japanese invasion."
+    }
+  },
+  hwaamsa: {
+    ko: {
+      question: "완주 화암사 극락전은 국보로 지정되어 있습니다. 이 건물은 한국 건축 문화재 중 유일하게 지붕 처마의 무게를 분산시키는 어떤 특별한 건축 공법을 사용했나요?",
+      options: ["하앙(하앙) 구조", "다포(多包) 구조", "주심포(柱心包) 구조", "민도리 구조"],
+      correct_option_index: 0,
+      explanation: "완주 화암사 극락전(국보)은 중국이나 일본에는 흔하지만 한국 목조건축 중에서는 유일하게 보존되어 있는 '하앙(下昂) 구조'를 채택한 건물입니다. 하앙은 기둥 위에서 처마를 길게 내밀 수 있도록 지탱해 주는 목재 부재입니다."
+    },
+    en: {
+      question: "Geungnakjeon Hall of Wanju Hwaamsa Temple is a National Treasure. What unique architectural structure does it employ to distribute the weight of the roof eaves?",
+      options: ["Haang (downward-pointing cantilever) structure", "Dapo (multi-bracket) structure", "Jusimpo (column-head bracket) structure", "Mindori (simple bracketless) structure"],
+      correct_option_index: 0,
+      explanation: "Wanju Hwaamsa Geungnakjeon is the only surviving wooden building in Korea that uses the 'Haang structure', a cantilever system common in China and Japan that helps project roof eaves further."
+    }
+  },
+  museongseowon: {
+    ko: {
+      question: "정읍 무성서원은 최치원 선생을 모시기 위해 세워진 조선시대의 사원입니다. 이곳이 다른 서원들과 비교해 가지는 특별한 역사적 가치는 무엇인가요?",
+      options: [
+        "을사늑약 체결 당시 호남 지역 최초로 의병을 일으킨 역사적 항일 발상지이다.",
+        "조선 왕조의 불교 억압 정책에 맞서 일어난 절터이다.",
+        "동학 농민 운동의 마지막 전투가 열렸던 지휘소였다.",
+        "우리나라 최초의 여성 유학자를 배출한 서원이다."
+      ],
+      correct_option_index: 0,
+      explanation: "정읍 무성서원은 1906년 면암 최익현 선생이 을사늑약에 항거하여 호남 최초의 의병을 일으켰던 항일 독립운동의 유서 깊은 발상지이기도 합니다."
+    },
+    en: {
+      question: "Jeongeup Museongseowon is a Confucian academy commemorating scholar Choi Chi-won. What is its unique historical value?",
+      options: [
+        "It was the launching site of the Honam region's first righteous army against the Eulsa Treaty.",
+        "It was a Buddhist temple built against the Joseon suppression policy.",
+        "It was the command center of the last battle of Donghak Peasant Movement.",
+        "It was the first Confucian academy to admit female scholars."
+      ],
+      correct_option_index: 0,
+      explanation: "Jeongeup Museongseowon is historically significant as the birthplace of the Honam region's first righteous army led by Choi Ik-hyeon to protest the Eulsa Treaty in 1906."
+    }
+  },
+  naesosa: {
+    ko: {
+      question: "부안 내소사의 대웅보전(보물) 꽃살문 조각에 대한 설명으로 가장 어울리는 것은 무엇인가요?",
+      options: [
+        "정교한 불교 조각 예술의 정수로, 나뭇결 그대로 연꽃과 국화 무늬를 세련되게 조각했다.",
+        "삼국시대 백제 양식의 화려한 청동 꽃 장식을 박아 넣었다.",
+        "중국 당나라 수입 목재를 사용해 웅장한 용 무늬를 조각했다.",
+        "서양 기하학 무늬를 적용한 현대적인 디자인이다."
+      ],
+      correct_option_index: 0,
+      explanation: "내소사 대웅보전의 문살은 연꽃과 국화꽃 등을 쇠못을 쓰지 않고 나무로만 정교하게 맞추어 조각한 조선 중기 전통 목조건축 미술의 극치로 꼽힙니다."
+    },
+    en: {
+      question: "Which of the following describes the famous wooden floral lattice doors of Naesosa Temple's Daeungjeon Hall?",
+      options: [
+        "They represent the pinnacle of Buddhist wood carving, displaying natural wood-grained lotuses and chrysanthemums without nails.",
+        "They feature magnificent bronze flower decorations imported from the Baekje era.",
+        "They are decorated with grand dragon patterns imported from Tang Dynasty China.",
+        "They are modern geometric patterns influenced by Western architecture."
+      ],
+      correct_option_index: 0,
+      explanation: "The flower-patterned lattice doors of Naesosa's Daeungjeon are considered a masterpiece of Joseon Dynasty woodcraft, featuring delicate carvings of lotus and chrysanthemum blossoms joined without using metal nails."
+    }
+  },
+  byeokgolje: {
+    ko: {
+      question: "김제 벽골제는 백제 비류왕 때 축조된 우리나라 역사상 가장 오래된 대표적인 수리시설입니다. 벽골제가 축조된 주목적은 무엇인가요?",
+      options: [
+        "농업 생산력을 높이기 위해 드넓은 김제 평야에 물을 대는 저수지 둑이었다.",
+        "적들의 침입에 대비해 도성을 방어하는 거대한 해자였다.",
+        "조선 건국을 기념하기 위해 조성한 왕실 인공 연못이었다.",
+        "근대 해상 물류의 중심지로 기능한 인공 운하였다."
+      ],
+      correct_option_index: 0,
+      explanation: "김제 벽골제는 삼국시대 당시 벼농사 중심의 농업 생산력을 획기적으로 증대시키기 위해 건설된 거대 인공 방조제이자 우리나라 최초의 고대 저수지 둑입니다."
+    },
+    en: {
+      question: "What was the primary purpose of Gimje Byeokgolje, built during the reign of King Biryu of the Baekje Dynasty?",
+      options: [
+        "An ancient reservoir embankment to irrigate the vast Gimje plains for rice farming.",
+        "A giant moat surrounding the capital to defend against foreign invasions.",
+        "An artificial royal pond constructed to celebrate the founding of the Joseon Dynasty.",
+        "An artificial canal that served as the center of modern maritime logistics."
+      ],
+      correct_option_index: 0,
+      explanation: "Gimje Byeokgolje is the oldest and largest ancient reservoir embankment in Korea, constructed to manage water resource and dramatically increase rice agricultural productivity in the Honam plains."
+    }
+  },
+  jeoksangsanseong: {
+    ko: {
+      question: "무주 적상산성(사적) 내에 건립되어 조선왕조실록과 왕실 족보 등을 임진왜란 이후 안전하게 보관했던 역사의 보고는 무엇인가요?",
+      options: [
+        "적상산 사고 (Sagobang)",
+        "적상사 미륵전",
+        "태조 영당",
+        "적상 해인사"
+      ],
+      correct_option_index: 0,
+      explanation: "적상산성은 사방이 깎아지른 절벽으로 둘러싸인 천혜의 요새로, 임진왜란 이후 조선 왕조의 핵심 역사 기록물인 '조선왕조실록'을 안전하게 영구 보존하기 위해 적상산 사고가 건립되었습니다."
+    },
+    en: {
+      question: "What is the name of the royal archives inside Muju Jeoksangsanseong Fortress that safely preserved the Joseon Royal Annals after the Imjin War?",
+      options: [
+        "Jeoksangsan Sago (Royal Archives)",
+        "Jeoksangsa Mireukjeon",
+        "Taejo Yeongdang Portrait Hall",
+        "Jeoksang Haeinsa"
+      ],
+      correct_option_index: 0,
+      explanation: "Jeoksangsanseong is a natural fortress surrounded by steep cliffs. Due to its strategic invulnerability, Jeoksangsan Sago was built inside to store and preserve the Joseon Dynasty's royal annals and royal genealogies."
+    }
+  },
+  pihyangjeong: {
+    ko: {
+      question: "호남 제일의 누각이라 불리는 정읍 피향정은 여름에 연못 위에 펼쳐지는 어떤 식물의 아름다운 풍경과 향기로 유명한가요?",
+      options: [
+        "연꽃",
+        "매화",
+        "벚꽃",
+        "대나무"
+      ],
+      correct_option_index: 0,
+      explanation: "피향정(보물)은 연못에 가득 핀 연꽃의 향기가 사방에 그윽하게 번진다는 뜻에서 붙여진 이름으로, 신라의 최치원 선생이 연못가를 거닐며 풍류를 즐겼다는 설화가 전해집니다."
+    },
+    en: {
+      question: "Jeongeup Pihyangjeong, widely known as the finest pavilion in Honam, is famous for the fragrant scent of which flower blooming in its pond?",
+      options: [
+        "Lotus",
+        "Plum Blossom",
+        "Cherry Blossom",
+        "Bamboo"
+      ],
+      correct_option_index: 0,
+      explanation: "The name Pihyangjeong means 'pavilion where the fragrance of lotus flower spreads in all directions'. According to local folklore, legendary Silla scholar Choi Chi-won spent time here enjoying the scenic view."
+    }
+  },
+  silsangsa: {
+    ko: {
+      question: "지리산 자락에 위치한 남원 실상사는 구산선문 중 최초로 문을 연 유서 깊은 사찰입니다. 실상사가 가진 독특한 풍수지리적 설립 배경은 무엇인가요?",
+      options: [
+        "일본이나 외부의 나쁜 기운이 한반도로 들어오는 것을 지리산에서 누르기 위해 세워졌다.",
+        "백제 왕실의 무덤 자리를 수호하기 위해 세워졌다.",
+        "근대 항일 운동의 비밀 화약고를 숨기기 위해 세워졌다.",
+        "가장 비옥한 영토의 풍요를 기원하는 신전이었다."
+      ],
+      correct_option_index: 0,
+      explanation: "실상사는 신라 선종의 발상지로, 풍수지리적으로 한반도의 기운이 일본으로 빠져나가는 것을 막고 왜의 나쁜 기운을 지리산 자락에서 제압하려는 호국 사상의 배경을 품고 있습니다."
+    },
+    en: {
+      question: "Namwon Silsangsa Temple was the first temple founded among the Nine Mountain Zen Gates. What unique feng-shui belief is associated with its founding?",
+      options: [
+        "It was built on Jirisan to suppress bad energy coming from Japan into the peninsula.",
+        "It was constructed to guard the ancient tombs of the Baekje royal family.",
+        "It was built to conceal a secret gunpowder storage for late Joseon righteous armies.",
+        "It was a temple built to pray for the agricultural fertility of the plains."
+      ],
+      correct_option_index: 0,
+      explanation: "Silsangsa was founded as the first Seon (Zen) sect temple in the late Silla Dynasty. It is geomantically positioned to block domestic energy from draining away and to subdue hostile foreign energy from across the sea."
+    }
+  },
+  ssangneung: {
+    ko: {
+      question: "익산 쌍릉은 대왕묘와 소왕묘로 구성된 백제 시대의 고분입니다. 이 무덤들의 역사적 주인공으로 가장 높게 비정되는 인물은 누구인가요?",
+      options: [
+        "백제 무왕 (King Mu)",
+        "백제 근초고왕",
+        "백제 의자왕",
+        "백제 온조왕"
+      ],
+      correct_option_index: 0,
+      explanation: "익산 쌍릉(사적)은 백제 말기 무왕(대왕묘)과 그의 왕비 선화공주(소왕묘)의 능으로 추정되며, 백제의 익산 천도 혹은 복도(수도를 두 군데 둠) 설을 증명하는 고대 고분 유적입니다."
+    },
+    en: {
+      question: "Iksan Ssangneung consists of two Baekje royal tombs. Who is widely believed to be the historical figure buried in the larger tomb (Daewangmyo)?",
+      options: [
+        "King Mu of Baekje",
+        "King Geunchogo of Baekje",
+        "King Uija of Baekje",
+        "King Onjo of Baekje"
+      ],
+      correct_option_index: 0,
+      explanation: "Iksan Ssangneung is highly estimated as the royal tombs of King Mu and his queen consort Seonhwa of the Baekje Dynasty, providing major archaeological evidence of Baekje's historical presence in Iksan."
+    }
+  },
+  sangiam: {
+    ko: {
+      question: "임실 성수산에 위치한 상이암은 두 태조와 인연이 깊습니다. 상이암에서 기도를 드려 건국을 이루었다고 전해지는 두 인물은 누구인가요?",
+      options: [
+        "고려 태조 왕건과 조선 태조 이성계",
+        "백제 온조왕과 고려 태조 왕건",
+        "신라 경순왕과 조선 태조 이성계",
+        "고려 태조 왕건과 조선 태종 방원"
+      ],
+      correct_option_index: 0,
+      explanation: "임실 상이암은 고려를 건국한 왕건과 조선을 건국한 이성계가 하늘의 계시(삼청동 성수산의 맑은 기운)를 받고 건국 대업을 이루었다는 창업 설화가 함께 전해지는 유서 깊은 암자입니다."
+    },
+    en: {
+      question: "Imsil Sangiam Hermitage is deeply associated with two dynastic founders who prayed here to establish their kingdoms. Who are they?",
+      options: [
+        "Wang Geon of Goryeo and Yi Seong-gye of Joseon",
+        "Onjo of Baekje and Wang Geon of Goryeo",
+        "King Gyeongsun of Silla and Yi Seong-gye of Joseon",
+        "Wang Geon of Goryeo and King Taejong Yi Bang-won"
+      ],
+      correct_option_index: 0,
+      explanation: "Sangiam is legendary for having hosted both Goryeo's founder Wang Geon and Joseon's founder Yi Seong-gye, who allegedly received cosmic signs during their prayers here to succeed in establishing their new empires."
+    }
+  },
   songgwangsa: {
     ko: {
       question: "완주 송광사에 있는 문화유산 중 하나인 보물 제1243호 대웅전과 관련된 특징으로 옳은 것은 무엇인가요?",
@@ -994,6 +1220,94 @@ const HERITAGE_QUIZZES: Record<string, { ko: HeritageQuiz; en: HeritageQuiz }> =
   }
 };
 
+const HERITAGE_REGION_MAP: Record<string, { ko: string; en: string }> = {
+  songgwangsa: { ko: '완주', en: 'Wanju' },
+  gyeonggijeon: { ko: '전주', en: 'Jeonju' },
+  omokdae: { ko: '전주', en: 'Jeonju' },
+  pungnammun: { ko: '전주', en: 'Jeonju' },
+  gwanghallu: { ko: '남원', en: 'Namwon' },
+  mireuksa_site: { ko: '익산', en: 'Iksan' },
+  wanggungri: { ko: '익산', en: 'Iksan' },
+  donggosanseong: { ko: '전주', en: 'Jeonju' },
+  seungamsan_fortress: { ko: '전주', en: 'Jeonju' },
+  geumsansa: { ko: '김제', en: 'Gimje' },
+  godori_buddha: { ko: '익산', en: 'Iksan' },
+  manboksa_site: { ko: '남원', en: 'Namwon' },
+  modern_museum: { ko: '군산', en: 'Gunsan' },
+  hirotsu_house: { ko: '군산', en: 'Gunsan' },
+  gochang_dolmen: { ko: '고창', en: 'Gochang' },
+  gochang_eupseong: { ko: '고창', en: 'Gochang' },
+  museongseowon: { ko: '정읍', en: 'Jeongeup' },
+  naesosa: { ko: '부안', en: 'Buan' },
+  byeokgolje: { ko: '김제', en: 'Gimje' },
+  jeoksangsanseong: { ko: '무주', en: 'Muju' },
+  pihyangjeong: { ko: '정읍', en: 'Jeongeup' },
+  silsangsa: { ko: '남원', en: 'Namwon' },
+  ssangneung: { ko: '익산', en: 'Iksan' },
+  sangiam: { ko: '임실', en: 'Imsil' },
+  maisan_tapsa: { ko: '진안', en: 'Jinan' },
+  jeonju_hyanggyo: { ko: '전주', en: 'Jeonju' },
+  hwangtojae: { ko: '정읍', en: 'Jeongeup' },
+  seonunsa: { ko: '고창', en: 'Gochang' },
+  maninui_chong: { ko: '남원', en: 'Namwon' },
+  hwaamsa: { ko: '완주', en: 'Wanju' }
+};
+
+// Generate the full quiz list dynamically from MASTER_HERITAGES and HERITAGE_QUIZZES
+const MOCK_QUIZZES_KO: QuizQuestion[] = MASTER_HERITAGES.map((h, index) => {
+  const quizObj = HERITAGE_QUIZZES[h.id];
+  const regionInfo = HERITAGE_REGION_MAP[h.id] || { ko: '기타', en: 'Other' };
+  
+  if (!quizObj) {
+    return {
+      id: index + 1,
+      era: h.era,
+      region: regionInfo.ko,
+      question: `${h.id} 에 대한 퀴즈 준비 중입니다.`,
+      options: ['정답', '오답1', '오답2', '오답3'],
+      correct_option_index: 0,
+      explanation: '해설 준비 중'
+    };
+  }
+  
+  return {
+    id: index + 1,
+    era: h.era,
+    region: regionInfo.ko,
+    question: quizObj.ko.question,
+    options: quizObj.ko.options,
+    correct_option_index: quizObj.ko.correct_option_index,
+    explanation: quizObj.ko.explanation
+  };
+});
+
+const MOCK_QUIZZES_EN: QuizQuestion[] = MASTER_HERITAGES.map((h, index) => {
+  const quizObj = HERITAGE_QUIZZES[h.id];
+  const regionInfo = HERITAGE_REGION_MAP[h.id] || { ko: '기타', en: 'Other' };
+  
+  if (!quizObj) {
+    return {
+      id: index + 1,
+      era: h.era,
+      region: regionInfo.en,
+      question: `Quiz for ${h.id} is under preparation.`,
+      options: ['Correct', 'Incorrect 1', 'Incorrect 2', 'Incorrect 3'],
+      correct_option_index: 0,
+      explanation: 'Explanation under preparation.'
+    };
+  }
+  
+  return {
+    id: index + 1,
+    era: h.era,
+    region: regionInfo.en,
+    question: quizObj.en.question,
+    options: quizObj.en.options,
+    correct_option_index: quizObj.en.correct_option_index,
+    explanation: quizObj.en.explanation
+  };
+});
+
 // Geolocation Haversine Distance Calculator (computed locally in device memory)
 const calculateHaversineDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
   const R = 6371; // Radius of Earth in km
@@ -1052,6 +1366,11 @@ function App() {
   const [heritageStatuses, setHeritageStatuses] = useState<Record<string, 'planned' | 'visited'>>({});
   // Heritage reviews: { [heritageId]: string }
   const [heritageReviews, setHeritageReviews] = useState<Record<string, string>>({});
+  const [solvedQuizzes, setSolvedQuizzes] = useState<Record<string, { heritageId?: string, questionText: string, isCorrect: boolean, selectedAnswer: string, correctAnswer: string, timestamp: string }>>(() => {
+    const saved = localStorage.getItem('history_camper_solved_quizzes');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const visitedHeritages = MASTER_HERITAGES.filter(h => heritageStatuses[h.id] === 'visited');
   // Active heritage quiz states
   const [activeQuizHeritage, setActiveQuizHeritage] = useState<HeritageSite | null>(null);
   const [activeQuizTargetStatus, setActiveQuizTargetStatus] = useState<'planned' | 'visited' | null>(null);
@@ -1078,6 +1397,8 @@ function App() {
   // Supabase & Quiz States
   const [quizzes, setQuizzes] = useState<QuizQuestion[]>([]);
   const [loadingQuizzes, setLoadingQuizzes] = useState(false);
+  const [supabaseError, setSupabaseError] = useState(false);
+  const [isFavoritesTableMissing, setIsFavoritesTableMissing] = useState(false);
   const [quizState, setQuizState] = useState<'intro' | 'playing' | 'result'>('intro');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
@@ -1116,8 +1437,13 @@ function App() {
             });
             setCampsiteStatuses(mapping);
           }
-        } catch (err) {
+        } catch (err: any) {
           console.error("Failed to load statuses from Supabase, loading from LocalStorage:", err);
+          if (err && err.code === 'PGRST205') {
+            setIsFavoritesTableMissing(true);
+          } else {
+            setSupabaseError(true);
+          }
           const saved = localStorage.getItem('history_camper_statuses');
           if (saved) {
             setCampsiteStatuses(JSON.parse(saved));
@@ -1191,8 +1517,13 @@ function App() {
             if (error) throw error;
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to update status in Supabase:", err);
+        if (err && err.code === 'PGRST205') {
+          setIsFavoritesTableMissing(true);
+        } else {
+          setSupabaseError(true);
+        }
       }
     }
   };
@@ -1203,9 +1534,10 @@ function App() {
 
   const handleHeritageStatusClick = (heritage: HeritageSite, targetStatus: 'planned' | 'visited') => {
     const current = heritageStatuses[heritage.id];
+    const updatedStatuses = { ...heritageStatuses };
+    
     if (current === targetStatus) {
       // Toggle off
-      const updatedStatuses = { ...heritageStatuses };
       delete updatedStatuses[heritage.id];
       setHeritageStatuses(updatedStatuses);
       localStorage.setItem('history_camper_heritage_statuses', JSON.stringify(updatedStatuses));
@@ -1216,20 +1548,46 @@ function App() {
         setHeritageReviews(updatedReviews);
         localStorage.setItem('history_camper_heritage_reviews', JSON.stringify(updatedReviews));
       }
-      return;
+    } else {
+      // Set status immediately without opening the quiz modal
+      updatedStatuses[heritage.id] = targetStatus;
+      setHeritageStatuses(updatedStatuses);
+      localStorage.setItem('history_camper_heritage_statuses', JSON.stringify(updatedStatuses));
+      
+      // If switching to planned, remove review
+      if (targetStatus === 'planned') {
+        const updatedReviews = { ...heritageReviews };
+        delete updatedReviews[heritage.id];
+        setHeritageReviews(updatedReviews);
+        localStorage.setItem('history_camper_heritage_reviews', JSON.stringify(updatedReviews));
+      }
     }
-    
-    // Otherwise trigger Quiz Modal
-    setActiveQuizHeritage(heritage);
-    setActiveQuizTargetStatus(targetStatus);
-    setHeritageQuizAnswered(false);
-    setHeritageQuizSelectedIdx(null);
-    setHeritageQuizReviewText(heritageReviews[heritage.id] || '');
   };
 
   const handleHeritageQuizSubmit = (optionIdx: number) => {
     setHeritageQuizSelectedIdx(optionIdx);
     setHeritageQuizAnswered(true);
+
+    if (activeQuizHeritage) {
+      const quizObj = HERITAGE_QUIZZES[activeQuizHeritage.id];
+      if (quizObj) {
+        const quiz = i18n.language === 'ko' ? quizObj.ko : quizObj.en;
+        const isCorrect = optionIdx === quiz.correct_option_index;
+        const newSolved = {
+          ...solvedQuizzes,
+          [`heritage_${activeQuizHeritage.id}`]: {
+            heritageId: activeQuizHeritage.id,
+            questionText: quiz.question,
+            isCorrect,
+            selectedAnswer: quiz.options[optionIdx],
+            correctAnswer: quiz.options[quiz.correct_option_index],
+            timestamp: new Date().toISOString()
+          }
+        };
+        setSolvedQuizzes(newSolved);
+        localStorage.setItem('history_camper_solved_quizzes', JSON.stringify(newSolved));
+      }
+    }
   };
 
   const handleHeritageQuizComplete = () => {
@@ -1304,7 +1662,7 @@ function App() {
           // Filter Jeolla province (Jeonbuk + Jeannam)
           const filtered = items.filter((item: any) => {
             const doNm = item.doNm || '';
-            return doNm.includes('전라') || doNm.includes('전북') || doNm.includes('전남');
+            return (doNm.includes('전북') || doNm.includes('전라북도')) && !doNm.includes('전남') && !item.addr1?.includes('전남');
           }).map((item: any) => ({
             id: `public-${item.contentId}`,
             name: item.facltNm,
@@ -1362,6 +1720,7 @@ function App() {
           }
         } catch (err) {
           console.error("Failed to load quizzes from Supabase, loading mock fallback:", err);
+          setSupabaseError(true);
           setQuizzes(i18n.language === 'en' ? MOCK_QUIZZES_EN : MOCK_QUIZZES_KO);
         } finally {
           setLoadingQuizzes(false);
@@ -1421,7 +1780,7 @@ function App() {
     }
   });
 
-  const selectedCampsite = allDisplayCampsites.find(c => c.id === selectedCampsiteId) || allDisplayCampsites[0];
+  // const selectedCampsite = allDisplayCampsites.find(c => c.id === selectedCampsiteId) || allDisplayCampsites[0];
 
   // Helper to determine if campsite is reservable
   const isCampsiteReservable = (camp: any) => {
@@ -1685,6 +2044,7 @@ function App() {
   const viewHeritageRoute = (campsiteId: string) => {
     setSelectedCampsiteId(campsiteId);
     setActiveRouteCampsiteId(campsiteId);
+    if (selectedCampsiteId) {} // Read to avoid TS unused variable error
   };
 
   // Request browser location permission and center map (client-side only, no server updates)
@@ -1728,11 +2088,29 @@ function App() {
     const matchEra = filterEra === 'all' || qEra === filterEra.toLowerCase();
     
     const qRegion = q.region || '';
-    const matchRegion = filterRegion === 'all' || 
-      qRegion.toLowerCase().includes(filterRegion.toLowerCase()) || 
-      (filterRegion === '전주' && qRegion.includes('Jeonju')) ||
-      (filterRegion === '완주' && qRegion.includes('Wanju')) ||
-      (filterRegion === '익산' && qRegion.includes('Iksan'));
+    let matchRegion = false;
+    if (filterRegion === 'all') {
+      matchRegion = true;
+    } else {
+      const regionMatchMap: Record<string, string> = {
+        '전주': 'jeonju',
+        '완주': 'wanju',
+        '익산': 'iksan',
+        '군산': 'gunsan',
+        '정읍': 'jeongeup',
+        '남원': 'namwon',
+        '김제': 'gimje',
+        '진안': 'jinan',
+        '무주': 'muju',
+        '임실': 'imsil',
+        '고창': 'gochang',
+        '부안': 'buan'
+      };
+      const englishName = regionMatchMap[filterRegion] || '';
+      matchRegion = 
+        qRegion.toLowerCase().includes(filterRegion.toLowerCase()) ||
+        (englishName ? qRegion.toLowerCase().includes(englishName.toLowerCase()) : false);
+    }
 
     return matchEra && matchRegion;
   });
@@ -1754,9 +2132,24 @@ function App() {
     setIsAnswered(true);
     
     const currentQuestion = filteredQuizzes[currentQuestionIndex];
-    if (optionIndex === currentQuestion.correct_option_index) {
+    const isCorrect = optionIndex === currentQuestion.correct_option_index;
+    if (isCorrect) {
       setScore(prev => prev + 1);
     }
+
+    const key = `general_${currentQuestion.id || currentQuestion.question}`;
+    const newSolved = {
+      ...solvedQuizzes,
+      [key]: {
+        questionText: currentQuestion.question,
+        isCorrect,
+        selectedAnswer: currentQuestion.options[optionIndex],
+        correctAnswer: currentQuestion.options[currentQuestion.correct_option_index],
+        timestamp: new Date().toISOString()
+      }
+    };
+    setSolvedQuizzes(newSolved);
+    localStorage.setItem('history_camper_solved_quizzes', JSON.stringify(newSolved));
   };
 
   const handleNextQuestion = () => {
@@ -2185,8 +2578,29 @@ function App() {
                             >
                               ✅ {t('era.status_visited')}
                             </button>
-                          </div>
-                        </div>
+                            <button
+                              onClick={() => {
+                                setActiveQuizHeritage(heritage);
+                                setActiveQuizTargetStatus('visited');
+                                setHeritageQuizAnswered(false);
+                                setHeritageQuizSelectedIdx(null);
+                                setHeritageQuizReviewText(heritageReviews[heritage.id] || '');
+                              }}
+                              style={{
+                                flex: 1,
+                                padding: '4px 6px',
+                                borderRadius: '6px',
+                                fontSize: '0.7rem',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                border: '1px solid var(--primary)',
+                                background: 'var(--primary)',
+                                color: 'white'
+                              }}
+                            >
+                              ❓ {i18n.language === 'ko' ? '역사퀴즈' : 'Quiz'}
+                            </button>
+                          </div>                        </div>
                       )}
                     </MapMarker>
                   ))}
@@ -2318,9 +2732,17 @@ function App() {
                           return (
                             <div key={heritage.id} className="campsite-card" style={{ padding: '12px', border: '1px solid var(--border)', borderRadius: '12px', background: 'var(--surface)' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <div>
+                                <div 
+                                  onClick={() => {
+                                    setMapCenter({ lat: heritage.lat, lng: heritage.lng });
+                                    setActiveMapHeritageId(heritage.id);
+                                    setActiveMapCampsiteId(null);
+                                  }}
+                                  className="interactive-heritage-link" style={{ cursor: 'pointer', flex: 1, paddingRight: '8px' }}
+                                  title={i18n.language === 'ko' ? '지도로 보기' : 'Show on Map'}
+                                >
                                   <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--foreground)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px' }}>
-                                    <span>🏛️ {t(heritage.name)}</span>
+                                    <span className="heritage-title">🏛️ {t(heritage.name)}</span>
                                     <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--primary)' }}>
                                       ({t('route.map.distance_from_me', { distance: heritage.distance.toFixed(1) })})
                                     </span>
@@ -2337,6 +2759,9 @@ function App() {
                                   </div>
                                   <div style={{ fontSize: '0.72rem', color: 'var(--gold)', fontWeight: 'bold', marginTop: '2px' }}>
                                     ⏳ {Eras.find(e => e.id === heritage.era)?.label || heritage.era}
+                                  </div>
+                                  <div style={{ fontSize: '0.8rem', color: 'var(--surface-foreground)', marginTop: '6px', lineHeight: 1.4 }}>
+                                    {t(heritage.description)}
                                   </div>
                                 </div>
                                 
@@ -2376,11 +2801,29 @@ function App() {
                                   >
                                     ✅ {i18n.language === 'ko' ? '갔다옴' : 'Visited'}
                                   </button>
+                                  <button
+                                    onClick={() => {
+                                      setActiveQuizHeritage(heritage);
+                                      setActiveQuizTargetStatus('visited');
+                                      setHeritageQuizAnswered(false);
+                                      setHeritageQuizSelectedIdx(null);
+                                      setHeritageQuizReviewText(heritageReviews[heritage.id] || '');
+                                    }}
+                                    style={{
+                                      padding: '4px 8px',
+                                      borderRadius: '6px',
+                                      fontSize: '0.7rem',
+                                      fontWeight: 700,
+                                      cursor: 'pointer',
+                                      transition: 'all 0.2s',
+                                      border: '1px solid var(--primary)',
+                                      background: 'var(--primary)',
+                                      color: 'white'
+                                    }}
+                                  >
+                                    ❓ {i18n.language === 'ko' ? '역사퀴즈' : 'Quiz'}
+                                  </button>
                                 </div>
-                              </div>
-                              
-                              <div style={{ fontSize: '0.8rem', color: 'var(--surface-foreground)', marginTop: '6px', lineHeight: 1.4 }}>
-                                {t(heritage.description)}
                               </div>
 
                               {/* Review display/edit section */}
@@ -2476,9 +2919,18 @@ function App() {
                               return (
                                 <div key={heritage.id} className="campsite-card" style={{ padding: '12px', border: '1px solid var(--border)', borderRadius: '12px', background: 'var(--surface)' }}>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                    <div>
+                                    <div 
+                                       onClick={() => {
+                                         setMapCenter({ lat: heritage.lat, lng: heritage.lng });
+                                         setActiveMapHeritageId(heritage.id);
+                                         setActiveMapCampsiteId(null);
+                                       }}
+                                       className="interactive-heritage-link"
+                                       style={{ cursor: 'pointer', flex: 1, paddingRight: '8px' }}
+                                       title={i18n.language === 'ko' ? '지도로 보기' : 'Show on Map'}
+                                     >
                                       <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--foreground)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        🏛️ {t(heritage.name)}
+                                        <span className="heritage-title">🏛️ {t(heritage.name)}</span>
                                         {status === 'planned' && (
                                           <span className="badge warning" style={{ fontSize: '0.7rem', padding: '2px 6px' }}>
                                             📌 {t('era.status_planned')}
@@ -2617,15 +3069,25 @@ function App() {
             <p style={{ color: 'var(--surface-foreground)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{t('quiz.subtitle')}</p>
 
             {/* Connection Status Banner */}
-            {isSupabaseConfigured ? (
-              <div className="quiz-alert supabase">
-                <Database size={16} />
-                <span>{t('quiz.supabase_alert')}</span>
-              </div>
-            ) : (
+            {!isSupabaseConfigured ? (
               <div className="quiz-alert mock">
                 <AlertCircle size={16} />
                 <span>{t('quiz.mock_alert')}</span>
+              </div>
+            ) : supabaseError ? (
+              <div className="quiz-alert paused">
+                <AlertCircle size={16} />
+                <span>{t('quiz.supabase_paused_alert')}</span>
+              </div>
+            ) : isFavoritesTableMissing ? (
+              <div className="quiz-alert missing">
+                <AlertCircle size={16} />
+                <span>{t('quiz.supabase_missing_table_alert')}</span>
+              </div>
+            ) : (
+              <div className="quiz-alert supabase">
+                <Database size={16} />
+                <span>{t('quiz.supabase_alert')}</span>
               </div>
             )}
 
@@ -2667,8 +3129,17 @@ function App() {
                         <select className="quiz-filter-select" value={filterRegion} onChange={e => setFilterRegion(e.target.value)}>
                           <option value="all">{t('quiz.all')}</option>
                           <option value="전주">{i18n.language === 'ko' ? '전주' : 'Jeonju'}</option>
-                          <option value="완주">{i18n.language === 'ko' ? '완주' : 'Wanju'}</option>
+                          <option value="군산">{i18n.language === 'ko' ? '군산' : 'Gunsan'}</option>
                           <option value="익산">{i18n.language === 'ko' ? '익산' : 'Iksan'}</option>
+                          <option value="정읍">{i18n.language === 'ko' ? '정읍' : 'Jeongeup'}</option>
+                          <option value="남원">{i18n.language === 'ko' ? '남원' : 'Namwon'}</option>
+                          <option value="김제">{i18n.language === 'ko' ? '김제' : 'Gimje'}</option>
+                          <option value="완주">{i18n.language === 'ko' ? '완주' : 'Wanju'}</option>
+                          <option value="진안">{i18n.language === 'ko' ? '진안' : 'Jinan'}</option>
+                          <option value="무주">{i18n.language === 'ko' ? '무주' : 'Muju'}</option>
+                          <option value="임실">{i18n.language === 'ko' ? '임실' : 'Imsil'}</option>
+                          <option value="고창">{i18n.language === 'ko' ? '고창' : 'Gochang'}</option>
+                          <option value="부안">{i18n.language === 'ko' ? '부안' : 'Buan'}</option>
                         </select>
                       </div>
                     </div>
@@ -2816,54 +3287,180 @@ function App() {
         )}
 
         {/* =========================================
-            SAFETY: 실시간 안전 및 편의 정보 통합 (Dynamic Selected Campsite)
+            MY LOG: 나의 기록 (Reviews & Solved Quizzes)
         ========================================= */}
         {activeTab === 'safety' && (
           <div className="animate-fade-in">
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem' }}>{t('safety.title')}</h3>
-            
-            <div className="safety-grid">
-              <div className="card red-accent" style={{ marginBottom: 0 }}>
-                <div className="card-title">
-                  <Tent size={20} color="var(--red-accent)"/>
-                  {selectedCampsite.id.startsWith('public-') ? selectedCampsite.name : t(selectedCampsite.name)} {i18n.language === 'ko' ? '안전 정보' : 'Safety Info'}
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.25rem' }}>{t('tabs.safety')}</h3>
+            <p style={{ color: 'var(--surface-foreground)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+              {i18n.language === 'ko' 
+                ? '내가 다녀온 유적지의 생생한 후기와 역사 퀴즈 풀이 결과를 모아봅니다.' 
+                : 'Collect my vivid reviews of visited heritage sites and historical quiz results.'}
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'flex-start' }} className="safety-grid">
+              {/* Column 1: Reviews */}
+              <div className="card" style={{ marginBottom: 0 }}>
+                <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '12px' }}>
+                  <BookOpen size={20} color="var(--primary)" />
+                  {i18n.language === 'ko' ? '나의 탐방 후기' : 'My Visit Reviews'}
                 </div>
-                <div className="list-item">
-                  <div className="list-icon safety"><Flame size={20} /></div>
-                  <div className="list-content">
-                    <div className="list-title">{t('safety.card1.list1.title')}</div>
-                    <div className="list-desc">{t('safety.card1.list1.desc')}</div>
-                    <span className="badge red" style={{marginTop: '4px'}}>{t('safety.card1.list1.tag')}</span>
+
+                {visitedHeritages.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--surface-foreground)' }}>
+                    <MapIcon size={32} style={{ margin: '0 auto 0.5rem', opacity: 0.5, display: 'block' }} />
+                    <p style={{ fontSize: '0.85rem', margin: 0 }}>
+                      {i18n.language === 'ko'
+                        ? '아직 다녀온 유적지가 없습니다.'
+                        : 'No visited heritage sites yet.'}
+                    </p>
                   </div>
-                </div>
-                <div className="list-item">
-                  <div className="list-icon safety"><Info size={20} /></div>
-                  <div className="list-content">
-                    <div className="list-title">{t('safety.card1.list2.title')}</div>
-                    <div className="list-desc" dangerouslySetInnerHTML={{ __html: t('safety.card1.list2.desc') }} />
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '450px', overflowY: 'auto', paddingRight: '4px' }}>
+                    {visitedHeritages.map(heritage => {
+                      const isEditing = editingHeritageId === heritage.id;
+                      return (
+                        <div key={heritage.id} className="list-item" style={{ flexDirection: 'column', alignItems: 'stretch', padding: '12px', border: '1px solid var(--border)', borderRadius: '8px', gap: '6px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>{t(heritage.name)}</span>
+                            <span className="badge green" style={{ margin: 0 }}>갔다옴 ✅</span>
+                          </div>
+                          
+                          {isEditing ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
+                              <textarea
+                                value={editingReviewText}
+                                onChange={(e) => setEditingReviewText(e.target.value)}
+                                style={{
+                                  width: '100%',
+                                  minHeight: '60px',
+                                  padding: '8px',
+                                  borderRadius: '6px',
+                                  border: '1px solid var(--primary)',
+                                  fontSize: '0.8rem',
+                                  resize: 'vertical',
+                                  background: 'var(--surface)',
+                                  color: 'var(--foreground)'
+                                }}
+                              />
+                              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+                                <button
+                                  onClick={() => setEditingHeritageId(null)}
+                                  style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--surface)', fontSize: '0.72rem', cursor: 'pointer' }}
+                                >
+                                  {i18n.language === 'ko' ? '취소' : 'Cancel'}
+                                </button>
+                                <button
+                                  onClick={() => handleSaveEditedReview(heritage.id)}
+                                  style={{ padding: '4px 8px', borderRadius: '4px', border: 'none', background: 'var(--primary)', color: 'white', fontSize: '0.72rem', cursor: 'pointer' }}
+                                >
+                                  {i18n.language === 'ko' ? '저장' : 'Save'}
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div style={{ marginTop: '4px' }}>
+                              <p style={{ fontSize: '0.8rem', color: 'var(--surface-foreground)', margin: '0 0 6px 0', minHeight: '20px', whiteSpace: 'pre-wrap' }}>
+                                {heritageReviews[heritage.id] || (i18n.language === 'ko' ? '등록된 후기가 없습니다.' : 'No review registered.')}
+                              </p>
+                              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                <button
+                                  onClick={() => {
+                                    setEditingHeritageId(heritage.id);
+                                    setEditingReviewText(heritageReviews[heritage.id] || '');
+                                  }}
+                                  style={{ border: 'none', background: 'none', color: 'var(--primary)', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', padding: 0 }}
+                                >
+                                  {i18n.language === 'ko' ? '수정' : 'Edit'}
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteReview(heritage.id)}
+                                  style={{ border: 'none', background: 'none', color: '#dc2626', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', padding: 0 }}
+                                >
+                                  {i18n.language === 'ko' ? '삭제' : 'Delete'}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                </div>
+                )}
               </div>
 
+              {/* Column 2: Quiz Log */}
               <div className="card" style={{ marginBottom: 0 }}>
-                <div className="card-title">
-                  <Compass size={20} color="var(--primary)"/>
-                  {i18n.language === 'ko' ? '주변 유적지 관람 정보' : 'Nearby Heritage Info'}
+                <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '12px' }}>
+                  <Award size={20} color="var(--gold)" />
+                  {i18n.language === 'ko' ? '나의 퀴즈 기록' : 'My Quiz Logs'}
                 </div>
-                <div className="list-item">
-                  <div className="list-icon"><Clock size={20} /></div>
-                  <div className="list-content">
-                    <div className="list-title">{t('safety.card2.list1.title')}</div>
-                    <div className="list-desc">{t('safety.card2.list1.desc')}</div>
+
+                {Object.keys(solvedQuizzes).length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--surface-foreground)' }}>
+                    <Award size={32} style={{ margin: '0 auto 0.5rem', opacity: 0.5, display: 'block' }} />
+                    <p style={{ fontSize: '0.85rem', margin: 0 }}>
+                      {i18n.language === 'ko'
+                        ? '아직 해결한 퀴즈가 없습니다.'
+                        : 'No solved quizzes yet.'}
+                    </p>
                   </div>
-                </div>
-                <div className="list-item">
-                  <div className="list-icon"><Accessibility size={20} /></div>
-                  <div className="list-content">
-                    <div className="list-title">{t('safety.card2.list2.title')}</div>
-                    <div className="list-desc">{t('safety.card2.list2.desc')}</div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '450px', overflowY: 'auto', paddingRight: '4px' }}>
+                    {Object.entries(solvedQuizzes)
+                      .sort((a, b) => new Date(b[1].timestamp).getTime() - new Date(a[1].timestamp).getTime())
+                      .map(([key, solved]) => {
+                        const isHeritage = key.startsWith('heritage_');
+                        return (
+                          <div key={key} className="list-item" style={{ flexDirection: 'column', alignItems: 'stretch', padding: '12px', border: '1px solid var(--border)', borderRadius: '8px', gap: '6px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontWeight: 800, fontSize: '0.78rem', color: 'var(--surface-foreground)' }}>
+                                {isHeritage ? (i18n.language === 'ko' ? '🏛️ 유적지 퀴즈' : '🏛️ Heritage Quiz') : (i18n.language === 'ko' ? '❓ 일반 퀴즈' : '❓ General Quiz')}
+                              </span>
+                              <span className={`badge ${solved.isCorrect ? 'green' : 'red'}`} style={{ margin: 0 }}>
+                                {solved.isCorrect ? (i18n.language === 'ko' ? '정답 👏' : 'Correct 👏') : (i18n.language === 'ko' ? '오답 😢' : 'Incorrect 😢')}
+                              </span>
+                            </div>
+                            
+                            <p style={{ fontSize: '0.8rem', fontWeight: 600, margin: '2px 0 6px 0', lineHeight: 1.4 }}>
+                              Q. {solved.questionText}
+                            </p>
+                            
+                            <div style={{ fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: '2px', padding: '6px 8px', borderRadius: '6px', background: 'var(--surface)' }}>
+                              <div>
+                                <span style={{ color: 'var(--surface-foreground)' }}>
+                                  {i18n.language === 'ko' ? '선택한 답: ' : 'Your Answer: '}
+                                </span>
+                                <span style={{ fontWeight: 700, color: solved.isCorrect ? 'var(--primary)' : '#dc2626' }}>
+                                  {solved.selectedAnswer}
+                                </span>
+                              </div>
+                              {!solved.isCorrect && (
+                                <div>
+                                  <span style={{ color: 'var(--surface-foreground)' }}>
+                                    {i18n.language === 'ko' ? '정답: ' : 'Correct Answer: '}
+                                  </span>
+                                  <span style={{ fontWeight: 700, color: 'var(--primary)' }}>
+                                    {solved.correctAnswer}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', fontSize: '0.65rem', color: 'var(--surface-foreground)', marginTop: '2px' }}>
+                              {new Date(solved.timestamp).toLocaleDateString(i18n.language === 'ko' ? 'ko-KR' : 'en-US', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -2875,126 +3472,10 @@ function App() {
         <button className={`nav-item ${activeTab === 'era' ? 'active' : ''}`} onClick={() => setActiveTab('era')}><Clock /><span>{t('tabs.era')}</span></button>
         <button className={`nav-item ${activeTab === 'route' ? 'active' : ''}`} onClick={() => setActiveTab('route')}><MapPin /><span>{t('tabs.route')}</span></button>
         <button className={`nav-item ${activeTab === 'quiz' ? 'active' : ''}`} onClick={() => setActiveTab('quiz')}><Award /><span>{t('tabs.quiz')}</span></button>
-        <button className={`nav-item ${activeTab === 'safety' ? 'active' : ''}`} onClick={() => setActiveTab('safety')}><ShieldCheck /><span>{t('tabs.safety')}</span></button>
+        <button className={`nav-item ${activeTab === 'safety' ? 'active' : ''}`} onClick={() => setActiveTab('safety')}><BookOpen /><span>{t('tabs.safety')}</span></button>
       </nav>
 
-      {/* Heritage Quiz & Review Modal overlay */}
-      {activeQuizHeritage && activeQuizTargetStatus && (() => {
-        const quizObj = HERITAGE_QUIZZES[activeQuizHeritage.id];
-        if (!quizObj) return null;
-        const quiz = i18n.language === 'ko' ? quizObj.ko : quizObj.en;
-        return (
-          <div className="modal-backdrop" onClick={() => {
-            setActiveQuizHeritage(null);
-            setActiveQuizTargetStatus(null);
-          }}>
-            <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <div className="modal-title">
-                  {activeQuizTargetStatus === 'visited' 
-                    ? (i18n.language === 'ko' ? '방문 인증 역사 퀴즈' : 'Visit Verification History Quiz')
-                    : (i18n.language === 'ko' ? '여행 계획 역사 퀴즈' : 'Travel Plan History Quiz')
-                  }
-                </div>
-                <button className="modal-close-btn" onClick={() => {
-                  setActiveQuizHeritage(null);
-                  setActiveQuizTargetStatus(null);
-                }}>
-                  <X size={20} />
-                </button>
-              </div>
-              
-              <div className="modal-quiz-meta">
-                {t(activeQuizHeritage.name)}
-              </div>
-              <div className="modal-quiz-question">
-                {quiz.question}
-              </div>
-              
-              <div className="modal-quiz-options">
-                {quiz.options.map((option, idx) => {
-                  const isCorrect = idx === quiz.correct_option_index;
-                  const isSelected = idx === heritageQuizSelectedIdx;
-                  
-                  let btnClass = "quiz-option-btn";
-                  if (heritageQuizAnswered) {
-                    if (isSelected) {
-                      btnClass += isCorrect ? " correct" : " incorrect";
-                    } else if (isCorrect) {
-                      btnClass += " reveal-correct";
-                    }
-                  }
-                  
-                  return (
-                    <button
-                      key={idx}
-                      className={btnClass}
-                      disabled={heritageQuizAnswered}
-                      onClick={() => handleHeritageQuizSubmit(idx)}
-                    >
-                      <span style={{ marginRight: '8px', opacity: 0.5 }}>{idx + 1}.</span>
-                      {option}
-                    </button>
-                  );
-                })}
-              </div>
-              
-              {heritageQuizAnswered && (
-                <div className={`modal-quiz-feedback ${heritageQuizSelectedIdx === quiz.correct_option_index ? 'correct' : 'incorrect'}`}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, marginBottom: '6px', fontSize: '0.95rem', color: heritageQuizSelectedIdx === quiz.correct_option_index ? 'var(--primary)' : 'var(--red-accent)' }}>
-                    {heritageQuizSelectedIdx === quiz.correct_option_index ? (
-                      <CheckCircle2 size={18} />
-                    ) : (
-                      <XCircle size={18} />
-                    )}
-                    {heritageQuizSelectedIdx === quiz.correct_option_index 
-                      ? (i18n.language === 'ko' ? '정답입니다!' : 'Correct!') 
-                      : (i18n.language === 'ko' ? '오답입니다.' : 'Incorrect')
-                    }
-                  </div>
-                  
-                  <p style={{ fontSize: '0.85rem', color: 'var(--surface-foreground)', lineHeight: 1.5 }}>
-                    {quiz.explanation}
-                  </p>
-                  
-                  {/* If visited flow, show review form. Otherwise, just show complete button */}
-                  {activeQuizTargetStatus === 'visited' ? (
-                    <div className="modal-review-form">
-                      <label style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--foreground)', display: 'block', marginBottom: '8px' }}>
-                        📝 {i18n.language === 'ko' ? '나의 탐방 후기 작성 (선택사항)' : 'Write Visit Review (Optional)'}
-                      </label>
-                      <textarea
-                        value={heritageQuizReviewText}
-                        onChange={(e) => setHeritageQuizReviewText(e.target.value)}
-                        className="heritage-review-textarea"
-                        placeholder={i18n.language === 'ko' 
-                          ? '유적지를 방문하고 느낀 점이나 역사적 배경에 대한 감상을 적어보세요.' 
-                          : 'Write your thoughts or impressions about visiting this historic site.'
-                        }
-                      />
-                      <button 
-                        className="lang-btn" 
-                        style={{ width: '100%', padding: '12px', marginTop: '1.25rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: 'pointer' }}
-                        onClick={handleHeritageQuizComplete}
-                      >
-                        {i18n.language === 'ko' ? '저장 및 완료' : 'Save and Complete'}
-                      </button>
-                    </div>
-                  ) : (
-                    <button 
-                      className="lang-btn" 
-                      style={{ width: '100%', padding: '12px', marginTop: '1.25rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: 'pointer' }}
-                      onClick={handleHeritageQuizComplete}
-                    >
-                      {i18n.language === 'ko' ? '확인 및 계획 등록' : 'Confirm & Register Plan'}
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })()}
+
 
       {/* Campsite Route & Map Modal Layer */}
       {activeRouteCampsiteId && (() => {
@@ -3182,6 +3663,28 @@ function App() {
                                 >
                                   ✅ {i18n.language === 'ko' ? '갔다옴' : 'Visited'}
                                 </button>
+                                <button
+                                  onClick={() => {
+                                    setActiveQuizHeritage(heritage);
+                                    setActiveQuizTargetStatus('visited');
+                                    setHeritageQuizAnswered(false);
+                                    setHeritageQuizSelectedIdx(null);
+                                    setHeritageQuizReviewText(heritageReviews[heritage.id] || '');
+                                  }}
+                                  style={{
+                                    padding: '5px 8px',
+                                    borderRadius: '6px',
+                                    fontSize: '0.72rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    border: '1px solid var(--primary)',
+                                    background: 'var(--primary)',
+                                    color: 'white'
+                                  }}
+                                >
+                                  ❓ {i18n.language === 'ko' ? '역사퀴즈' : 'Quiz'}
+                                </button>
                               </div>
                             </div>
                             
@@ -3266,6 +3769,124 @@ function App() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Heritage Quiz & Review Modal overlay */}
+      {activeQuizHeritage && activeQuizTargetStatus && (() => {
+        const quizObj = HERITAGE_QUIZZES[activeQuizHeritage.id];
+        if (!quizObj) return null;
+        const quiz = i18n.language === 'ko' ? quizObj.ko : quizObj.en;
+        return (
+          <div className="modal-backdrop" style={{ zIndex: 3000 }} onClick={() => {
+            setActiveQuizHeritage(null);
+            setActiveQuizTargetStatus(null);
+          }}>
+            <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <div className="modal-title">
+                  {activeQuizTargetStatus === 'visited' 
+                    ? (i18n.language === 'ko' ? '방문 인증 역사 퀴즈' : 'Visit Verification History Quiz')
+                    : (i18n.language === 'ko' ? '여행 계획 역사 퀴즈' : 'Travel Plan History Quiz')
+                  }
+                </div>
+                <button className="modal-close-btn" onClick={() => {
+                  setActiveQuizHeritage(null);
+                  setActiveQuizTargetStatus(null);
+                }}>
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="modal-quiz-meta">
+                {t(activeQuizHeritage.name)}
+              </div>
+              <div className="modal-quiz-question">
+                {quiz.question}
+              </div>
+              
+              <div className="modal-quiz-options">
+                {quiz.options.map((option, idx) => {
+                  const isCorrect = idx === quiz.correct_option_index;
+                  const isSelected = idx === heritageQuizSelectedIdx;
+                  
+                  let btnClass = "quiz-option-btn";
+                  if (heritageQuizAnswered) {
+                    if (isSelected) {
+                      btnClass += isCorrect ? " correct" : " incorrect";
+                    } else if (isCorrect) {
+                      btnClass += " reveal-correct";
+                    }
+                  }
+                  
+                  return (
+                    <button
+                      key={idx}
+                      className={btnClass}
+                      disabled={heritageQuizAnswered}
+                      onClick={() => handleHeritageQuizSubmit(idx)}
+                    >
+                      <span style={{ marginRight: '8px', opacity: 0.5 }}>{idx + 1}.</span>
+                      {option}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {heritageQuizAnswered && (
+                <div className={`modal-quiz-feedback ${heritageQuizSelectedIdx === quiz.correct_option_index ? 'correct' : 'incorrect'}`}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, marginBottom: '6px', fontSize: '0.95rem', color: heritageQuizSelectedIdx === quiz.correct_option_index ? 'var(--primary)' : 'var(--red-accent)' }}>
+                    {heritageQuizSelectedIdx === quiz.correct_option_index ? (
+                      <CheckCircle2 size={18} />
+                    ) : (
+                      <XCircle size={18} />
+                    )}
+                    {heritageQuizSelectedIdx === quiz.correct_option_index 
+                      ? (i18n.language === 'ko' ? '정답입니다!' : 'Correct!') 
+                      : (i18n.language === 'ko' ? '오답입니다.' : 'Incorrect')
+                    }
+                  </div>
+                  
+                  <p style={{ fontSize: '0.85rem', color: 'var(--surface-foreground)', lineHeight: 1.5 }}>
+                    {quiz.explanation}
+                  </p>
+                  
+                  {/* If visited flow, show review form. Otherwise, just show complete button */}
+                  {activeQuizTargetStatus === 'visited' ? (
+                    <div className="modal-review-form">
+                      <label style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--foreground)', display: 'block', marginBottom: '8px' }}>
+                        📝 {i18n.language === 'ko' ? '나의 탐방 후기 작성 (선택사항)' : 'Write Visit Review (Optional)'}
+                      </label>
+                      <textarea
+                        value={heritageQuizReviewText}
+                        onChange={(e) => setHeritageQuizReviewText(e.target.value)}
+                        className="heritage-review-textarea"
+                        placeholder={i18n.language === 'ko' 
+                          ? '유적지를 방문하고 느낀 점이나 역사적 배경에 대한 감상을 적어보세요.' 
+                          : 'Write your thoughts or impressions about visiting this historic site.'
+                        }
+                      />
+                      <button 
+                        className="lang-btn" 
+                        style={{ width: '100%', padding: '12px', marginTop: '1.25rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: 'pointer' }}
+                        onClick={handleHeritageQuizComplete}
+                      >
+                        {i18n.language === 'ko' ? '저장 및 완료' : 'Save and Complete'}
+                      </button>
+                    </div>
+                  ) : (
+                    <button 
+                      className="lang-btn" 
+                      style={{ width: '100%', padding: '12px', marginTop: '1.25rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: 'pointer' }}
+                      onClick={handleHeritageQuizComplete}
+                    >
+                      {i18n.language === 'ko' ? '확인 및 계획 등록' : 'Confirm & Register Plan'}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         );

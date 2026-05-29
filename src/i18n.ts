@@ -11,7 +11,7 @@ const resources = {
         home: "큐레이션",
         era: "역사캠핑지",
         route: "역사지도",
-        safety: "안전·편의",
+        safety: "나의 기록",
         quiz: "역사퀴즈"
       },
       home: {
@@ -106,7 +106,63 @@ const resources = {
         }
       },
       heritages: {
-        songgwangsa: {
+                        maisan_tapsa: {
+          name: "진안 마이산 탑사",
+          desc: "기이한 모양 of 돌탑들이 거센 비바람에도 무너지지 않고 보존된 마이산의 신비로운 탑사"
+        },
+        jeonju_hyanggyo: {
+          name: "전주향교",
+          desc: "조선 시대 지방 교육기관으로 웅장한 대성전과 오래된 은행나무들이 조화를 이루는 곳"
+        },
+        hwangtojae: {
+          name: "정읍 황토현 전적지",
+          desc: "1894년 동학농민군이 관군을 상대로 첫 대승을 거두어 혁명의 불씨를 당긴 역사적 격전지"
+        },
+        seonunsa: {
+          name: "고창 선운사",
+          desc: "아름다운 동백나무 숲과 금동지장보살좌상을 소장한 도솔산 자락의 천년고찰"
+        },
+        maninui_chong: {
+          name: "남원 만인의총",
+          desc: "정유재란 당시 남원성 전투에서 왜군에 맞서 싸우다 순절한 호국영령들을 모신 공동묘역이자 사당"
+        },
+        hwaamsa: {
+          name: "완주 화암사",
+          desc: "한국에서 유일하게 지붕 처마를 받치는 하앙(下昂) 구조가 남아있는 국보 극락전의 천년사찰"
+        },
+museongseowon: {
+          name: "정읍 무성서원",
+          desc: "유네스코 세계문화유산으로 등재된 조선시대의 대표적인 서원"
+        },
+        naesosa: {
+          name: "부안 내소사",
+          desc: "아름다운 전나무 숲길과 정교한 대웅보전 조각을 간직한 천년고찰"
+        },
+        byeokgolje: {
+          name: "김제 벽골제",
+          desc: "백제 시대에 축조된 한국 역사상 가장 오래된 대표적인 고대 수리시설"
+        },
+        jeoksangsanseong: {
+          name: "무주 적상산성",
+          desc: "조선왕조실록을 보관하던 적상산 사고지가 있던 요새성곽"
+        },
+        pihyangjeong: {
+          name: "정읍 피향정",
+          desc: "호남에서 가장 아름다운 누각으로 꼽히는 조선시대의 대표 정자"
+        },
+        silsangsa: {
+          name: "남원 실상사",
+          desc: "지리산 자락에 위치한 천년고찰로 수많은 국보와 보물을 소장한 유적"
+        },
+        ssangneung: {
+          name: "익산 쌍릉",
+          desc: "백제 무왕과 선화공주의 묘로 추정되는 고대 왕릉 유적"
+        },
+        sangiam: {
+          name: "임실 상이암",
+          desc: "고려 태조 왕건과 조선 태조 이성계가 기도를 올려 건국을 이룬 암자"
+        },
+songgwangsa: {
           name: "완주 송광사",
           desc: "조선시대의 대웅전 보물과 아름다운 벚꽃길을 지닌 유서 깊은 사찰"
         },
@@ -278,6 +334,8 @@ const resources = {
         incorrect: "아쉽게도 틀렸습니다. 😢",
         mock_alert: "💡 현재 모의(Mock) 데이터로 퀴즈를 구동 중입니다. 프로젝트 루트에 .env 파일을 만들고 Supabase 키를 추가하면 실시간 DB로 연동됩니다.",
         supabase_alert: "✅ Supabase 실시간 데이터베이스 연동 완료! 퀴즈 데이터를 클라우드에서 실시간으로 불러오는 중입니다.",
+        supabase_paused_alert: "⚠️ Supabase 연결에 실패하여 오프라인 모드로 자동 전환되었습니다. (Supabase 프로젝트가 일시 정지(Paused) 상태일 수 있습니다. Supabase 대시보드에서 'Resume Project'를 실행해 보세요.)",
+        supabase_missing_table_alert: "⚠️ Supabase 연결 완료 (하지만 favorites 테이블이 데이터베이스에 존재하지 않아, 갔다옴/갈예정 데이터는 기기 로컬 저장소에 저장 중입니다. Supabase 대시보드의 SQL Editor에서 favorites 테이블을 생성해 주세요.)",
         era_select: "시대 선택",
         region_select: "지역 선택",
         all: "전체"
@@ -293,7 +351,7 @@ const resources = {
         home: "Curation",
         era: "History Campsites",
         route: "History Map",
-        safety: "Safety Info",
+        safety: "My Log",
         quiz: "History Quiz"
       },
       home: {
@@ -388,7 +446,63 @@ const resources = {
         }
       },
       heritages: {
-        songgwangsa: {
+                        maisan_tapsa: {
+          name: "Jinan Maisan Tapsa Temple",
+          desc: "A mysterious temple on Mt. Maisan where uniquely shaped stone pagodas stand firm without collapsing against strong winds."
+        },
+        jeonju_hyanggyo: {
+          name: "Jeonju Hyanggyo Local School",
+          desc: "A local educational institution of the Joseon Dynasty, featuring a grand Daeseongjeon hall and ancient ginkgo trees."
+        },
+        hwangtojae: {
+          name: "Jeongeup Hwangtojae Battleground",
+          desc: "The historic battlefield where the Donghak Peasant Army won its first major victory against the government forces in 1894."
+        },
+        seonunsa: {
+          name: "Gochang Seonunsa Temple",
+          desc: "A thousand-year-old temple at the foot of Mt. Dosolsan, famous for its camellia forest and Gilt-bronze Ksitigarbha Bodhisattva."
+        },
+        maninui_chong: {
+          name: "Namwon Maninui Chong Shrine",
+          desc: "The tomb and shrine for the patriotic soldiers and citizens who died defending Namwon Castle during the 1597 Japanese invasion."
+        },
+        hwaamsa: {
+          name: "Wanju Hwaamsa Temple",
+          desc: "A thousand-year-old temple housing the National Treasure Geungnakjeon, which features Korea's only remaining Haang architectural structure."
+        },
+museongseowon: {
+          name: "Jeongeup Museongseowon",
+          desc: "A representative Confucian academy of the Joseon Dynasty, registered as a UNESCO World Heritage Site."
+        },
+        naesosa: {
+          name: "Buan Naesosa Temple",
+          desc: "A millennium-old temple famous for its beautiful fir tree forest path and exquisite wooden carvings."
+        },
+        byeokgolje: {
+          name: "Gimje Byeokgolje",
+          desc: "Korea's oldest ancient reservoir embankment built during the Baekje Dynasty."
+        },
+        jeoksangsanseong: {
+          name: "Muju Jeoksangsanseong Fortress",
+          desc: "A mountain fortress that housed the royal archives storing the Joseon Dynasty's royal annals."
+        },
+        pihyangjeong: {
+          name: "Jeongeup Pihyangjeong Pavilion",
+          desc: "A Joseon Dynasty pavilion widely regarded as the finest historic pavilion in the Honam region."
+        },
+        silsangsa: {
+          name: "Namwon Silsangsa Temple",
+          desc: "A historic temple on Mount Jirisan housing multiple national treasures and ancient pagodas."
+        },
+        ssangneung: {
+          name: "Iksan Ssangneung Royal Tombs",
+          desc: "Ancient twin royal tombs of the Baekje Dynasty, believed to belong to King Mu and Queen Seonhwa."
+        },
+        sangiam: {
+          name: "Imsil Sangiam Hermitage",
+          desc: "A historical hermitage where both Goryeo founder Wang Geon and Joseon founder Yi Seong-gye prayed for dynastic foundation."
+        },
+songgwangsa: {
           name: "Wanju Songgwangsa Temple",
           desc: "A historic temple featuring Joseon era treasures and beautiful cherry blossom paths."
         },
@@ -560,6 +674,8 @@ const resources = {
         incorrect: "Incorrect. 😢",
         mock_alert: "💡 Running on mock data. Create a .env file in the root and add Supabase keys to load quizzes from your cloud database.",
         supabase_alert: "✅ Connected to Supabase! Quizzes are synchronized from the cloud in real-time.",
+        supabase_paused_alert: "⚠️ Failed to connect to Supabase. Switched to offline mode. (Your Supabase project might be paused. Please visit the Supabase dashboard and run 'Resume Project'.)",
+        supabase_missing_table_alert: "⚠️ Supabase Connected (However, the 'favorites' table does not exist in your database. Planned/visited statuses are saved in your browser's localStorage. Please create the 'favorites' table in the Supabase SQL Editor.)",
         era_select: "Select Era",
         region_select: "Select Region",
         all: "All"

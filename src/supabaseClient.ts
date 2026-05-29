@@ -1,6 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
+let rawUrl = import.meta.env.VITE_SUPABASE_URL || ''
+if (rawUrl.endsWith('/rest/v1/')) {
+  rawUrl = rawUrl.slice(0, -9);
+} else if (rawUrl.endsWith('/rest/v1')) {
+  rawUrl = rawUrl.slice(0, -8);
+}
+const supabaseUrl = rawUrl;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
 // Check if credentials are set and not the default placeholder

@@ -589,6 +589,16 @@ body {
   border: 1px solid rgba(22, 101, 52, 0.15);
   color: var(--primary);
 }
+.quiz-alert.paused {
+  background: rgba(185, 28, 28, 0.06);
+  border: 1px solid rgba(185, 28, 28, 0.15);
+  color: var(--red-accent);
+}
+.quiz-alert.missing {
+  background: rgba(217, 119, 6, 0.06);
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  color: #b45309;
+}
 
 /* Heritage Quiz Modal & Reviews */
 .heritage-review-box {
@@ -774,3 +784,23 @@ body {
   }
 }
 
+
+
+/* Interactive Heritage List Items Hover States */
+.interactive-heritage-link {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 6px;
+  margin: -6px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+.interactive-heritage-link:hover {
+  background: rgba(22, 101, 52, 0.04);
+  border-color: rgba(22, 101, 52, 0.15);
+  box-shadow: 0 4px 12px rgba(22, 101, 52, 0.05);
+}
+.interactive-heritage-link:hover .heritage-title {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
