@@ -1,0 +1,16 @@
+{
+  "short_name": "전북역사캠퍼",
+  "name": "전북역사캠퍼",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#166534",
+  "background_color": "#ffffff"
+}
