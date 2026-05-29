@@ -3548,14 +3548,14 @@ function App() {
 
                 {/* Timeline Info Panel */}
                 <div className="card gold-accent route-info-container" style={{ marginBottom: 0 }}>
-                  <div className="card-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div className="card-title route-card-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <MapPin size={20} color="var(--gold)"/>
                       {t('route.card.title', { campsiteName: campsite.id.startsWith('public-') ? campsite.name : t(campsite.name) })}
                     </div>
                     
                     {/* Campsite statuses planned/visited toggle */}
-                    <div style={{ display: 'flex', gap: '4px' }}>
+                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                       <button
                         onClick={() => toggleStatus(campsite.id, 'planned')}
                         style={{
@@ -3566,7 +3566,8 @@ function App() {
                           borderRadius: '6px',
                           fontSize: '0.75rem',
                           cursor: 'pointer',
-                          fontWeight: 'bold'
+                          fontWeight: 'bold',
+                          whiteSpace: 'nowrap'
                         }}
                       >
                         📌 {t('era.status_planned')}
@@ -3581,7 +3582,8 @@ function App() {
                           borderRadius: '6px',
                           fontSize: '0.75rem',
                           cursor: 'pointer',
-                          fontWeight: 'bold'
+                          fontWeight: 'bold',
+                          whiteSpace: 'nowrap'
                         }}
                       >
                         ✅ {t('era.status_visited')}
@@ -3614,7 +3616,7 @@ function App() {
                             background: heritageStatuses[heritage.id] === 'visited' ? 'var(--primary)' : (heritageStatuses[heritage.id] === 'planned' ? 'var(--gold)' : 'var(--border)')
                           }}></div>
                           <div className="timeline-content">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                            <div className="timeline-header">
                               <div>
                                 <div className="time">
                                   {index === 0 ? "DAY 1 - 16:00" : `DAY 2 - 10:00`}
@@ -3634,7 +3636,7 @@ function App() {
                                 </div>
                               </div>
                               
-                              <div style={{ display: 'flex', gap: '6px' }}>
+                              <div className="timeline-buttons">
                                 <button
                                   onClick={() => handleHeritageStatusClick(heritage, 'planned')}
                                   style={{
@@ -3645,7 +3647,8 @@ function App() {
                                     cursor: 'pointer',
                                     border: heritageStatuses[heritage.id] === 'planned' ? '1px solid var(--gold)' : '1px solid var(--border)',
                                     background: heritageStatuses[heritage.id] === 'planned' ? 'rgba(217, 119, 6, 0.08)' : 'var(--surface)',
-                                    color: heritageStatuses[heritage.id] === 'planned' ? 'var(--gold)' : 'var(--surface-foreground)'
+                                    color: heritageStatuses[heritage.id] === 'planned' ? 'var(--gold)' : 'var(--surface-foreground)',
+                                    whiteSpace: 'nowrap'
                                   }}
                                 >
                                   📌 {i18n.language === 'ko' ? '갈 예정' : 'Plan'}
@@ -3660,7 +3663,8 @@ function App() {
                                     cursor: 'pointer',
                                     border: heritageStatuses[heritage.id] === 'visited' ? '1px solid var(--primary)' : '1px solid var(--border)',
                                     background: heritageStatuses[heritage.id] === 'visited' ? 'rgba(22, 101, 52, 0.08)' : 'var(--surface)',
-                                    color: heritageStatuses[heritage.id] === 'visited' ? 'var(--primary)' : 'var(--surface-foreground)'
+                                    color: heritageStatuses[heritage.id] === 'visited' ? 'var(--primary)' : 'var(--surface-foreground)',
+                                    whiteSpace: 'nowrap'
                                   }}
                                 >
                                   ✅ {i18n.language === 'ko' ? '갔다옴' : 'Visited'}
@@ -3682,7 +3686,8 @@ function App() {
                                     transition: 'all 0.2s',
                                     border: '1px solid var(--primary)',
                                     background: 'var(--primary)',
-                                    color: 'white'
+                                    color: 'white',
+                                    whiteSpace: 'nowrap'
                                   }}
                                 >
                                   ❓ {i18n.language === 'ko' ? '역사퀴즈' : 'Quiz'}
