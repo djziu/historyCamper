@@ -1373,7 +1373,7 @@ function App() {
   const visitedHeritages = MASTER_HERITAGES.filter(h => heritageStatuses[h.id] === 'visited');
   // Active heritage quiz states
   const [activeQuizHeritage, setActiveQuizHeritage] = useState<HeritageSite | null>(null);
-  const [activeQuizTargetStatus, setActiveQuizTargetStatus] = useState<'planned' | 'visited' | null>(null);
+  const [activeQuizTargetStatus, setActiveQuizTargetStatus] = useState<'planned' | 'visited' | 'quiz_only' | null>(null);
   const [heritageQuizAnswered, setHeritageQuizAnswered] = useState(false);
   const [heritageQuizSelectedIdx, setHeritageQuizSelectedIdx] = useState<number | null>(null);
   const [heritageQuizReviewText, setHeritageQuizReviewText] = useState('');
@@ -1593,21 +1593,23 @@ function App() {
   const handleHeritageQuizComplete = () => {
     if (!activeQuizHeritage || !activeQuizTargetStatus) return;
 
-    // Update status
-    const updatedStatuses = { ...heritageStatuses, [activeQuizHeritage.id]: activeQuizTargetStatus };
-    setHeritageStatuses(updatedStatuses);
-    localStorage.setItem('history_camper_heritage_statuses', JSON.stringify(updatedStatuses));
+    // Update status if not quiz_only
+    if (activeQuizTargetStatus !== 'quiz_only') {
+      const updatedStatuses = { ...heritageStatuses, [activeQuizHeritage.id]: activeQuizTargetStatus };
+      setHeritageStatuses(updatedStatuses);
+      localStorage.setItem('history_camper_heritage_statuses', JSON.stringify(updatedStatuses));
 
-    // Update review if visited
-    if (activeQuizTargetStatus === 'visited') {
-      const updatedReviews = { ...heritageReviews };
-      if (heritageQuizReviewText.trim()) {
-        updatedReviews[activeQuizHeritage.id] = heritageQuizReviewText.trim();
-      } else {
-        delete updatedReviews[activeQuizHeritage.id];
+      // Update review if visited
+      if (activeQuizTargetStatus === 'visited') {
+        const updatedReviews = { ...heritageReviews };
+        if (heritageQuizReviewText.trim()) {
+          updatedReviews[activeQuizHeritage.id] = heritageQuizReviewText.trim();
+        } else {
+          delete updatedReviews[activeQuizHeritage.id];
+        }
+        setHeritageReviews(updatedReviews);
+        localStorage.setItem('history_camper_heritage_reviews', JSON.stringify(updatedReviews));
       }
-      setHeritageReviews(updatedReviews);
-      localStorage.setItem('history_camper_heritage_reviews', JSON.stringify(updatedReviews));
     }
 
     // Reset states
@@ -1827,12 +1829,14 @@ function App() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
               <div 
                 className="list-title" 
-                style={{ cursor: 'pointer', transition: 'color 0.2s', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}
                 onClick={() => viewHeritageRoute(campsite.id)}
-                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
-                onMouseLeave={(e) => e.currentTarget.style.color = ''}
               >
-                <span>{campsite.id.startsWith('public-') ? campsite.name : t(campsite.name)}</span>
+                <span className="campsite-name-span">
+                  {campsite.id.startsWith('public-') ? campsite.name : t(campsite.name)}
+                </span>
+                <span className="course-link-indicator">
+                  {i18n.language === 'ko' ? '🔍상세 코스 보기 ➔' : '🔍View Course ➔'}
+                </span>
                 {getReservationBadge(campsite)}
               </div>
             </div>
@@ -2388,7 +2392,7 @@ function App() {
                                 <button
                                   onClick={() => {
                                     setActiveQuizHeritage(heritage);
-                                    setActiveQuizTargetStatus('visited');
+                                    setActiveQuizTargetStatus('quiz_only');
                                     setHeritageQuizAnswered(false);
                                     setHeritageQuizSelectedIdx(null);
                                     setHeritageQuizReviewText(heritageReviews[heritage.id] || '');
@@ -2905,7 +2909,7 @@ function App() {
                             <button
                               onClick={() => {
                                 setActiveQuizHeritage(heritage);
-                                setActiveQuizTargetStatus('visited');
+                                setActiveQuizTargetStatus('quiz_only');
                                 setHeritageQuizAnswered(false);
                                 setHeritageQuizSelectedIdx(null);
                                 setHeritageQuizReviewText(heritageReviews[heritage.id] || '');
@@ -3128,7 +3132,7 @@ function App() {
                                   <button
                                     onClick={() => {
                                       setActiveQuizHeritage(heritage);
-                                      setActiveQuizTargetStatus('visited');
+                                      setActiveQuizTargetStatus('quiz_only');
                                       setHeritageQuizAnswered(false);
                                       setHeritageQuizSelectedIdx(null);
                                       setHeritageQuizReviewText(heritageReviews[heritage.id] || '');
@@ -3818,7 +3822,9 @@ function App() {
                 <div className="modal-title">
                   {activeQuizTargetStatus === 'visited' 
                     ? (i18n.language === 'ko' ? '방문 인증 역사 퀴즈' : 'Visit Verification History Quiz')
-                    : (i18n.language === 'ko' ? '여행 계획 역사 퀴즈' : 'Travel Plan History Quiz')
+                    : (activeQuizTargetStatus === 'planned'
+                        ? (i18n.language === 'ko' ? '여행 계획 역사 퀴즈' : 'Travel Plan History Quiz')
+                        : (i18n.language === 'ko' ? '역사 퀴즈 풀기' : 'Solve History Quiz'))
                   }
                 </div>
                 <button className="modal-close-btn" onClick={() => {
@@ -3911,7 +3917,10 @@ function App() {
                       style={{ width: '100%', padding: '12px', marginTop: '1.25rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: 'pointer' }}
                       onClick={handleHeritageQuizComplete}
                     >
-                      {i18n.language === 'ko' ? '확인 및 계획 등록' : 'Confirm & Register Plan'}
+                      {activeQuizTargetStatus === 'planned'
+                        ? (i18n.language === 'ko' ? '확인 및 계획 등록' : 'Confirm & Register Plan')
+                        : (i18n.language === 'ko' ? '확인' : 'Confirm')
+                      }
                     </button>
                   )}
                 </div>

@@ -348,6 +348,32 @@ body {
   font-size: 1.05rem;
   margin-bottom: 4px;
   color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.list-title .campsite-name-span {
+  transition: color 0.2s;
+}
+
+.list-title .course-link-indicator {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: normal;
+  transition: all 0.2s;
+}
+
+.list-title:hover .campsite-name-span {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.list-title:hover .course-link-indicator {
+  color: var(--primary);
+  font-weight: 700;
 }
 
 .list-desc {
@@ -842,4 +868,47 @@ body {
     gap: 1rem;
   }
 }
+
+/* Make Route Modal Fullscreen on Mobile to Maximize Space */
+@media (max-width: 767px) {
+  .modal-backdrop {
+    padding: 0 !important;
+  }
+  .route-modal-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    padding: 16px !important;
+    border: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .route-modal-card .route-layout {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    overflow: hidden !important;
+  }
+  .route-modal-card .route-map-container {
+    height: 220px !important;
+    min-height: 220px !important;
+    flex-shrink: 0 !important;
+  }
+  .route-modal-card .route-info-container {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    padding: 12px !important;
+  }
+  .route-modal-card .route-timeline {
+    flex: 1 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+  }
+}
+
 
