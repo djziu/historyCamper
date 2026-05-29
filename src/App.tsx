@@ -1925,7 +1925,8 @@ function App() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '4px',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    whiteSpace: 'nowrap'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = '#16a34a';
@@ -1960,7 +1961,8 @@ function App() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '4px',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    whiteSpace: 'nowrap'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = '#ca8a04';
