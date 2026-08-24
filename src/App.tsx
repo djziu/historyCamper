@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
-import { Tent, Compass, Map as MapIcon, ShieldCheck, MapPin, Clock, Star, Award, CheckCircle2, XCircle, AlertCircle, Database, X, BookOpen, ChevronLeft } from 'lucide-react'
+import { useState, useEffect, useRef, useMemo } from 'react'
+import { Tent, Map as MapIcon, MapPin, Clock, Award, CheckCircle2, XCircle, AlertCircle, X, BookOpen, ChevronLeft, LogIn, LogOut, User } from 'lucide-react'
 import { Map, MapMarker, Polyline, useKakaoLoader } from 'react-kakao-maps-sdk'
 import { useTranslation } from 'react-i18next'
 import { supabase, isSupabaseConfigured, QuizQuestion, Campsite, HeritageSite } from './supabaseClient'
+import type { User as SupabaseUser, Session } from '@supabase/supabase-js'
 
 // Campsites Master Data (Historical Campsites)
 const MASTER_CAMPSITES: Campsite[] = [
@@ -382,6 +383,129 @@ const MOCK_JEOLLA_CAMPS = [
   { id: 'public-mock-15', name: '진안 운일암반일암 국민여가캠핑장', addr: '전북 진안군 주천면 동상주천로 1928', lat: 35.9188, lng: 127.2845, tel: '063-430-8359', induty: '일반야영장, 오토캠핑', description: '기암절벽과 맑은 계곡물이 흐르는 운일암반일암 계곡 옆 야영장.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' },
   { id: 'public-mock-16', name: '무주 덕유산 국민여가캠핑장', addr: '전북 무주군 설천면 백련사로 2', lat: 35.8912, lng: 127.7685, tel: '063-322-1097', induty: '일반야영장, 카라반', description: '덕유산 국립공원 입구 구천동 계곡 옆에 펼쳐진 대규모 야영장.', resveCl: '온라인야영장예약', resveUrl: 'https://gocamping.or.kr' },
   { id: 'public-mock-17', name: '완주 자연을닮은 캠핑장', addr: '전북 완주군 소양면 해학로 12-4', lat: 35.8855, lng: 127.2515, tel: '063-240-0000', induty: '일반야영장, 글램핑', description: '완주 소양 고즈넉한 산자락 아래 위치하여 힐링하기 최적의 장소.', resveCl: '전화', resveUrl: '' }
+];
+
+// Gamification: Badges & Stamp Tour configuration
+export interface Badge {
+  id: string;
+  nameKo: string;
+  nameEn: string;
+  descKo: string;
+  descEn: string;
+  icon: string;
+  color: string;
+  checkUnlocked: (
+    heritageStatuses: Record<string, 'planned' | 'visited'>,
+    solvedQuizzes: Record<string, any>,
+    heritageReviews: Record<string, string>
+  ) => boolean;
+}
+
+const BADGES: Badge[] = [
+  {
+    id: 'first_step',
+    nameKo: '첫 역사적인 발걸음',
+    nameEn: 'First Step',
+    descKo: '처음으로 유적지 탐방(탐방 완료)을 등록해 보세요.',
+    descEn: 'Mark your very first heritage site as visited.',
+    icon: '👣',
+    color: '#60a5fa',
+    checkUnlocked: (statuses) => Object.values(statuses).some(s => s === 'visited')
+  },
+  {
+    id: 'baekje_explorer',
+    nameKo: '찬란한 백제의 탐험가',
+    nameEn: 'Baekje Explorer',
+    descKo: '전북 백제 시대의 모든 유적지를 다녀오세요.',
+    descEn: 'Visit all Baekje era heritage sites in Jeonbuk.',
+    icon: '👑',
+    color: '#34d399',
+    checkUnlocked: (statuses) => {
+      const targets = MASTER_HERITAGES.filter(h => h.era === 'baekje');
+      return targets.length > 0 && targets.every(h => statuses[h.id] === 'visited');
+    }
+  },
+  {
+    id: 'joseon_scholar',
+    nameKo: '학식 깊은 조선의 선비',
+    nameEn: 'Joseon Scholar',
+    descKo: '전북 조선 시대의 모든 유적지를 다녀오세요.',
+    descEn: 'Visit all Joseon era heritage sites in Jeonbuk.',
+    icon: '📜',
+    color: '#f59e0b',
+    checkUnlocked: (statuses) => {
+      const targets = MASTER_HERITAGES.filter(h => h.era === 'joseon');
+      return targets.length > 0 && targets.every(h => statuses[h.id] === 'visited');
+    }
+  },
+  {
+    id: 'modern_collector',
+    nameKo: '모던 전북 수집가',
+    nameEn: 'Modern Collector',
+    descKo: '전북 근대 시대의 모든 유적지를 다녀오세요.',
+    descEn: 'Visit all Modern era heritage sites in Jeonbuk.',
+    icon: '🎩',
+    color: '#ec4899',
+    checkUnlocked: (statuses) => {
+      const targets = MASTER_HERITAGES.filter(h => h.era === 'modern');
+      return targets.length > 0 && targets.every(h => statuses[h.id] === 'visited');
+    }
+  },
+  {
+    id: 'patriotic_hero',
+    nameKo: '호국의 영웅',
+    nameEn: 'Patriotic Hero',
+    descKo: '남원 만인의총, 정읍 황토현 전적지, 고창읍성을 모두 방문해 보세요.',
+    descEn: 'Visit all three historical defense sites in Jeonbuk.',
+    icon: '🛡️',
+    color: '#ef4444',
+    checkUnlocked: (statuses) => {
+      const targets = ['maninsuichong', 'hwangtohyon', 'gochang_eupseong'];
+      return targets.every(id => statuses[id] === 'visited');
+    }
+  },
+  {
+    id: 'camp_master',
+    nameKo: '별빛 아래 캠퍼',
+    nameEn: 'Camping Master',
+    descKo: '역사지 탐방 후기를 3개 이상 작성해 보세요.',
+    descEn: 'Write at least 3 reviews for visited heritage sites.',
+    icon: '⛺',
+    color: '#10b981',
+    checkUnlocked: (_, __, reviews) => Object.keys(reviews).length >= 3
+  },
+  {
+    id: 'quiz_king',
+    nameKo: '전북 역사 퀴즈왕',
+    nameEn: 'Quiz Conqueror',
+    descKo: '역사 퀴즈 정답을 5개 이상 맞혀보세요.',
+    descEn: 'Correctly answer at least 5 history quizzes.',
+    icon: '🏆',
+    color: '#d97706',
+    checkUnlocked: (_, quizzes) => Object.values(quizzes).filter((q: any) => q.isCorrect).length >= 5
+  },
+  {
+    id: 'perfect_historian',
+    nameKo: '완벽한 역사학자',
+    nameEn: 'Grand Historian',
+    descKo: '다른 모든 7개의 배지를 획득하여 최고 등급 배지를 해금하세요.',
+    descEn: 'Unlock all other 7 badges to receive this ultimate honor.',
+    icon: '✨',
+    color: '#8b5cf6',
+    checkUnlocked: (statuses, quizzes, reviews) => {
+      const isFirst = Object.values(statuses).some(s => s === 'visited');
+      const bTargets = MASTER_HERITAGES.filter(h => h.era === 'baekje');
+      const isBaekje = bTargets.length > 0 && bTargets.every(h => statuses[h.id] === 'visited');
+      const jTargets = MASTER_HERITAGES.filter(h => h.era === 'joseon');
+      const isJoseon = jTargets.length > 0 && jTargets.every(h => statuses[h.id] === 'visited');
+      const mTargets = MASTER_HERITAGES.filter(h => h.era === 'modern');
+      const isModern = mTargets.length > 0 && mTargets.every(h => statuses[h.id] === 'visited');
+      const isPatriotic = ['maninsuichong', 'hwangtohyon', 'gochang_eupseong'].every(id => statuses[id] === 'visited');
+      const isCamp = Object.keys(reviews).length >= 3;
+      const isQuiz = Object.values(quizzes).filter((q: any) => q.isCorrect).length >= 5;
+      return isFirst && isBaekje && isJoseon && isModern && isPatriotic && isCamp && isQuiz;
+    }
+  }
 ];
 
 // Mock Quiz Data - Korean & English are dynamically generated below HERITAGE_QUIZZES to support all 30 Jeonbuk heritage sites.
@@ -1254,7 +1378,7 @@ const HERITAGE_REGION_MAP: Record<string, { ko: string; en: string }> = {
 };
 
 // Generate the full quiz list dynamically from MASTER_HERITAGES and HERITAGE_QUIZZES
-const MOCK_QUIZZES_KO: QuizQuestion[] = MASTER_HERITAGES.map((h, index) => {
+const BASE_MOCK_QUIZZES_KO: QuizQuestion[] = MASTER_HERITAGES.map((h, index) => {
   const quizObj = HERITAGE_QUIZZES[h.id];
   const regionInfo = HERITAGE_REGION_MAP[h.id] || { ko: '기타', en: 'Other' };
   
@@ -1281,7 +1405,7 @@ const MOCK_QUIZZES_KO: QuizQuestion[] = MASTER_HERITAGES.map((h, index) => {
   };
 });
 
-const MOCK_QUIZZES_EN: QuizQuestion[] = MASTER_HERITAGES.map((h, index) => {
+const BASE_MOCK_QUIZZES_EN: QuizQuestion[] = MASTER_HERITAGES.map((h, index) => {
   const quizObj = HERITAGE_QUIZZES[h.id];
   const regionInfo = HERITAGE_REGION_MAP[h.id] || { ko: '기타', en: 'Other' };
   
@@ -1308,6 +1432,363 @@ const MOCK_QUIZZES_EN: QuizQuestion[] = MASTER_HERITAGES.map((h, index) => {
   };
 });
 
+const EXTRA_QUIZZES_KO: Omit<QuizQuestion, 'id'>[] = [
+  {
+    era: 'prehistoric',
+    region: '김제',
+    question: "전라북도 김제는 예로부터 한국 최대의 곡창지대로 알려져 있습니다. 김제에서 가을마다 열리는 대표적인 농경 문화 축제의 이름은 무엇인가요?",
+    options: ["김제지평선축제", "정읍구절초축제", "고창모양성제", "임실N치즈축제"],
+    correct_option_index: 0,
+    explanation: "김제지평선축제는 황금벌판과 지평선을 배경으로 우리나라 최고(最古)의 저수지인 벽골제 일대에서 고대 농경 문화를 계승하고 벼농사의 역사를 기념하기 위해 열리는 축제입니다."
+  },
+  {
+    era: 'baekje',
+    region: '익산',
+    question: "백제 무왕이 어릴 적 마(서동)를 캐며 신라 선화공주와 결혼하기 위해 아이들에게 부르게 했다는, 한국 역사상 최초의 4구체 향가의 제목은 무엇인가요?",
+    options: ["서동요", "제망매가", "찬기파랑가", "처용가"],
+    correct_option_index: 0,
+    explanation: "서동요는 백제 30대 무왕(서동)이 신라 진평왕의 셋째 딸인 선화공주를 사모하여 아이들에게 마를 나누어 주며 부르게 한 백제 가요이자 신라의 향가입니다."
+  },
+  {
+    era: 'joseon',
+    region: '기타',
+    question: "임진왜란과 정유재란 당시 이순신 장군이 남긴 한문 문구 중, '만약 전라도가 없었다면 나라 또한 없었을 것이다'라는 뜻의 유명한 문구는 무엇인가요?",
+    options: ["약무호남 시무국가", "필사즉생 필생즉사", "물령망동 정중여산", "금신전선 상유십이"],
+    correct_option_index: 0,
+    explanation: "이순신 장군은 정유재란을 앞두고 사헌부 지평 현덕승에게 보낸 편지에서 '약무호남 시무국가(若無湖南 吾無國家)' 즉, '호남이 없으면 국가도 없다'는 말로 충무공의 나라 사랑과 호남의 전략적 중요성을 강조했습니다."
+  },
+  {
+    era: 'modern',
+    region: '정읍',
+    question: "1894년 동학농민군이 고부 백산에 집결하여 발표한 행동 강령이자 혁명의 정당성을 밝힌 4대 행동 지침을 무엇이라고 하나요?",
+    options: ["백산 사대명의", "무장포고문", "폐정개혁안", "홍범14조"],
+    correct_option_index: 0,
+    explanation: "동학농민군은 백산에 모여 전봉준을 대장으로 추대하고 '사람을 죽이지 말고 가축을 해치지 말라(불살인 불살물)' 등을 담은 '사대명의'를 선포하며 본격적인 농민혁명을 개시했습니다."
+  },
+  {
+    era: 'joseon',
+    region: '장수',
+    question: "조선 태조 이성계의 태(탯줄)를 묻었던 곳이자, 백두대간의 맑은 정기가 서린 전라북도 장수의 대표적인 역사적 유적은 어디인가요?",
+    options: ["장수 태조태실", "무주 사각사고", "임실 상이암", "남원 만인의총"],
+    correct_option_index: 0,
+    explanation: "장수 태조태실(전북 유형문화재)은 조선 건국 후 태조 이성계의 탯줄을 항아리에 담아 소중하게 보관하여 묻었던 왕실 역사 유적입니다."
+  },
+  {
+    era: 'goryeo',
+    region: '남원',
+    question: "남원 실상사에 봉안되어 있는 보물 제41호 철조여래좌상에 대한 설명으로 옳은 것은 무엇인가요?",
+    options: [
+      "통일신라 후기 철로 만든 불상으로, 당시 발달한 제철 기술과 불교 예술의 융합을 보여준다.",
+      "청동에 금을 두껍게 입힌 도금 불상이다.",
+      "고려 후기 원나라 기술자가 진흙으로 빚은 소조상이다.",
+      "화강암을 깎아 만든 거대 마애불이다."
+    ],
+    correct_option_index: 0,
+    explanation: "실상사 철조여래좌상(보물)은 통일신라 후기(9세기)에 유행한 철조불상의 대표적인 유물로, 당시 발달했던 선종의 기풍과 호남 지역의 발달한 주철 기술을 잘 나타내어 줍니다."
+  },
+  {
+    era: 'goryeo',
+    region: '정읍',
+    question: "신라 말기의 대문장가이자 유학자로, 태인 현감 시절 정읍 피향정 가를 거닐며 시를 읊고 풍류를 즐겼다고 전해지는 인물은 누구인가요?",
+    options: ["최치원", "설총", "강수", "원효"],
+    correct_option_index: 0,
+    explanation: "신라의 천재 학자 고운 최치원 선생은 태산(현재의 정읍 태인) 태수로 재임하던 시절, 연못에 핀 연꽃 향에 반해 피향정을 짓고 풍류를 즐겼다는 역사적 전설을 남겼습니다."
+  },
+  {
+    era: 'baekje',
+    region: '익산',
+    question: "익산 미륵사지 남쪽에 나란히 서 있는 보물 제236호로 지정된 두 돌기둥의 명칭이자, 사찰의 깃발(당)을 다는 지지대 역할을 했던 문화유산은 무엇인가요?",
+    options: ["당간지주", "석등", "석탑 기단", "석조"],
+    correct_option_index: 0,
+    explanation: "미륵사지 당간지주(보물)는 사찰 행사나 의식 때 깃발을 다는 당간(깃대)을 흔들리지 않게 고정해 주던 한 쌍의 돌기둥입니다. 백제 통일신라 시기 석조 공예의 미학을 간직하고 있습니다."
+  },
+  {
+    era: 'modern',
+    region: '정읍',
+    question: "키가 작아 '녹두장군'이라는 별명으로 불렸으며, 고부 민란을 주도하고 동학농민혁명의 최고 지도자 역할을 했던 역사적 인물은 누구인가요?",
+    options: ["전봉준", "손화중", "김개남", "최제우"],
+    correct_option_index: 0,
+    explanation: "전봉준 장군은 몸집이 작아 녹두장군이라 불렸으며, 고부 군수 조병갑의 탐학에 항거해 백성들을 모아 고부 민란을 이끌고 1894년 동학농민운동의 총대장으로 활약했습니다."
+  },
+  {
+    era: 'joseon',
+    region: '고창',
+    question: "고창 선운사 영산전에 봉안되어 있는 보물 제279호 금동아미타여래삼존상에 대한 설명으로 옳은 것은 무엇인가요?",
+    options: ["조선 초기의 세련되고 온화한 조각 양식을 보여주는 불상으로, 도난당했다가 기적적으로 회수되었다.", "고려 무신정권 시절 최충헌의 원찰 불상이다.", "삼국시대 백제 가마에서 직접 구워낸 도자기 불상이다.", "조선 후기 흥선대원군이 직접 주조하여 기증한 불상이다."],
+    correct_option_index: 0,
+    explanation: "선운사 금동아미타여래삼존상(보물)은 조선 초기 정교하고 우아한 불교 조각 양식을 대표하는 불상입니다. 2000년대 후반 문화재 도굴범들에게 도난당했다가 기적적으로 온전히 회수되었습니다."
+  },
+  {
+    era: 'joseon',
+    region: '전주',
+    question: "조선시대 임진왜란 당시, 전국에 있던 4대 사고 중 유일하게 불타지 않고 조선왕조실록을 온전히 지켜낸 전주의 사고는 어디인가요?",
+    options: ["전주사고", "춘추관사고", "충주사고", "성주사고"],
+    correct_option_index: 0,
+    explanation: "임진왜란 때 서울(춘추관), 충주, 성주 사고에 보관되던 실록은 모두 유실되었으나, 전주사고의 실록은 내장산 등으로 안전하게 대피시켜 유일하게 보존되었습니다. 이를 바탕으로 실록이 재출판되어 역사가 이어졌습니다."
+  },
+  {
+    era: 'joseon',
+    region: '군산',
+    question: "군산 임피면에 있는 조선시대 지방 관청 건물로, 인근에 살았던 소설 '탁류'의 작가 채만식과도 깊은 역사적 연관을 띠며 전통 객사 양식을 보존하고 있는 이곳은 어디인가요?",
+    options: ["임피객사", "군산부청", "구 군산세관", "임피역사"],
+    correct_option_index: 0,
+    explanation: "임피객사는 조선 시대 임피현의 지방 관청(객사)으로, 국왕의 위패를 모시고 매달 망궐례를 올리거나 지방에 온 관리들의 숙소로 사용되던 대표적인 목조건축물입니다."
+  },
+  {
+    era: 'joseon',
+    region: '부안',
+    question: "부안 변산반도 개암사에 봉안된 보물 제292호 대웅전 내부 천장에 조각되어 있으며, 용머리와 함께 화려한 천장 문양을 채우고 있어 조선 후기 불교 조각의 백미로 꼽히는 것은 무엇인가요?",
+    options: ["대웅전 봉황과 청룡 조각", "철조 미륵불상", "석탑 부도군", "사천왕 벽화"],
+    correct_option_index: 0,
+    explanation: "부안 개암사 대웅전(보물) 내부 천장에는 대들보 위로 튀어나온 용머리와 봉황 조각이 매우 역동적이고 화려하게 장식되어 있어, 조선 후기 불교 목조 공예의 뛰어난 예술성을 보여줍니다."
+  },
+  {
+    era: 'baekje',
+    region: '익산',
+    question: "2009년 익산 미륵사지 석탑 해체 보수 과정에서 탑 내부 심초석에서 발견된, 백제 왕실의 석탑 건립 경위와 기증자(사택적덕의 딸인 백제 왕후)가 명확히 기록되어 백제 역사를 새로 쓰게 만든 유물은 무엇인가요?",
+    options: ["미륵사지 석탑 사리장엄구", "왕궁리 금강경판", "무령왕릉 지석", "칠지도"],
+    correct_option_index: 0,
+    explanation: "미륵사지 석탑 사리장엄구(국보)는 금제사리봉영기를 비롯해 다양한 장신구로 구성되어 있으며, 백제 왕후가 재물을 희사하여 미륵사를 창건하고 사리를 봉안했다는 기록이 선명히 남아있어 역사학계를 놀라게 했습니다."
+  },
+  {
+    era: 'joseon',
+    region: '완주',
+    question: "조선 후기 유사시 전주 경기전에 봉안된 태조 이성계의 어진과 조경묘의 위패를 임진왜란이나 민란 등으로부터 대피시키기 위해 완주에 16km에 달하는 둘레로 쌓았던 산성은 어디인가요?",
+    options: ["위봉산성", "남고산성", "동고산성", "적상산성"],
+    correct_option_index: 0,
+    explanation: "위봉산성(사적)은 1675년(숙종 1년)에 축성되어 실제로 동학농민운동 당시 전주성이 함락되자 경기전의 태조 어진과 위패를 이곳으로 피난시켜 보관하기도 하였습니다."
+  },
+  {
+    era: 'joseon',
+    region: '순창',
+    question: "순창군 구림면 만일사에 보존되어 있으며, 조선 태조 이성계가 등극하기 전에 무학대사와 함께 이곳에서 나라를 위해 기도하고 중건했음을 전하는 비석의 이름은 무엇인가요?",
+    options: ["순창 만일사비", "남원 황산대첩비", "북한산 진흥왕 순수비", "광개토대왕비"],
+    correct_option_index: 0,
+    explanation: "순창 만일사비(전북 유형문화재)는 태조 이성계가 등극하기 전 만일사에서 기도할 때, 무학대사가 이 절을 중창하여 왕조 창업을 도왔다는 역사적 전설을 기록하고 있는 비석입니다."
+  },
+  {
+    era: 'joseon',
+    region: '진안',
+    question: "진안군 마령면 섬진강 상류 암벽 아래 천연 동굴 모양의 홈에 마치 제비집처럼 세워진 독특한 2층 누각으로, 보물 제2055호로 지정된 이 아름다운 유적은 무엇인가요?",
+    options: ["수선루", "한벽당", "피향정", "광한루"],
+    correct_option_index: 0,
+    explanation: "수선루(보물)는 암벽에 자연적으로 생긴 굴 안쪽에 지어진 정자로, 신선이 노니는 누각이라는 뜻을 지니며 주변 자연지형을 극적으로 활용한 한국 전통 정자 건축의 독특한 예입니다."
+  },
+  {
+    era: 'joseon',
+    region: '무주',
+    question: "전라북도 무주에 위치해 있으며, 삼남(충청, 전라, 경상)의 3대 누각 중 하나로 불리며 수많은 시인 묵객들이 시를 읊었던 보물 지정 누각은 무엇인가요?",
+    options: ["한풍루", "희풍루", "풍남문", "망경루"],
+    correct_option_index: 0,
+    explanation: "무주 한풍루(보물)는 전주의 한벽당, 삼척의 죽서루 등과 함께 삼남의 대표적 명승 누각으로 꼽힙니다. 임진왜란 때 왜군에 의해 소실되었다가 중건되는 등 파란만장한 역사를 겪었습니다."
+  },
+  {
+    era: 'goryeo',
+    region: '익산',
+    question: "익산 왕궁리 오층석탑(국보)을 해체 수리할 때 탑의 옥개석에서 발견된, 정교한 금제 사리함과 녹색 유리 사리병 등으로 대표되는 국보 제123호 유물의 명칭은 무엇인가요?",
+    options: ["왕궁리 오층석탑 사리장엄구", "미륵사지 석탑 사리장엄구", "감은사지 석탑 사리장엄구", "무량사 5층석탑 사리구"],
+    correct_option_index: 0,
+    explanation: "왕궁리 오층석탑 사리장엄구(국보 제123호)는 순금으로 만든 금강경판, 정교한 금제 사리외함, 녹색 유리 사리병 등으로 구성되어 백제와 고려 시대 금속공예와 불교 문화의 우수성을 입증합니다."
+  },
+  {
+    era: 'goryeo',
+    region: '고창',
+    question: "고창 선운사 도솔암의 거대한 절벽 암벽에 새겨진 마애불로, 가슴 부위에 비기(비밀스러운 편지)가 숨겨져 있다는 전설이 있어 구한말 동학농민군이나 민중들에게 혁명의 희망을 주었던 보물은 무엇인가요?",
+    options: ["선운사 도솔암 마애여래좌상", "미륵사지 석조여래입상", "남원 실상사 철조여래좌상", "여산 송불암 마애불"],
+    correct_option_index: 0,
+    explanation: "도솔암 마애불(보물)은 거대한 절벽에 새겨진 불상으로, 그 가슴 속에 숨겨진 비결(비기)이 꺼내어지는 날 한양이 망하고 새로운 세상이 열린다는 전설이 있어 1892년 동학 접주들이 실제로 비기를 꺼내어 농민 혁명의 도화선이 되었습니다."
+  }
+];
+
+const EXTRA_QUIZZES_EN: Omit<QuizQuestion, 'id'>[] = [
+  {
+    era: 'prehistoric',
+    region: 'Gimje',
+    question: "Gimje in Jeollabuk-do has historically been Korea's largest granary. What is the name of the agricultural culture festival held every autumn in Gimje?",
+    options: ["Gimje Horizon Festival", "Jeongeup Gujeolcho Festival", "Gochang Moyangseong Festival", "Imsil N-Cheese Festival"],
+    correct_option_index: 0,
+    explanation: "The Gimje Horizon Festival is held around the ancient Byeokgolje reservoir, celebrating ancient agricultural history and traditional rice farming."
+  },
+  {
+    era: 'baekje',
+    region: 'Iksan',
+    question: "What is the title of the earliest surviving 4-line Hyangga (native song) in Korean history, sung by children to help Baekje's King Mu (Seodong) marry Silla's Princess Seonhwa?",
+    options: ["Seodongyo", "Jemangmaega", "Chankiparangga", "Cheoyongga"],
+    correct_option_index: 0,
+    explanation: "Seodongyo is a Baekje/Silla folksong that Seodong (later King Mu) taught to children, offering them sweet potatoes, to win Princess Seonhwa of Silla."
+  },
+  {
+    era: 'joseon',
+    region: 'Other',
+    question: "What is the famous phrase left by Admiral Yi Sun-sin meaning 'If there were no Jeolla, there would be no nation' during the Japanese invasions?",
+    options: ["Yakmu Honam Simu Gukga", "Pilsajeoksaeng Pilsaengjeoksa", "Mulryeongmangdong Jeongjungyeosan", "Geumshinjeonseon Sangyusibi"],
+    correct_option_index: 0,
+    explanation: "'Yakmu Honam Simu Gukga' means 'If there were no Honam, we would have no country,' highlighting the strategic importance of the Jeolla region."
+  },
+  {
+    era: 'modern',
+    region: 'Jeongeup',
+    question: "What is the name of the 4-point manifesto announced by the Donghak Peasant Army when they gathered at Baeksan in 1894 to declare their code of conduct?",
+    options: ["Baeksan Sadaemyeongui", "Mujang Proclamation", "Pejeong Reform Proposals", "Hongbeom 14 Articles"],
+    correct_option_index: 0,
+    explanation: "The Baeksan Sadaemyeongui (Four Great Proclamations) declared the peasants' intention to protect citizens, refrain from unnecessary violence, and expel corrupt officers."
+  },
+  {
+    era: 'joseon',
+    region: 'Jangsu',
+    question: "Where in Jangsu, Jeollabuk-do, is the historic site where the placenta and umbilical cord (Taesil) of Joseon's founder King Taejo Yi Seong-gye were enshrined?",
+    options: ["Jangsu Taejo Taesil", "Muju Sagaksago", "Imsil Sangiam", "Namwon Maninui Chong"],
+    correct_option_index: 0,
+    explanation: "Taejo Taesil in Jangsu is a historic royal site where the umbilical cord of King Taejo was buried in a stone chamber to pray for the longevity of the dynasty."
+  },
+  {
+    era: 'goryeo',
+    region: 'Namwon',
+    question: "Which of the following is correct about the Iron Seated Buddha (Treasure No. 41) at Silsangsa Temple in Namwon?",
+    options: [
+      "An iron Buddha from the late Unified Silla, showing the fusion of casting technology and Buddhist art.",
+      "A gold-plated bronze statue made by late Joseon artists.",
+      "A clay statue crafted by Yuan dynasty artisans during Goryeo.",
+      "A massive rock-carved granite Buddha."
+    ],
+    correct_option_index: 0,
+    explanation: "The Silsangsa Iron Seated Buddha (Treasure) is a prime example of iron Buddha statues that became popular in the 9th century, showcasing Silla's iron-casting technology."
+  },
+  {
+    era: 'goryeo',
+    region: 'Jeongeup',
+    question: "Who is the legendary Silla scholar and writer who is said to have walked by Jeongeup Pihyangjeong to enjoy poetry during his term as a local magistrate?",
+    options: ["Choi Chi-won", "Seol Chong", "Gang Su", "Wonhyo"],
+    correct_option_index: 0,
+    explanation: "The celebrated scholar Choi Chi-won built and frequented Pihyangjeong during his tenure as magistrate of Taesan (modern Jeongeup)."
+  },
+  {
+    era: 'baekje',
+    region: 'Iksan',
+    question: "What is the name of the flagpole supports (Treasure No. 236) standing in Iksan Mireuksa Temple Site that held decorative banners for temple rituals?",
+    options: ["Danggangeoju (Flagpole supports)", "Seokdeung (Stone lantern)", "Stone pagoda base", "Seokjo (Stone basin)"],
+    correct_option_index: 0,
+    explanation: "The Flagpole Supports (Danggangeoju) at Mireuksa Temple Site are twin stone pillars built to hold the flagpole during major Buddhist gatherings."
+  },
+  {
+    era: 'modern',
+    region: 'Jeongeup',
+    question: "Who is the legendary leader of the Donghak Peasant Revolution who was nicknamed the 'Nokdu (Mung Bean) General' due to his short stature?",
+    options: ["Jeon Bong-jun", "Son Hwa-jung", "Kim Gae-nam", "Choe Je-woo"],
+    correct_option_index: 0,
+    explanation: "General Jeon Bong-jun was nicknamed 'Nokdu General' because of his short height. He led the peasants against corrupt local officials in the 1894 revolution."
+  },
+  {
+    era: 'joseon',
+    region: 'Gochang',
+    question: "Which of the following is correct about the Gilt-Bronze Amitabha Buddha Triad (Treasure No. 279) at Seonunsa Temple in Gochang?",
+    options: [
+      "A refined early Joseon gilt-bronze Buddha that was once stolen but miraculously recovered.",
+      "A personal temple Buddha of military leader Choe Chung-heon during Goryeo.",
+      "A ceramic Buddha baked directly in a Baekje clay kiln during the Three Kingdoms period.",
+      "An iron Buddha cast and donated by the Regent Heungseon Daewongun in late Joseon."
+    ],
+    correct_option_index: 0,
+    explanation: "The Gilt-Bronze Amitabha Triad of Seonunsa represents the elegant Buddhist sculpture style of the early Joseon period. It was stolen by thieves but successfully recovered and returned to the temple."
+  },
+  {
+    era: 'joseon',
+    region: 'Jeonju',
+    question: "During the Imjin War of the Joseon Dynasty, which history archive (Sago) in Jeonju was the only one that survived fire, safely preserving the Joseon Wangjo Sillok (Annals)?",
+    options: ["Jeonju Sago", "Chunchugwan Sago", "Chungju Sago", "Seongju Sago"],
+    correct_option_index: 0,
+    explanation: "While the archives in Seoul, Chungju, and Seongju were destroyed by fire, the Annals kept in Jeonju Sago were moved to Mount Naejangsan for safety, becoming the only copy to survive."
+  },
+  {
+    era: 'joseon',
+    region: 'Gunsan',
+    question: "What is the name of the Joseon Dynasty local government lodging (Gaeksa) located in Impi-myeon, Gunsan, which retains traditional wooden architecture?",
+    options: ["Impi Gaeksa", "Gunsan City Hall", "Old Gunsan Customshouse", "Impi Station"],
+    correct_option_index: 0,
+    explanation: "Impi Gaeksa served as the local government guest house where officials from the central government stayed and performed ceremonies bowing toward the king."
+  },
+  {
+    era: 'joseon',
+    region: 'Buan',
+    question: "What is the famous wooden sculpture decoration in the ceiling of the Daeungjeon Hall (Treasure No. 292) at Gaeamsa Temple in Buan, representing late Joseon Buddhist art?",
+    options: ["Phoenix and Blue Dragon carvings", "Iron Maitreya Buddha", "Stone Stupas", "Four Heavenly Kings mural"],
+    correct_option_index: 0,
+    explanation: "The ceiling of Gaeamsa Temple's Daeungjeon Hall features highly detailed carvings of dragon heads and phoenixes, representing the artistic height of late Joseon Dynasty woodcraft."
+  },
+  {
+    era: 'baekje',
+    region: 'Iksan',
+    question: "What is the name of the national treasure reliquary set discovered in 2009 during the disassembly of the West Pagoda at Iksan Mireuksa Temple Site, which recorded the exact founder (Baekje Queen)?",
+    options: ["Mireuksa Pagoda Sarira Reliquary", "Wanggung-ri Geumgang Gyeongpan", "King Muryeong's Tomb Epitaph", "Chiljido (Seven-Branched Sword)"],
+    correct_option_index: 0,
+    explanation: "The Mireuksa Temple Sarira Reliquary set (National Treasure) includes a gold plaque (Sarira Bongyeonggi) detailing that the queen of Baekje funded the construction of the pagoda in 639 AD."
+  },
+  {
+    era: 'joseon',
+    region: 'Wanju',
+    question: "Which fortress in Wanju was built during the late Joseon Dynasty to evacuate the royal portrait of King Taejo and ancestral tablets in times of emergency?",
+    options: ["Wibong Fortress (Wibongsanseong)", "Namgosanseong", "Donggosanseong", "Jeoksangsanseong"],
+    correct_option_index: 0,
+    explanation: "Wibong Fortress was built in 1675 to protect royal treasures. During the Donghak Peasant Revolution when Jeonju Fortress fell, King Taejo's portrait was safely evacuated here."
+  },
+  {
+    era: 'joseon',
+    region: 'Sunchang',
+    question: "Which historic monument at Manilsa Temple in Sunchang records the legend of King Taejo (Yi Seong-gye) and Monk Muhak praying for the foundation of the Joseon Dynasty?",
+    options: ["Sunchang Manilsabi", "Namwon Hwangsandaecheopbi", "Bukhansan Jinheungwang Sunsubi", "Gwanggaeto Stele"],
+    correct_option_index: 0,
+    explanation: "The Sunchang Manilsabi is a stone monument detailing how Yi Seong-gye prayed at Manilsa Temple and received help from Monk Muhak before founding the Joseon Dynasty."
+  },
+  {
+    era: 'joseon',
+    region: 'Jinan',
+    question: "Which unique two-story wooden pavilion (Treasure No. 2055) in Jinan is built inside a natural rock shelter/cave, resembling a swallow's nest?",
+    options: ["Suseonru", "Hanbyeokdang", "Pihyangjeong", "Gwanghanru"],
+    correct_option_index: 0,
+    explanation: "Suseonru is an extraordinary pavilion built directly inside a natural cliff cave in Jinan, demonstrating a rare integration of Korean traditional architecture with natural topography."
+  },
+  {
+    era: 'joseon',
+    region: 'Muju',
+    question: "Which historic pavilion in Muju (Treasure) is celebrated as one of the three great pavilions of the Samnam region, frequented by classical poets?",
+    options: ["Hanpungru", "Huipungru", "Pungnammun", "Manggyeongru"],
+    correct_option_index: 0,
+    explanation: "Hanpungru in Muju is a beautiful Joseon-era pavilion designated as a Treasure, known as one of the three most scenic pavilions of the southern provinces."
+  },
+  {
+    era: 'goryeo',
+    region: 'Iksan',
+    question: "What is the name of the National Treasure No. 123 relic set, consisting of a gold scripture plaque and glass sarira bottle, discovered inside the Wanggung-ri Five-story Stone Pagoda?",
+    options: ["Wanggung-ri Five-story Stone Pagoda Sarira Reliquary", "Mireuksa Pagoda Sarira Reliquary", "Gameunsa Pagoda Sarira Reliquary", "Muryangsa Pagoda Sarira Reliquary"],
+    correct_option_index: 0,
+    explanation: "The Wanggung-ri Stone Pagoda Sarira Reliquary set (National Treasure No. 123) represents high-quality Buddhist art, containing gold plaques of the Diamond Sutra and a green glass bottle."
+  },
+  {
+    era: 'goryeo',
+    region: 'Gochang',
+    question: "What is the name of the rock-carved cliff Buddha (Treasure) at Seonunsa Temple's Dosolam Hermitage, famous for the legend of a secret prophecy hidden in its chest that inspired the Donghak Revolution?",
+    options: ["Seonunsa Temple Dosolam Rock-carved Buddha", "Mireuksa Temple Stone Buddha", "Silsangsa Temple Iron Buddha", "Songbulam Cliff Buddha"],
+    correct_option_index: 0,
+    explanation: "The Dosolam Rock-carved Buddha in Gochang features a legend of a hidden prophecy in its chest. In 1892, Donghak rebels opened the niche, retrieving the text to inspire their revolutionary movement."
+  }
+];
+
+const MOCK_QUIZZES_KO: QuizQuestion[] = [
+  ...BASE_MOCK_QUIZZES_KO,
+  ...EXTRA_QUIZZES_KO.map((eq, i) => ({
+    id: BASE_MOCK_QUIZZES_KO.length + i + 1,
+    ...eq
+  }))
+];
+
+const MOCK_QUIZZES_EN: QuizQuestion[] = [
+  ...BASE_MOCK_QUIZZES_EN,
+  ...EXTRA_QUIZZES_EN.map((eq, i) => ({
+    id: BASE_MOCK_QUIZZES_EN.length + i + 1,
+    ...eq
+  }))
+];
+
 // Geolocation Haversine Distance Calculator (computed locally in device memory)
 const calculateHaversineDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
   const R = 6371; // Radius of Earth in km
@@ -1323,6 +1804,69 @@ const calculateHaversineDistance = (lat1: number, lng1: number, lat2: number, ln
   return Math.round(R * c * 10) / 10;
 };
 
+const getGpsErrorMessage = (error: GeolocationPositionError, t: any): string => {
+  if (error.code === error.PERMISSION_DENIED) {
+    return t('route.map.gps_error_permission');
+  } else if (error.code === error.POSITION_UNAVAILABLE) {
+    return t('route.map.gps_error_unavailable');
+  } else if (error.code === error.TIMEOUT) {
+    return t('route.map.gps_error_timeout');
+  }
+  return t('route.map.gps_error');
+};
+
+const getHeritageMarkerImage = (status: string | undefined) => {
+  let color = '#F59E0B'; // default yellow/amber
+  let stroke = '#D97706';
+  // Star icon inside pin
+  let innerIcon = `<path fill="white" d="M18 10l2.0 4.0 4.4.6-3.2 3.1.8 4.4-4.0-2.1-4.0 2.1.8-4.4-3.2-3.1 4.4-.6z"/>`;
+
+  if (status === 'planned') {
+    color = '#EA580C'; // orange
+    stroke = '#C2410C';
+    // Pin/Tack icon
+    innerIcon = `<path fill="white" d="M16 10h4v2h-4zm-2 3h8v2c0 2.2-1.8 4-4 4s-4-1.8-4-4zm4 6v5h-2v-5z"/>`;
+  } else if (status === 'visited') {
+    color = '#16A34A'; // green
+    stroke = '#15803D';
+    // Check icon
+    innerIcon = `<path fill="white" d="M14.5 22.0l-4.0-4.0 1.4-1.4 2.6 2.6 6.6-6.6 1.4 1.4z"/>`;
+  }
+
+  const svgString = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 46" width="36" height="46">
+      <path fill="${color}" stroke="${stroke}" stroke-width="2" d="M18 2C9.16 2 2 9.16 2 18c0 12.3 16 26 16 26s16-13.7 16-26c0-8.84-7.16-18-18-18z"/>
+      ${innerIcon}
+    </svg>
+  `.trim().replace(/\s+/g, ' ').replace(/"/g, "'");
+
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svgString)}`;
+};
+
+const getCampsiteMarkerImage = (status: string | undefined, isCurated: boolean) => {
+  let color = isCurated ? '#EF4444' : '#3B82F6'; // curated red, public blue
+  let stroke = isCurated ? '#B91C1C' : '#1D4ED8';
+  // Tent icon inside pin
+  const innerIcon = `<path fill="white" d="M18 10l9 12H9l9-12zm-5 11h10l-5-6.5-5 6.5z"/>`;
+
+  if (status === 'planned') {
+    color = '#EA580C'; // orange
+    stroke = '#C2410C';
+  } else if (status === 'visited') {
+    color = '#16A34A'; // green
+    stroke = '#15803D';
+  }
+
+  const svgString = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 46" width="36" height="46">
+      <path fill="${color}" stroke="${stroke}" stroke-width="2" d="M18 2C9.16 2 2 9.16 2 18c0 12.3 16 26 16 26s16-13.7 16-26c0-8.84-7.16-18-18-18z"/>
+      ${innerIcon}
+    </svg>
+  `.trim().replace(/\s+/g, ' ').replace(/"/g, "'");
+
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svgString)}`;
+};
+
 function App() {
   const { t, i18n } = useTranslation();
 
@@ -1332,8 +1876,58 @@ function App() {
   useKakaoLoader({
     appkey: KAKAO_KEY,
   });
+
+  // ── Supabase Auth state ──────────────────────────────────────────────────
+  const [authUser, setAuthUser] = useState<SupabaseUser | null>(null);
+  const [, setAuthSession] = useState<Session | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) {
+      setAuthLoading(false);
+      return;
+    }
+    // 초기 세션 로드
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setAuthSession(session);
+      setAuthUser(session?.user ?? null);
+      setAuthLoading(false);
+    });
+    // 세션 변화 구독
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthSession(session);
+      setAuthUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleKakaoLogin = async () => {
+    if (!supabase) return;
+    setLoginLoading(true);
+    const redirectTo = isLocal
+      ? 'http://localhost:5173/historyCamper/'
+      : 'https://djziu.github.io/historyCamper/';
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'kakao',
+      options: { redirectTo },
+    });
+    if (error) {
+      console.error('카카오 로그인 오류:', error);
+      alert(i18n.language === 'ko' ? '로그인 중 오류가 발생했습니다.' : 'Login failed. Please try again.');
+    }
+    setLoginLoading(false);
+  };
+
+  const handleLogout = async () => {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    setShowLoginModal(false);
+  };
+  // ────────────────────────────────────────────────────────────────────────
   
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState('era');
   const [activeEra, setActiveEra] = useState('all');
 
   // GoCamping API setup
@@ -1341,13 +1935,18 @@ function App() {
   const isGocampingConfigured = !!(gocampingApiKey && gocampingApiKey !== 'your-gocamping-decoding-service-key');
 
   const [showPublicCamps, setShowPublicCamps] = useState(false);
-  const [showReservableOnly, setShowReservableOnly] = useState(false);
+  const [showCuratedCamps, setShowCuratedCamps] = useState(true);
   const [publicCamps, setPublicCamps] = useState<any[]>([]);
   const [loadingPublicCamps, setLoadingPublicCamps] = useState(false);
 
   // Client-side user geolocation tracking (retained in smartphone memory only)
   const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
   const [gpsError, setGpsError] = useState<string | null>(null);
+  const [isLocationGuideOpen, setIsLocationGuideOpen] = useState(false);
+  const [guideTab, setGuideTab] = useState<'inapp' | 'chrome' | 'safari'>('inapp');
+  const isStandalone = 
+    (window.navigator as any).standalone === true || 
+    window.matchMedia('(display-mode: standalone)').matches;
 
   // Device identifier
   const [deviceId] = useState(() => {
@@ -1366,11 +1965,21 @@ function App() {
   const [heritageStatuses, setHeritageStatuses] = useState<Record<string, 'planned' | 'visited'>>({});
   // Heritage reviews: { [heritageId]: string }
   const [heritageReviews, setHeritageReviews] = useState<Record<string, string>>({});
+  // Heritage visit dates: { [heritageId]: string (ISO Date) }
+  const [heritageVisitDates, setHeritageVisitDates] = useState<Record<string, string>>(() => {
+    try {
+      const saved = localStorage.getItem('history_camper_heritage_visit_dates');
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) {
+      console.error("Failed to parse heritage visit dates from localStorage", e);
+      return {};
+    }
+  });
   const [solvedQuizzes, setSolvedQuizzes] = useState<Record<string, { heritageId?: string, questionText: string, isCorrect: boolean, selectedAnswer: string, correctAnswer: string, timestamp: string }>>(() => {
     const saved = localStorage.getItem('history_camper_solved_quizzes');
     return saved ? JSON.parse(saved) : {};
   });
-  const visitedHeritages = MASTER_HERITAGES.filter(h => heritageStatuses[h.id] === 'visited');
+
   // Active heritage quiz states
   const [activeQuizHeritage, setActiveQuizHeritage] = useState<HeritageSite | null>(null);
   const [activeQuizTargetStatus, setActiveQuizTargetStatus] = useState<'planned' | 'visited' | 'quiz_only' | null>(null);
@@ -1388,6 +1997,27 @@ function App() {
   // Status filter: 'all' | 'planned' | 'visited'
   const [statusFilter, setStatusFilter] = useState<'all' | 'planned' | 'visited'>('all');
 
+  // Heritage status filter for My Log (나의 기록) tab
+  const [heritageLogFilter, setHeritageLogFilter] = useState<'all' | 'planned' | 'visited'>('all');
+
+  // Sub-tab for My Log ('badges' or 'logs')
+  const [activeLogSubTab, setActiveLogSubTab] = useState<'badges' | 'logs'>('badges');
+  // Selected badge for details modal
+  const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
+
+  // Heritage status filter for History Map (역사지도) tab
+  const [mapHeritageFilter, setMapHeritageFilter] = useState<'all' | 'planned' | 'visited' | 'none'>('all');
+
+  // Heritage era filter for History Map (역사지도) tab
+  const [mapEraFilter, setMapEraFilter] = useState<string>('all');
+
+  // Toggle filter panel expand/collapse in History Map tab
+  const [isMapFilterExpanded, setIsMapFilterExpanded] = useState(false);
+
+  // Swipe-to-go-back gesture refs (using refs to avoid re-renders during active drag)
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const touchEndRef = useRef<{ x: number; y: number } | null>(null);
+
   // Selected Campsite for interactive mapping (defaults to Moaksan)
   const [selectedCampsiteId, setSelectedCampsiteId] = useState('moaksan');
 
@@ -1397,8 +2027,8 @@ function App() {
   // Supabase & Quiz States
   const [quizzes, setQuizzes] = useState<QuizQuestion[]>([]);
   const [loadingQuizzes, setLoadingQuizzes] = useState(false);
-  const [supabaseError, setSupabaseError] = useState(false);
-  const [isFavoritesTableMissing, setIsFavoritesTableMissing] = useState(false);
+  const [, setSupabaseError] = useState(false);
+  const [, setIsFavoritesTableMissing] = useState(false);
   const [quizState, setQuizState] = useState<'intro' | 'playing' | 'result'>('intro');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
@@ -1408,6 +2038,47 @@ function App() {
   // Filters for Quiz
   const [filterEra, setFilterEra] = useState('all');
   const [filterRegion, setFilterRegion] = useState('all');
+
+  // Compute regions that have quizzes in the selected era
+  const availableRegions = useMemo(() => {
+    const eraQuizzes = quizzes.filter(q => {
+      const qEra = q.era?.toLowerCase() || '';
+      return filterEra === 'all' || qEra === filterEra.toLowerCase();
+    });
+
+    const regionNormalizeMap: Record<string, string> = {
+      'jeonju': '전주', '전주': '전주',
+      'wanju': '완주', '완주': '완주',
+      'iksan': '익산', '익산': '익산',
+      'gunsan': '군산', '군산': '군산',
+      'jeongeup': '정읍', '정읍': '정읍',
+      'namwon': '남원', '남원': '남원',
+      'gimje': '김제', '김제': '김제',
+      'jinan': '진안', '진안': '진안',
+      'muju': '무주', '무주': '무주',
+      'imsil': '임실', '임실': '임실',
+      'gochang': '고창', '고창': '고창',
+      'buan': '부안', '부안': '부안'
+    };
+
+    const set = new Set<string>();
+    eraQuizzes.forEach(q => {
+      if (q.region) {
+        const normalized = regionNormalizeMap[q.region.toLowerCase()];
+        if (normalized) {
+          set.add(normalized);
+        }
+      }
+    });
+    return set;
+  }, [quizzes, filterEra]);
+
+  // Reset selected region to 'all' if the selected era has no quizzes in that region
+  useEffect(() => {
+    if (filterRegion !== 'all' && !availableRegions.has(filterRegion)) {
+      setFilterRegion('all');
+    }
+  }, [availableRegions, filterRegion]);
 
   const Eras = [
     { id: 'all', label: t('era.eras.all') },
@@ -1467,6 +2138,10 @@ function App() {
       const savedHReviews = localStorage.getItem('history_camper_heritage_reviews');
       if (savedHReviews) {
         setHeritageReviews(JSON.parse(savedHReviews));
+      }
+      const savedHVisitDates = localStorage.getItem('history_camper_heritage_visit_dates');
+      if (savedHVisitDates) {
+        setHeritageVisitDates(JSON.parse(savedHVisitDates));
       }
     } catch (e) {
       console.error("Failed to load heritage data from localStorage", e);
@@ -1542,6 +2217,11 @@ function App() {
       setHeritageStatuses(updatedStatuses);
       localStorage.setItem('history_camper_heritage_statuses', JSON.stringify(updatedStatuses));
       
+      const updatedVisitDates = { ...heritageVisitDates };
+      delete updatedVisitDates[heritage.id];
+      setHeritageVisitDates(updatedVisitDates);
+      localStorage.setItem('history_camper_heritage_visit_dates', JSON.stringify(updatedVisitDates));
+
       if (targetStatus === 'visited') {
         const updatedReviews = { ...heritageReviews };
         delete updatedReviews[heritage.id];
@@ -1554,6 +2234,15 @@ function App() {
       setHeritageStatuses(updatedStatuses);
       localStorage.setItem('history_camper_heritage_statuses', JSON.stringify(updatedStatuses));
       
+      const updatedVisitDates = { ...heritageVisitDates };
+      if (targetStatus === 'visited') {
+        updatedVisitDates[heritage.id] = new Date().toISOString();
+      } else {
+        delete updatedVisitDates[heritage.id];
+      }
+      setHeritageVisitDates(updatedVisitDates);
+      localStorage.setItem('history_camper_heritage_visit_dates', JSON.stringify(updatedVisitDates));
+
       // If switching to planned, remove review
       if (targetStatus === 'planned') {
         const updatedReviews = { ...heritageReviews };
@@ -1598,6 +2287,15 @@ function App() {
       const updatedStatuses = { ...heritageStatuses, [activeQuizHeritage.id]: activeQuizTargetStatus };
       setHeritageStatuses(updatedStatuses);
       localStorage.setItem('history_camper_heritage_statuses', JSON.stringify(updatedStatuses));
+
+      const updatedVisitDates = { ...heritageVisitDates };
+      if (activeQuizTargetStatus === 'visited') {
+        updatedVisitDates[activeQuizHeritage.id] = new Date().toISOString();
+      } else {
+        delete updatedVisitDates[activeQuizHeritage.id];
+      }
+      setHeritageVisitDates(updatedVisitDates);
+      localStorage.setItem('history_camper_heritage_visit_dates', JSON.stringify(updatedVisitDates));
 
       // Update review if visited
       if (activeQuizTargetStatus === 'visited') {
@@ -2029,9 +2727,6 @@ function App() {
     if (statusFilter === 'all' && activeEra !== 'all' && c.era !== activeEra) {
       return false;
     }
-    if (showReservableOnly && !isCampsiteReservable(c)) {
-      return false;
-    }
     return true;
   });
 
@@ -2053,13 +2748,44 @@ function App() {
     if (selectedCampsiteId) {} // Read to avoid TS unused variable error
   };
 
+  // Swipe to go back gesture handlers for campsite details view (using refs to prevent re-renders)
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (!e.targetTouches || e.targetTouches.length === 0) return;
+    touchEndRef.current = null;
+    touchStartRef.current = {
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY
+    };
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (!e.targetTouches || e.targetTouches.length === 0) return;
+    touchEndRef.current = {
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY
+    };
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStartRef.current || !touchEndRef.current) return;
+    const distanceX = touchEndRef.current.x - touchStartRef.current.x;
+    const distanceY = Math.abs(touchEndRef.current.y - touchStartRef.current.y);
+    
+    // Swipe right (distanceX > 60) starting from the left side of the screen (x < 120)
+    // and horizontal movement is significantly greater than vertical movement (distanceX > distanceY)
+    if (distanceX > 60 && distanceX > distanceY && touchStartRef.current.x < 120) {
+      setActiveRouteCampsiteId(null);
+    }
+  };
+
   // Request browser location permission and center map (client-side only, no server updates)
   const handleFindMyLocation = () => {
     if (!navigator.geolocation) {
-      setGpsError(t('route.map.gps_error'));
+      setGpsError(t('route.map.gps_error_unsupported'));
       return;
     }
     
+    // Attempt high-accuracy first
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const lat = position.coords.latitude;
@@ -2069,10 +2795,28 @@ function App() {
         setGpsError(null);
       },
       (error) => {
-        console.error("GPS retrieval error:", error);
-        setGpsError(t('route.map.gps_error'));
+        console.warn("First-attempt GPS retrieval failed. Trying fallback...", error);
+        if (error.code === error.TIMEOUT || error.code === error.POSITION_UNAVAILABLE) {
+          // Fallback to low-accuracy
+          navigator.geolocation.getCurrentPosition(
+            (fallbackPosition) => {
+              const lat = fallbackPosition.coords.latitude;
+              const lng = fallbackPosition.coords.longitude;
+              setUserLocation({ lat, lng });
+              setMapCenter({ lat, lng });
+              setGpsError(null);
+            },
+            (fallbackError) => {
+              console.error("Fallback GPS retrieval error:", fallbackError);
+              setGpsError(getGpsErrorMessage(fallbackError, t));
+            },
+            { enableHighAccuracy: false, timeout: 15000, maximumAge: 10000 }
+          );
+        } else {
+          setGpsError(getGpsErrorMessage(error, t));
+        }
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
     );
   };
 
@@ -2181,6 +2925,108 @@ function App() {
 
   return (
     <div className="app-container">
+
+      {/* ── 카카오 로그인 모달 ─────────────────────────────── */}
+      {showLoginModal && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowLoginModal(false); }}
+        >
+          <div style={{
+            background: 'var(--surface)', borderRadius: '20px', padding: '32px 28px',
+            maxWidth: '340px', width: '100%', boxShadow: '0 24px 64px rgba(0,0,0,0.18)',
+            border: '1px solid var(--border)', position: 'relative'
+          }}>
+            <button
+              onClick={() => setShowLoginModal(false)}
+              style={{
+                position: 'absolute', top: '14px', right: '14px',
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'var(--surface-foreground)', padding: '4px', borderRadius: '50%'
+              }}
+            >
+              <X size={20} />
+            </button>
+
+            {authUser ? (
+              /* 로그인 상태 */
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  width: '72px', height: '72px', borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #166534, #16a34a)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto 16px', fontSize: '2rem'
+                }}>
+                  {authUser.user_metadata?.avatar_url
+                    ? <img src={authUser.user_metadata.avatar_url} alt="profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                    : <User size={36} color="white" />}
+                </div>
+                <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--foreground)', marginBottom: '4px' }}>
+                  {authUser.user_metadata?.full_name || authUser.user_metadata?.name || (i18n.language === 'ko' ? '히스토리캠퍼' : 'History Camper')}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--surface-foreground)', marginBottom: '24px' }}>
+                  {authUser.email || (i18n.language === 'ko' ? '카카오 계정으로 로그인됨' : 'Signed in with Kakao')}
+                </div>
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    width: '100%', padding: '13px',
+                    background: '#fee500', border: 'none', borderRadius: '12px',
+                    fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    color: '#3c1e1e'
+                  }}
+                >
+                  <LogOut size={18} />
+                  {i18n.language === 'ko' ? '로그아웃' : 'Sign Out'}
+                </button>
+              </div>
+            ) : (
+              /* 비로그인 상태 */
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '2.8rem', marginBottom: '12px' }}>⛺</div>
+                <div style={{ fontWeight: 900, fontSize: '1.3rem', color: 'var(--foreground)', marginBottom: '8px' }}>
+                  {i18n.language === 'ko' ? '히스토리캠퍼' : 'History Camper'}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--surface-foreground)', marginBottom: '28px', lineHeight: 1.6 }}>
+                  {i18n.language === 'ko'
+                    ? '카카오 계정으로 로그인하면 나의 탐방 기록을 저장할 수 있어요.'
+                    : 'Sign in with Kakao to save your heritage visit history.'}
+                </div>
+                <button
+                  onClick={handleKakaoLogin}
+                  disabled={loginLoading}
+                  style={{
+                    width: '100%', padding: '14px',
+                    background: '#fee500', border: 'none', borderRadius: '12px',
+                    fontWeight: 800, fontSize: '1rem', cursor: loginLoading ? 'not-allowed' : 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                    color: '#3c1e1e', opacity: loginLoading ? 0.7 : 1,
+                    boxShadow: '0 4px 16px rgba(254,229,0,0.4)', transition: 'all 0.2s'
+                  }}
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="#3c1e1e">
+                    <path d="M12 3C6.477 3 2 6.477 2 10.8c0 2.7 1.6 5.1 4 6.6L5 21l4.3-2.8C10.2 18.4 11.1 18.5 12 18.5c5.523 0 10-3.477 10-7.7S17.523 3 12 3z"/>
+                  </svg>
+                  {loginLoading
+                    ? (i18n.language === 'ko' ? '연결 중...' : 'Connecting...')
+                    : (i18n.language === 'ko' ? '카카오로 로그인' : 'Sign in with Kakao')}
+                </button>
+                <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '16px', lineHeight: 1.5 }}>
+                  {i18n.language === 'ko'
+                    ? '로그인 없이도 모든 기능을 이용할 수 있습니다.'
+                    : 'You can use all features without signing in.'}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {activeRouteCampsiteId ? (
         (() => {
           const campsite = allDisplayCampsites.find(c => c.id === activeRouteCampsiteId);
@@ -2193,7 +3039,13 @@ function App() {
           ]);
 
           return (
-        <div className="detail-view-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', overflow: 'hidden' }}>
+        <div 
+          className="detail-view-container" 
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', overflow: 'hidden' }}
+        >
           <header className="top-header detail-header" style={{ flexShrink: 0, display: 'flex', alignItems: 'center', height: '56px', padding: '0 16px', background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
             <button 
               className="back-btn" 
@@ -2233,9 +3085,9 @@ function App() {
                     {/* Campsite Marker */}
                     <MapMarker
                       position={{ lat: campsite.lat, lng: campsite.lng }}
-                      image={{
-                        src: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
-                        size: { width: 24, height: 35 }
+                      image={campsite.id.startsWith('public-') ? undefined : {
+                        src: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+                        size: { width: 31, height: 35 }
                       }}
                     >
                       <div style={{ padding: "3px 6px", color: "black", fontSize: "0.75rem", textAlign: "center", borderRadius: "4px", fontWeight: "bold" }}>
@@ -2245,7 +3097,14 @@ function App() {
 
                     {/* Nearby Heritage Markers */}
                     {routeHeritages.map(heritage => (
-                      <MapMarker key={heritage.id} position={{ lat: heritage.lat, lng: heritage.lng }}>
+                      <MapMarker 
+                        key={heritage.id} 
+                        position={{ lat: heritage.lat, lng: heritage.lng }}
+                        image={{
+                          src: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
+                          size: { width: 24, height: 35 }
+                        }}
+                      >
                         <div style={{ padding: "3px 6px", color: "black", fontSize: "0.75rem", textAlign: "center", fontWeight: 'bold' }}>
                           🏛️ {t(heritage.name)}
                         </div>
@@ -2351,6 +3210,7 @@ function App() {
                                   {heritageStatuses[heritage.id] === 'visited' && (
                                     <span style={{ fontSize: '0.7rem', padding: '2px 6px', background: 'rgba(22, 101, 52, 0.1)', color: 'var(--primary)', border: '1px solid rgba(22, 101, 52, 0.2)', borderRadius: '4px', fontWeight: 'bold' }}>
                                       ✅ {t('era.status_visited')}
+                                      {heritageVisitDates[heritage.id] && ` (${new Date(heritageVisitDates[heritage.id]).toLocaleDateString(i18n.language === 'ko' ? 'ko-KR' : 'en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })})`}
                                     </span>
                                   )}
                                 </div>
@@ -2371,7 +3231,7 @@ function App() {
                                     whiteSpace: 'nowrap'
                                   }}
                                 >
-                                  📌 {i18n.language === 'ko' ? '갈 예정' : 'Plan'}
+                                  📌 {i18n.language === 'ko' ? '탐방 계획' : 'Plan'}
                                 </button>
                                 <button
                                   onClick={() => handleHeritageStatusClick(heritage, 'visited')}
@@ -2387,7 +3247,7 @@ function App() {
                                     whiteSpace: 'nowrap'
                                   }}
                                 >
-                                  ✅ {i18n.language === 'ko' ? '갔다옴' : 'Visited'}
+                                  ✅ {i18n.language === 'ko' ? '탐방 완료' : 'Visited'}
                                 </button>
                                 <button
                                   onClick={() => {
@@ -2511,7 +3371,6 @@ function App() {
         
         {/* Desktop Navigation Link Tabs */}
         <nav className="desktop-nav">
-          <button className={`nav-link ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>{t('tabs.home')}</button>
           <button className={`nav-link ${activeTab === 'era' ? 'active' : ''}`} onClick={() => setActiveTab('era')}>{t('tabs.era')}</button>
           <button className={`nav-link ${activeTab === 'route' ? 'active' : ''}`} onClick={() => setActiveTab('route')}>{t('tabs.route')}</button>
           <button className={`nav-link ${activeTab === 'quiz' ? 'active' : ''}`} onClick={() => setActiveTab('quiz')}>{t('tabs.quiz')}</button>
@@ -2522,61 +3381,37 @@ function App() {
           className="lang-btn" 
           onClick={() => i18n.changeLanguage(i18n.language === 'ko' ? 'en' : 'ko')}
         >
-          {i18n.language === 'ko' ? 'EN' : 'KO'}
+          {i18n.language === 'ko' ? 'KO' : 'EN'}
         </button>
+
+        {/* 카카오 로그인 버튼 */}
+        {isSupabaseConfigured && !authLoading && (
+          <button
+            onClick={() => setShowLoginModal(true)}
+            title={authUser ? (i18n.language === 'ko' ? '내 프로필' : 'My Profile') : (i18n.language === 'ko' ? '로그인' : 'Sign In')}
+            style={{
+              width: '36px', height: '36px', borderRadius: '50%',
+              border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: authUser ? 'linear-gradient(135deg, #166534, #16a34a)' : '#fee500',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+              transition: 'all 0.2s', flexShrink: 0,
+              overflow: 'hidden'
+            }}
+          >
+            {authUser ? (
+              authUser.user_metadata?.avatar_url
+                ? <img src={authUser.user_metadata.avatar_url} alt="profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <User size={18} color="white" />
+            ) : (
+              <LogIn size={18} color="#3c1e1e" />
+            )}
+          </button>
+        )}
       </header>
 
       <div className="scroll-area">
-        {/* =========================================
-            HOME (Curation Overview)
-        ========================================= */}
-        {activeTab === 'home' && (
-          <div className="animate-fade-in">
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '0.5rem', lineHeight: 1.3 }}>
-              {t('home.title1')}<br />
-              <span style={{ color: 'var(--primary)' }}>{t('home.title2')}</span>
-            </h2>
-            <p style={{ color: 'var(--surface-foreground)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
-              {t('home.desc')}
-            </p>
 
-            <div className="home-grid">
-              <div className="card" style={{ marginBottom: 0 }}>
-                <div className="card-title">
-                  <Clock size={20} color="var(--primary)" />
-                  {t('home.card1.title')}
-                </div>
-                <div className="card-text">
-                  {t('home.card1.desc')}
-                </div>
-                <div className="tag-container">
-                  <span className="badge"><Tent size={14}/> {t('home.card1.tag1')}</span>
-                  <span className="badge gold"><Star size={14}/> {t('home.card1.tag2')}</span>
-                </div>
-              </div>
-
-              <div className="card gold-accent" style={{ marginBottom: 0 }}>
-                <div className="card-title">
-                  <MapIcon size={20} color="var(--gold)" />
-                  {t('home.card2.title')}
-                </div>
-                <div className="card-text">
-                  {t('home.card2.desc')}
-                </div>
-              </div>
-
-              <div className="card red-accent" style={{ marginBottom: 0 }}>
-                <div className="card-title">
-                  <ShieldCheck size={20} color="var(--red-accent)" />
-                  {t('home.card3.title')}
-                </div>
-                <div className="card-text">
-                  {t('home.card3.desc')}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* =========================================
             ERA: 시대별 역사 캠핑지 매칭 & 상태 관리
@@ -2585,82 +3420,137 @@ function App() {
           <div className="animate-fade-in">
             <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem' }}>{t('era.title')}</h3>
             
-            <div className="era-selector" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
-              {/* Category selector based on status */}
-              <button
-                className={`era-btn ${statusFilter === 'all' ? 'active' : ''}`}
-                onClick={() => {
-                  setStatusFilter('all');
-                  setActiveEra('all');
-                }}
-              >
-                {t('era.eras.all')}
-              </button>
+            <div className="card" style={{ padding: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', marginBottom: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+              
+              {/* Section 1: Visit Status Filters */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: statusFilter === 'all' ? '12px' : '0' }}>
+                <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span>🎯</span> {i18n.language === 'ko' ? '탐방 상태 필터' : 'Visit Status Filter'}
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  <button
+                    className={`era-btn ${statusFilter === 'all' ? 'active' : ''}`}
+                    onClick={() => {
+                      setStatusFilter('all');
+                      setActiveEra('all');
+                    }}
+                    style={{
+                      borderRadius: '12px',
+                      padding: '8px 16px',
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                      background: statusFilter === 'all' ? 'var(--primary)' : 'var(--surface)',
+                      color: statusFilter === 'all' ? 'white' : 'var(--surface-foreground)',
+                      border: statusFilter === 'all' ? '1px solid var(--primary)' : '1px solid var(--border)',
+                      boxShadow: statusFilter === 'all' ? '0 2px 6px rgba(22, 101, 52, 0.15)' : 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {t('era.eras.all')}
+                  </button>
 
-              <button
-                className={`era-btn ${statusFilter === 'planned' ? 'active' : ''}`}
-                onClick={() => {
-                  setStatusFilter('planned');
-                }}
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '4px',
-                  borderColor: statusFilter === 'planned' ? 'var(--gold)' : '',
-                  backgroundColor: statusFilter === 'planned' ? 'rgba(217, 119, 6, 0.05)' : '',
-                  color: statusFilter === 'planned' ? 'var(--gold)' : ''
-                }}
-              >
-                <span>📌</span> {t('era.status_planned')}
-              </button>
+                  <button
+                    onClick={() => {
+                      setStatusFilter('planned');
+                    }}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '6px',
+                      borderRadius: '12px',
+                      padding: '8px 16px',
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                      background: statusFilter === 'planned' ? 'var(--gold)' : 'var(--surface)',
+                      color: statusFilter === 'planned' ? 'white' : 'var(--surface-foreground)',
+                      border: statusFilter === 'planned' ? '1px solid var(--gold)' : '1px solid var(--border)',
+                      boxShadow: statusFilter === 'planned' ? '0 2px 6px rgba(180, 83, 9, 0.15)' : 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <span>📌</span> {t('era.status_planned')}
+                  </button>
 
-              <button
-                className={`era-btn ${statusFilter === 'visited' ? 'active' : ''}`}
-                onClick={() => {
-                  setStatusFilter('visited');
-                }}
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '4px',
-                  borderColor: statusFilter === 'visited' ? 'var(--primary)' : '',
-                  backgroundColor: statusFilter === 'visited' ? 'rgba(22, 101, 52, 0.05)' : '',
-                  color: statusFilter === 'visited' ? 'var(--primary)' : ''
-                }}
-              >
-                <span>✅</span> {t('era.status_visited')}
-              </button>
+                  <button
+                    onClick={() => {
+                      setStatusFilter('visited');
+                    }}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '6px',
+                      borderRadius: '12px',
+                      padding: '8px 16px',
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                      background: statusFilter === 'visited' ? 'var(--primary)' : 'var(--surface)',
+                      color: statusFilter === 'visited' ? 'white' : 'var(--surface-foreground)',
+                      border: statusFilter === 'visited' ? '1px solid var(--primary)' : '1px solid var(--border)',
+                      boxShadow: statusFilter === 'visited' ? '0 2px 6px rgba(22, 101, 52, 0.15)' : 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <span>✅</span> {t('era.status_visited')}
+                  </button>
+                </div>
+              </div>
 
-              {/* Show divider and Era selectors only when status is 'all' */}
+              {/* Section 2: Era Filters (Only visible when "All" status is active) */}
               {statusFilter === 'all' && (
-                <>
-                  <div style={{ height: '20px', width: '1px', background: 'var(--border)', margin: '0 4px' }} />
-                  {Eras.filter(e => e.id !== 'all').map(era => (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px dashed var(--border)', paddingTop: '12px', marginTop: '12px' }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>⏳</span> {i18n.language === 'ko' ? '역사 시대 선택' : 'Select Era'}
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     <button 
-                      key={era.id} 
-                      className={`era-btn ${activeEra === era.id ? 'active' : ''}`}
-                      onClick={() => {
-                        setActiveEra(era.id);
+                      className={`era-btn ${activeEra === 'all' ? 'active' : ''}`}
+                      onClick={() => setActiveEra('all')}
+                      style={{
+                        borderRadius: '10px',
+                        padding: '6px 12px',
+                        fontSize: '0.82rem',
+                        fontWeight: 700,
+                        background: activeEra === 'all' ? 'var(--primary)' : 'rgba(0,0,0,0.02)',
+                        color: activeEra === 'all' ? 'white' : 'var(--surface-foreground)',
+                        border: '1px solid var(--border)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
                       }}
                     >
-                      {era.label}
+                      {i18n.language === 'ko' ? '전체 시대' : 'All Eras'}
                     </button>
-                  ))}
-                </>
+                    {Eras.filter(e => e.id !== 'all').map(era => (
+                      <button 
+                        key={era.id} 
+                        className={`era-btn ${activeEra === era.id ? 'active' : ''}`}
+                        onClick={() => {
+                          setActiveEra(era.id);
+                        }}
+                        style={{
+                          borderRadius: '10px',
+                          padding: '6px 12px',
+                          fontSize: '0.82rem',
+                          fontWeight: 700,
+                          background: activeEra === era.id ? 'var(--primary)' : 'var(--surface)',
+                          color: activeEra === era.id ? 'white' : 'var(--surface-foreground)',
+                          border: activeEra === era.id ? '1px solid var(--primary)' : '1px solid var(--border)',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        {era.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
 
             {/* Filter and GPS bar */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--primary)' }}>
-                <input 
-                  type="checkbox" 
-                  checked={showReservableOnly} 
-                  onChange={(e) => setShowReservableOnly(e.target.checked)}
-                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                />
-                {t('route.map.reservable_only')}
-              </label>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
 
               <button
                 onClick={handleFindMyLocation}
@@ -2686,9 +3576,28 @@ function App() {
             </div>
 
             {gpsError && activeTab === 'era' && (
-              <div className="quiz-alert mock" style={{ marginBottom: '10px', background: 'rgba(185, 28, 28, 0.05)', borderColor: 'rgba(185, 28, 28, 0.15)', color: 'var(--red-accent)' }}>
-                <AlertCircle size={16} />
-                <span style={{ fontSize: '0.75rem' }}>{gpsError}</span>
+              <div className="quiz-alert mock" style={{ marginBottom: '10px', background: 'rgba(185, 28, 28, 0.05)', borderColor: 'rgba(185, 28, 28, 0.15)', color: 'var(--red-accent)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                  <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                  <span style={{ fontSize: '0.75rem', lineHeight: 1.3 }}>{gpsError}</span>
+                </div>
+                <button 
+                  onClick={() => setIsLocationGuideOpen(true)}
+                  style={{
+                    background: 'var(--red-accent)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    fontSize: '0.68rem',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
+                  }}
+                >
+                  {t('route.map.gps_guide_btn')}
+                </button>
               </div>
             )}
 
@@ -2752,60 +3661,326 @@ function App() {
           <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column' }}>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem' }}>{t('route.title')}</h3>
             
-            {/* Open API Toggle controller */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', padding: '10px', background: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'center' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                  <input 
-                    type="checkbox" 
-                    checked={showPublicCamps} 
-                    onChange={(e) => {
-                      const checked = e.target.checked;
-                      setShowPublicCamps(checked);
-                      if (checked) {
-                        fetchPublicCamps();
-                      }
+            {/* Collapsible Filter Panel UI */}
+            {!isMapFilterExpanded ? (
+              <div className="card" style={{ padding: '10px 16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem', fontWeight: 'bold', color: 'var(--surface-foreground)', flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', marginRight: '8px' }}>
+                  <span>🔍</span>
+                  <span style={{ textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                    {i18n.language === 'ko' ? '필터: ' : 'Filters: '}
+                    <span style={{ color: 'var(--primary)' }}>
+                      {[
+                        showCuratedCamps ? (i18n.language === 'ko' ? '역사 주변🔴' : 'Near Site') : null,
+                        showPublicCamps ? (i18n.language === 'ko' ? '공공캠핑🔵' : 'Public') : null,
+                        mapHeritageFilter === 'planned' ? '📌탐방계획' : mapHeritageFilter === 'visited' ? '✅탐방완료' : null,
+                        mapEraFilter !== 'all' ? (Eras.find(e => e.id === mapEraFilter)?.label || mapEraFilter) : null
+                      ].filter(Boolean).join(', ') || (i18n.language === 'ko' ? '필터 없음' : 'None')}
+                    </span>
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                  <button
+                    onClick={() => setIsMapFilterExpanded(true)}
+                    style={{
+                      padding: '6px 12px',
+                      background: 'none',
+                      border: '1px solid var(--border)',
+                      borderRadius: '8px',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      color: 'var(--primary)',
+                      transition: 'all 0.2s',
+                      whiteSpace: 'nowrap'
                     }}
-                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                  />
-                  {t('route.map.load_public')}
-                </label>
-
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem', color: 'var(--primary)' }}>
-                  <input 
-                    type="checkbox" 
-                    checked={showReservableOnly} 
-                    onChange={(e) => setShowReservableOnly(e.target.checked)}
-                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                  />
-                  {t('route.map.reservable_only')}
-                </label>
+                  >
+                    {i18n.language === 'ko' ? '필터 열기 ▾' : 'Expand ▾'}
+                  </button>
+                  <button
+                    onClick={handleFindMyLocation}
+                    style={{
+                      padding: '6px 10px',
+                      background: 'var(--primary)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontWeight: 'bold',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.2s'
+                    }}
+                    title={t('route.map.find_my_location')}
+                  >
+                    <span>🎯</span>
+                  </button>
+                </div>
               </div>
+            ) : (
+              <div className="card" style={{ padding: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', marginBottom: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                
+                {/* Header title with collapse button */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
+                  <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--foreground)' }}>
+                    ⚙️ {i18n.language === 'ko' ? '지도 상세 필터 설정' : 'Map Filters Setup'}
+                  </span>
+                  <button
+                    onClick={() => setIsMapFilterExpanded(false)}
+                    style={{
+                      padding: '4px 8px',
+                      background: 'none',
+                      border: '1px solid var(--border)',
+                      borderRadius: '6px',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      color: '#64748b'
+                    }}
+                  >
+                    {i18n.language === 'ko' ? '필터 접기 ▴' : 'Collapse ▴'}
+                  </button>
+                </div>
 
-              {/* Local GPS Finder button */}
-              <button
-                onClick={handleFindMyLocation}
-                style={{
-                  padding: '8px 12px',
-                  background: 'var(--primary)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontWeight: 'bold',
-                  fontSize: '0.8rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.filter = 'brightness(0.95)'}
-                onMouseLeave={(e) => e.currentTarget.style.filter = ''}
-              >
-                <span>🎯</span>
-                {t('route.map.find_my_location')}
-              </button>
-            </div>
+                {/* Section 1: Campsite Display Settings (Side-by-side Toggle Chips instead of Checkboxes) */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>⛺</span> {i18n.language === 'ko' ? '캠핑장 표시 설정' : 'Campsite Display Settings'}
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    <button
+                      onClick={() => setShowCuratedCamps(prev => !prev)}
+                      className={`era-btn ${showCuratedCamps ? 'active' : ''}`}
+                      style={{
+                        flex: 1,
+                        minWidth: '130px',
+                        borderRadius: '10px',
+                        padding: '6px 12px',
+                        fontSize: '0.8rem',
+                        fontWeight: 700,
+                        background: showCuratedCamps ? 'var(--gold)' : 'var(--surface)',
+                        color: showCuratedCamps ? 'white' : 'var(--surface-foreground)',
+                        border: showCuratedCamps ? '1px solid var(--gold)' : '1px solid var(--border)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <img 
+                        src="https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png" 
+                        style={{ height: '14px', width: '12px', objectFit: 'contain' }} 
+                        alt="Curated Campsite Marker"
+                      />
+                      {i18n.language === 'ko' ? '역사 주변 캠핑장' : 'Curated Campsites'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        const nextVal = !showPublicCamps;
+                        setShowPublicCamps(nextVal);
+                        if (nextVal) {
+                          fetchPublicCamps();
+                        }
+                      }}
+                      className={`era-btn ${showPublicCamps ? 'active' : ''}`}
+                      style={{
+                        flex: 1,
+                        minWidth: '130px',
+                        borderRadius: '10px',
+                        padding: '6px 12px',
+                        fontSize: '0.8rem',
+                        fontWeight: 700,
+                        background: showPublicCamps ? 'var(--primary)' : 'var(--surface)',
+                        color: showPublicCamps ? 'white' : 'var(--surface-foreground)',
+                        border: showPublicCamps ? '1px solid var(--primary)' : '1px solid var(--border)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <img 
+                        src="https://t1.daumcdn.net/mapjsapi/images/2x/marker.png" 
+                        style={{ height: '14px', width: '10px', objectFit: 'contain' }} 
+                        alt="Public Campsite Marker"
+                      />
+                      {i18n.language === 'ko' ? '전라도 공공 캠핑장' : 'Public Campsites'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Section 2: Heritage Visit Status Filters */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px dashed var(--border)', paddingTop: '12px' }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <img 
+                      src="https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png" 
+                      style={{ height: '14px', width: '10px', objectFit: 'contain' }} 
+                      alt="Heritage Marker"
+                    />
+                    {i18n.language === 'ko' ? '역사 유적지 탐방 필터' : 'Heritage Visit Status'}
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    <button
+                      className={`era-btn ${mapHeritageFilter === 'all' ? 'active' : ''}`}
+                      onClick={() => {
+                        setMapHeritageFilter(prev => prev === 'all' ? 'none' : 'all');
+                        setMapEraFilter('all');
+                      }}
+                      style={{
+                        borderRadius: '12px',
+                        padding: '8px 16px',
+                        fontSize: '0.85rem',
+                        fontWeight: 700,
+                        background: mapHeritageFilter === 'all' ? 'var(--primary)' : 'var(--surface)',
+                        color: mapHeritageFilter === 'all' ? 'white' : 'var(--surface-foreground)',
+                        border: mapHeritageFilter === 'all' ? '1px solid var(--primary)' : '1px solid var(--border)',
+                        boxShadow: mapHeritageFilter === 'all' ? '0 2px 6px rgba(22, 101, 52, 0.15)' : 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      {t('era.eras.all')}
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setMapHeritageFilter(prev => prev === 'planned' ? 'none' : 'planned');
+                      }}
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '6px',
+                        borderRadius: '12px',
+                        padding: '8px 16px',
+                        fontSize: '0.85rem',
+                        fontWeight: 700,
+                        background: mapHeritageFilter === 'planned' ? 'var(--gold)' : 'var(--surface)',
+                        color: mapHeritageFilter === 'planned' ? 'white' : 'var(--surface-foreground)',
+                        border: mapHeritageFilter === 'planned' ? '1px solid var(--gold)' : '1px solid var(--border)',
+                        boxShadow: mapHeritageFilter === 'planned' ? '0 2px 6px rgba(180, 83, 9, 0.15)' : 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <span>📌</span> {t('era.status_planned')}
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setMapHeritageFilter(prev => prev === 'visited' ? 'none' : 'visited');
+                      }}
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '6px',
+                        borderRadius: '12px',
+                        padding: '8px 16px',
+                        fontSize: '0.85rem',
+                        fontWeight: 700,
+                        background: mapHeritageFilter === 'visited' ? 'var(--primary)' : 'var(--surface)',
+                        color: mapHeritageFilter === 'visited' ? 'white' : 'var(--surface-foreground)',
+                        border: mapHeritageFilter === 'visited' ? '1px solid var(--primary)' : '1px solid var(--border)',
+                        boxShadow: mapHeritageFilter === 'visited' ? '0 2px 6px rgba(22, 101, 52, 0.15)' : 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <span>✅</span> {t('era.status_visited')}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Section 3: Heritage Era Filters (Horizontal Scroll instead of wrap) */}
+                {mapHeritageFilter === 'all' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px dashed var(--border)', paddingTop: '12px' }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span>⏳</span> {i18n.language === 'ko' ? '유적지 역사 시대 선택' : 'Select Heritage Era'}
+                    </div>
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: '8px', 
+                      overflowX: 'auto', 
+                      paddingBottom: '8px',
+                      scrollbarWidth: 'none',
+                      msOverflowStyle: 'none'
+                    }} className="era-selector-scroll">
+                      <button 
+                        className={`era-btn ${mapEraFilter === 'all' ? 'active' : ''}`}
+                        onClick={() => setMapEraFilter('all')}
+                        style={{
+                          borderRadius: '10px',
+                          padding: '6px 12px',
+                          fontSize: '0.82rem',
+                          fontWeight: 700,
+                          background: mapEraFilter === 'all' ? 'var(--primary)' : 'rgba(0,0,0,0.02)',
+                          color: mapEraFilter === 'all' ? 'white' : 'var(--surface-foreground)',
+                          border: '1px solid var(--border)',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {i18n.language === 'ko' ? '전체 시대' : 'All Eras'}
+                      </button>
+                      {Eras.filter(e => e.id !== 'all').map(era => (
+                        <button 
+                          key={era.id} 
+                          className={`era-btn ${mapEraFilter === era.id ? 'active' : ''}`}
+                          onClick={() => {
+                            setMapEraFilter(era.id);
+                          }}
+                          style={{
+                            borderRadius: '10px',
+                            padding: '6px 12px',
+                            fontSize: '0.82rem',
+                            fontWeight: 700,
+                            background: mapEraFilter === era.id ? 'var(--primary)' : 'var(--surface)',
+                            color: mapEraFilter === era.id ? 'white' : 'var(--surface-foreground)',
+                            border: mapEraFilter === era.id ? '1px solid var(--primary)' : '1px solid var(--border)',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {era.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Section 4: GPS Action Button */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border)', paddingTop: '12px', marginTop: '4px' }}>
+                  <button
+                    onClick={handleFindMyLocation}
+                    style={{
+                      padding: '8px 12px',
+                      background: 'var(--primary)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontWeight: 'bold',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.filter = 'brightness(0.95)'}
+                    onMouseLeave={(e) => e.currentTarget.style.filter = ''}
+                  >
+                    <span>🎯</span>
+                    {t('route.map.find_my_location')}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {loadingPublicCamps && (
               <div style={{ fontSize: '0.85rem', color: 'var(--primary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -2823,9 +3998,28 @@ function App() {
 
             {/* GPS permissions error */}
             {gpsError && (
-              <div className="quiz-alert mock" style={{ marginBottom: '10px', marginTop: 0, background: 'rgba(185, 28, 28, 0.05)', borderColor: 'rgba(185, 28, 28, 0.15)', color: 'var(--red-accent)' }}>
-                <AlertCircle size={16} />
-                <span style={{ fontSize: '0.75rem' }}>{gpsError}</span>
+              <div className="quiz-alert mock" style={{ marginBottom: '10px', marginTop: 0, background: 'rgba(185, 28, 28, 0.05)', borderColor: 'rgba(185, 28, 28, 0.15)', color: 'var(--red-accent)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                  <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                  <span style={{ fontSize: '0.75rem', lineHeight: 1.3 }}>{gpsError}</span>
+                </div>
+                <button 
+                  onClick={() => setIsLocationGuideOpen(true)}
+                  style={{
+                    background: 'var(--red-accent)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    fontSize: '0.68rem',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
+                  }}
+                >
+                  {t('route.map.gps_guide_btn')}
+                </button>
               </div>
             )}
 
@@ -2837,23 +4031,40 @@ function App() {
                   style={{ width: "100%", height: "100%" }}
                   level={10}
                 >
-                  {/* Render all 15 heritage sites */}
-                  {MASTER_HERITAGES.map(heritage => (
-                    <MapMarker 
-                      key={heritage.id} 
-                      position={{ lat: heritage.lat, lng: heritage.lng }}
-                      onClick={() => setActiveMapHeritageId(heritage.id)}
-                    >
+                  {/* Render filtered heritage sites */}
+                  {MASTER_HERITAGES.filter(h => {
+                    if (mapHeritageFilter !== 'all' && heritageStatuses[h.id] !== mapHeritageFilter) {
+                      return false;
+                    }
+                    if (mapEraFilter !== 'all' && h.era !== mapEraFilter) {
+                      return false;
+                    }
+                    return true;
+                  }).map(heritage => (
+                     <MapMarker 
+                       key={heritage.id} 
+                       position={{ lat: heritage.lat, lng: heritage.lng }}
+                       image={{
+                         src: getHeritageMarkerImage(heritageStatuses[heritage.id]),
+                         size: { width: 32, height: 40 },
+                         options: {
+                           offset: { x: 16, y: 40 }
+                         }
+                       }}
+                       onClick={() => setActiveMapHeritageId(heritage.id)}
+                     >
                       {activeMapHeritageId === heritage.id && (
                         <div style={{ 
                           padding: '10px', 
-                          minWidth: '220px', 
+                          width: '260px', 
                           background: 'white', 
                           borderRadius: '12px', 
                           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                           fontSize: '0.85rem',
                           color: '#333',
-                          zIndex: 99999
+                          zIndex: 99999,
+                          whiteSpace: 'normal',
+                          wordBreak: 'keep-all'
                         }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f0f0f0', paddingBottom: '6px', marginBottom: '8px' }}>
                             <span style={{ fontWeight: 800, color: 'var(--primary)', fontSize: '0.85rem' }}>{t(heritage.name)}</span>
@@ -2935,11 +4146,10 @@ function App() {
 
                   {/* Render all campsites on the map */}
                   {(() => {
-                    const mapCampsites = showPublicCamps ? allDisplayCampsites : MASTER_CAMPSITES;
-                    const filteredMapCampsites = mapCampsites.filter(c => {
-                      if (showReservableOnly && !isCampsiteReservable(c)) {
-                        return false;
-                      }
+                    const filteredMapCampsites = allDisplayCampsites.filter(c => {
+                      const isCurated = MASTER_CAMPSITES.some(mc => mc.id === c.id);
+                      if (isCurated && !showCuratedCamps) return false;
+                      if (!isCurated && !showPublicCamps) return false;
                       return true;
                     });
 
@@ -2949,10 +4159,13 @@ function App() {
                         <MapMarker 
                           key={campsite.id} 
                           position={{ lat: campsite.lat, lng: campsite.lng }}
-                          image={isCurated ? {
-                            src: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
-                            size: { width: 24, height: 35 }
-                          } : undefined}
+                          image={{
+                            src: getCampsiteMarkerImage(campsiteStatuses[campsite.id], isCurated),
+                            size: { width: 32, height: 40 },
+                            options: {
+                              offset: { x: 16, y: 40 }
+                            }
+                          }}
                           onClick={() => {
                             setActiveMapCampsiteId(campsite.id);
                             setActiveMapHeritageId(null);
@@ -2961,13 +4174,15 @@ function App() {
                           {activeMapCampsiteId === campsite.id && (
                             <div style={{ 
                               padding: '10px', 
-                              minWidth: '220px', 
+                              width: '260px', 
                               background: 'white', 
                               borderRadius: '12px', 
                               boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                               fontSize: '0.85rem',
                               color: '#333',
-                              zIndex: 99999
+                              zIndex: 99999,
+                              whiteSpace: 'normal',
+                              wordBreak: 'keep-all'
                             }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f0f0f0', paddingBottom: '6px', marginBottom: '8px' }}>
                                 <span style={{ fontWeight: 800, color: 'var(--primary)', fontSize: '0.85rem' }}>
@@ -3055,7 +4270,12 @@ function App() {
                         });
                         heritagesWithDistance.sort((a, b) => a.distance - b.distance);
 
-                        return heritagesWithDistance.map(heritage => {
+                        const filteredHeritagesWithDistance = heritagesWithDistance.filter(h => {
+                          if (mapHeritageFilter === 'all') return true;
+                          return heritageStatuses[h.id] === mapHeritageFilter;
+                        });
+
+                        return filteredHeritagesWithDistance.map(heritage => {
                           const status = heritageStatuses[heritage.id];
                           return (
                             <div key={heritage.id} className="campsite-card" style={{ padding: '12px', border: '1px solid var(--border)', borderRadius: '12px', background: 'var(--surface)' }}>
@@ -3082,6 +4302,7 @@ function App() {
                                     {status === 'visited' && (
                                       <span className="badge success" style={{ fontSize: '0.7rem', padding: '2px 6px' }}>
                                         ✅ {t('era.status_visited')}
+                                        {heritageVisitDates[heritage.id] && ` (${new Date(heritageVisitDates[heritage.id]).toLocaleDateString(i18n.language === 'ko' ? 'ko-KR' : 'en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })})`}
                                       </span>
                                     )}
                                   </div>
@@ -3108,9 +4329,9 @@ function App() {
                                       background: status === 'planned' ? 'rgba(217, 119, 6, 0.08)' : 'var(--surface)',
                                       color: status === 'planned' ? 'var(--gold)' : 'var(--surface-foreground)'
                                     }}
-                                    title={i18n.language === 'ko' ? '갈 예정 등록 (역사 퀴즈)' : 'Register Planned (History Quiz)'}
+                                    title={i18n.language === 'ko' ? '탐방 계획 등록 (역사 퀴즈)' : 'Register Planned (History Quiz)'}
                                   >
-                                    📌 {i18n.language === 'ko' ? '갈 예정' : 'Plan'}
+                                    📌 {i18n.language === 'ko' ? '탐방 계획' : 'Plan'}
                                   </button>
                                   <button
                                     onClick={() => handleHeritageStatusClick(heritage, 'visited')}
@@ -3125,9 +4346,9 @@ function App() {
                                       background: status === 'visited' ? 'rgba(22, 101, 52, 0.08)' : 'var(--surface)',
                                       color: status === 'visited' ? 'var(--primary)' : 'var(--surface-foreground)'
                                     }}
-                                    title={i18n.language === 'ko' ? '갔다옴 등록 (역사 퀴즈 및 후기)' : 'Register Visited (History Quiz & Review)'}
+                                    title={i18n.language === 'ko' ? '탐방 완료 등록 (역사 퀴즈 및 후기)' : 'Register Visited (History Quiz & Review)'}
                                   >
-                                    ✅ {i18n.language === 'ko' ? '갔다옴' : 'Visited'}
+                                    ✅ {i18n.language === 'ko' ? '탐방 완료' : 'Visited'}
                                   </button>
                                   <button
                                     onClick={() => {
@@ -3220,8 +4441,13 @@ function App() {
                     </div>
                   ) : (
                     ['prehistoric', 'baekje', 'later_baekje', 'goryeo', 'joseon', 'modern'].map(eraId => {
+                      if (mapEraFilter !== 'all' && eraId !== mapEraFilter) return null;
                       const eraHeritages = MASTER_HERITAGES.filter(h => h.era === eraId);
-                      if (eraHeritages.length === 0) return null;
+                      const filteredEraHeritages = eraHeritages.filter(h => {
+                        if (mapHeritageFilter !== 'all' && heritageStatuses[h.id] !== mapHeritageFilter) return false;
+                        return true;
+                      });
+                      if (filteredEraHeritages.length === 0) return null;
                       const eraLabel = Eras.find(e => e.id === eraId)?.label || eraId;
                       
                       return (
@@ -3238,11 +4464,11 @@ function App() {
                             gap: '6px'
                           }}>
                             <span>⏳</span> {eraLabel}
-                            <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--surface-foreground)' }}>({eraHeritages.length})</span>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--surface-foreground)' }}>({filteredEraHeritages.length})</span>
                           </h4>
                           
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {eraHeritages.map(heritage => {
+                            {filteredEraHeritages.map(heritage => {
                               const status = heritageStatuses[heritage.id];
                               return (
                                 <div key={heritage.id} className="campsite-card" style={{ padding: '12px', border: '1px solid var(--border)', borderRadius: '12px', background: 'var(--surface)' }}>
@@ -3267,6 +4493,7 @@ function App() {
                                         {status === 'visited' && (
                                           <span className="badge success" style={{ fontSize: '0.7rem', padding: '2px 6px' }}>
                                             ✅ {t('era.status_visited')}
+                                            {heritageVisitDates[heritage.id] && ` (${new Date(heritageVisitDates[heritage.id]).toLocaleDateString(i18n.language === 'ko' ? 'ko-KR' : 'en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })})`}
                                           </span>
                                         )}
                                       </div>
@@ -3287,9 +4514,9 @@ function App() {
                                           background: status === 'planned' ? 'rgba(217, 119, 6, 0.08)' : 'var(--surface)',
                                           color: status === 'planned' ? 'var(--gold)' : 'var(--surface-foreground)'
                                         }}
-                                        title={i18n.language === 'ko' ? '갈 예정 등록 (역사 퀴즈)' : 'Register Planned (History Quiz)'}
+                                        title={i18n.language === 'ko' ? '탐방 계획 등록 (역사 퀴즈)' : 'Register Planned (History Quiz)'}
                                       >
-                                        📌 {i18n.language === 'ko' ? '갈 예정' : 'Plan'}
+                                        📌 {i18n.language === 'ko' ? '탐방 계획' : 'Plan'}
                                       </button>
                                       <button
                                         onClick={() => handleHeritageStatusClick(heritage, 'visited')}
@@ -3304,9 +4531,9 @@ function App() {
                                           background: status === 'visited' ? 'rgba(22, 101, 52, 0.08)' : 'var(--surface)',
                                           color: status === 'visited' ? 'var(--primary)' : 'var(--surface-foreground)'
                                         }}
-                                        title={i18n.language === 'ko' ? '갔다옴 등록 (역사 퀴즈 및 후기)' : 'Register Visited (History Quiz & Review)'}
+                                        title={i18n.language === 'ko' ? '탐방 완료 등록 (역사 퀴즈 및 후기)' : 'Register Visited (History Quiz & Review)'}
                                       >
-                                        ✅ {i18n.language === 'ko' ? '갔다옴' : 'Visited'}
+                                        ✅ {i18n.language === 'ko' ? '탐방 완료' : 'Visited'}
                                       </button>
                                     </div>
                                   </div>
@@ -3396,28 +4623,7 @@ function App() {
             <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.25rem' }}>{t('quiz.title')}</h3>
             <p style={{ color: 'var(--surface-foreground)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{t('quiz.subtitle')}</p>
 
-            {/* Connection Status Banner */}
-            {!isSupabaseConfigured ? (
-              <div className="quiz-alert mock">
-                <AlertCircle size={16} />
-                <span>{t('quiz.mock_alert')}</span>
-              </div>
-            ) : supabaseError ? (
-              <div className="quiz-alert paused">
-                <AlertCircle size={16} />
-                <span>{t('quiz.supabase_paused_alert')}</span>
-              </div>
-            ) : isFavoritesTableMissing ? (
-              <div className="quiz-alert missing">
-                <AlertCircle size={16} />
-                <span>{t('quiz.supabase_missing_table_alert')}</span>
-              </div>
-            ) : (
-              <div className="quiz-alert supabase">
-                <Database size={16} />
-                <span>{t('quiz.supabase_alert')}</span>
-              </div>
-            )}
+
 
             {loadingQuizzes ? (
               <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
@@ -3456,18 +4662,26 @@ function App() {
                         </label>
                         <select className="quiz-filter-select" value={filterRegion} onChange={e => setFilterRegion(e.target.value)}>
                           <option value="all">{t('quiz.all')}</option>
-                          <option value="전주">{i18n.language === 'ko' ? '전주' : 'Jeonju'}</option>
-                          <option value="군산">{i18n.language === 'ko' ? '군산' : 'Gunsan'}</option>
-                          <option value="익산">{i18n.language === 'ko' ? '익산' : 'Iksan'}</option>
-                          <option value="정읍">{i18n.language === 'ko' ? '정읍' : 'Jeongeup'}</option>
-                          <option value="남원">{i18n.language === 'ko' ? '남원' : 'Namwon'}</option>
-                          <option value="김제">{i18n.language === 'ko' ? '김제' : 'Gimje'}</option>
-                          <option value="완주">{i18n.language === 'ko' ? '완주' : 'Wanju'}</option>
-                          <option value="진안">{i18n.language === 'ko' ? '진안' : 'Jinan'}</option>
-                          <option value="무주">{i18n.language === 'ko' ? '무주' : 'Muju'}</option>
-                          <option value="임실">{i18n.language === 'ko' ? '임실' : 'Imsil'}</option>
-                          <option value="고창">{i18n.language === 'ko' ? '고창' : 'Gochang'}</option>
-                          <option value="부안">{i18n.language === 'ko' ? '부안' : 'Buan'}</option>
+                          {[
+                            { key: '전주', labelKo: '전주', labelEn: 'Jeonju' },
+                            { key: '군산', labelKo: '군산', labelEn: 'Gunsan' },
+                            { key: '익산', labelKo: '익산', labelEn: 'Iksan' },
+                            { key: '정읍', labelKo: '정읍', labelEn: 'Jeongeup' },
+                            { key: '남원', labelKo: '남원', labelEn: 'Namwon' },
+                            { key: '김제', labelKo: '김제', labelEn: 'Gimje' },
+                            { key: '완주', labelKo: '완주', labelEn: 'Wanju' },
+                            { key: '진안', labelKo: '진안', labelEn: 'Jinan' },
+                            { key: '무주', labelKo: '무주', labelEn: 'Muju' },
+                            { key: '임실', labelKo: '임실', labelEn: 'Imsil' },
+                            { key: '고창', labelKo: '고창', labelEn: 'Gochang' },
+                            { key: '부안', labelKo: '부안', labelEn: 'Buan' }
+                          ]
+                            .filter(r => availableRegions.has(r.key))
+                            .map(r => (
+                              <option key={r.key} value={r.key}>
+                                {i18n.language === 'ko' ? r.labelKo : r.labelEn}
+                              </option>
+                            ))}
                         </select>
                       </div>
                     </div>
@@ -3626,177 +4840,360 @@ function App() {
                 : 'Collect my vivid reviews of visited heritage sites and historical quiz results.'}
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'flex-start' }} className="safety-grid">
-              {/* Column 1: Reviews */}
-              <div className="card" style={{ marginBottom: 0 }}>
-                <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '12px' }}>
-                  <BookOpen size={20} color="var(--primary)" />
-                  {i18n.language === 'ko' ? '나의 탐방 후기' : 'My Visit Reviews'}
-                </div>
+            {/* Sub-tab navigation */}
+            <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '1.5rem', gap: '16px' }}>
+              <button
+                onClick={() => setActiveLogSubTab('badges')}
+                style={{
+                  padding: '8px 12px',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: activeLogSubTab === 'badges' ? '3px solid var(--primary)' : '3px solid transparent',
+                  fontWeight: 800,
+                  fontSize: '0.9rem',
+                  color: activeLogSubTab === 'badges' ? 'var(--primary)' : 'var(--surface-foreground)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                🏅 {i18n.language === 'ko' ? '배지 컬렉션' : 'Badge Collection'}
+              </button>
+              <button
+                onClick={() => setActiveLogSubTab('logs')}
+                style={{
+                  padding: '8px 12px',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: activeLogSubTab === 'logs' ? '3px solid var(--primary)' : '3px solid transparent',
+                  fontWeight: 800,
+                  fontSize: '0.9rem',
+                  color: activeLogSubTab === 'logs' ? 'var(--primary)' : 'var(--surface-foreground)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                📖 {i18n.language === 'ko' ? '나의 활동 일지' : 'Activity Logs'}
+              </button>
+            </div>
 
-                {visitedHeritages.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--surface-foreground)' }}>
-                    <MapIcon size={32} style={{ margin: '0 auto 0.5rem', opacity: 0.5, display: 'block' }} />
-                    <p style={{ fontSize: '0.85rem', margin: 0 }}>
-                      {i18n.language === 'ko'
-                        ? '아직 다녀온 유적지가 없습니다.'
-                        : 'No visited heritage sites yet.'}
-                    </p>
+            {activeLogSubTab === 'badges' && (() => {
+              const unlockedBadges = BADGES.filter(b => b.checkUnlocked(heritageStatuses, solvedQuizzes, heritageReviews));
+              const percent = Math.round((unlockedBadges.length / BADGES.length) * 100);
+
+              return (
+                <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  {/* Progress Stats Card */}
+                  <div className="card" style={{ marginBottom: 0, padding: '1.25rem 1.5rem', background: 'radial-gradient(120% 120% at 0% 0%, rgba(22, 101, 52, 0.05) 0%, transparent 100%), var(--surface)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                      <div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--surface-foreground)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          {i18n.language === 'ko' ? '탐방 성과' : 'EXP PROGRESS'}
+                        </div>
+                        <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--foreground)', marginTop: '2px' }}>
+                          {i18n.language === 'ko' ? `역사 탐방 배지 ${unlockedBadges.length}개 획득` : `Unlocked ${unlockedBadges.length} of ${BADGES.length} Badges`}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--primary)' }}>
+                        {percent}%
+                      </div>
+                    </div>
+                    {/* Progress Bar */}
+                    <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ width: `${percent}%`, height: '100%', background: 'linear-gradient(90deg, var(--primary), var(--gold))', borderRadius: '4px', transition: 'width 0.5s ease-out' }}></div>
+                    </div>
                   </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '450px', overflowY: 'auto', paddingRight: '4px' }}>
-                    {visitedHeritages.map(heritage => {
-                      const isEditing = editingHeritageId === heritage.id;
+
+                  {/* Badge Cards Grid */}
+                  <div className="badge-grid">
+                    {BADGES.map(badge => {
+                      const isUnlocked = badge.checkUnlocked(heritageStatuses, solvedQuizzes, heritageReviews);
                       return (
-                        <div key={heritage.id} className="list-item" style={{ flexDirection: 'column', alignItems: 'stretch', padding: '12px', border: '1px solid var(--border)', borderRadius: '8px', gap: '6px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>{t(heritage.name)}</span>
-                            <span className="badge green" style={{ margin: 0 }}>갔다옴 ✅</span>
+                        <div
+                          key={badge.id}
+                          className={`badge-card ${isUnlocked ? 'unlocked' : 'locked'}`}
+                          onClick={() => setSelectedBadge(badge)}
+                        >
+                          <div className="badge-icon-wrapper" style={isUnlocked ? { color: badge.color } : {}}>
+                            {badge.icon}
                           </div>
-                          
-                          {isEditing ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
-                              <textarea
-                                value={editingReviewText}
-                                onChange={(e) => setEditingReviewText(e.target.value)}
-                                style={{
-                                  width: '100%',
-                                  minHeight: '60px',
-                                  padding: '8px',
-                                  borderRadius: '6px',
-                                  border: '1px solid var(--primary)',
-                                  fontSize: '0.8rem',
-                                  resize: 'vertical',
-                                  background: 'var(--surface)',
-                                  color: 'var(--foreground)'
-                                }}
-                              />
-                              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
-                                <button
-                                  onClick={() => setEditingHeritageId(null)}
-                                  style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--surface)', fontSize: '0.72rem', cursor: 'pointer' }}
-                                >
-                                  {i18n.language === 'ko' ? '취소' : 'Cancel'}
-                                </button>
-                                <button
-                                  onClick={() => handleSaveEditedReview(heritage.id)}
-                                  style={{ padding: '4px 8px', borderRadius: '4px', border: 'none', background: 'var(--primary)', color: 'white', fontSize: '0.72rem', cursor: 'pointer' }}
-                                >
-                                  {i18n.language === 'ko' ? '저장' : 'Save'}
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div style={{ marginTop: '4px' }}>
-                              <p style={{ fontSize: '0.8rem', color: 'var(--surface-foreground)', margin: '0 0 6px 0', minHeight: '20px', whiteSpace: 'pre-wrap' }}>
-                                {heritageReviews[heritage.id] || (i18n.language === 'ko' ? '등록된 후기가 없습니다.' : 'No review registered.')}
-                              </p>
-                              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                                <button
-                                  onClick={() => {
-                                    setEditingHeritageId(heritage.id);
-                                    setEditingReviewText(heritageReviews[heritage.id] || '');
-                                  }}
-                                  style={{ border: 'none', background: 'none', color: 'var(--primary)', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', padding: 0 }}
-                                >
-                                  {i18n.language === 'ko' ? '수정' : 'Edit'}
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteReview(heritage.id)}
-                                  style={{ border: 'none', background: 'none', color: '#dc2626', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', padding: 0 }}
-                                >
-                                  {i18n.language === 'ko' ? '삭제' : 'Delete'}
-                                </button>
-                              </div>
-                            </div>
-                          )}
+                          <div className="badge-name">
+                            {i18n.language === 'ko' ? badge.nameKo : badge.nameEn}
+                          </div>
+                          <span 
+                            className="badge-status-label" 
+                            style={{ 
+                              background: isUnlocked ? 'rgba(22, 101, 52, 0.08)' : 'rgba(0,0,0,0.04)',
+                              color: isUnlocked ? 'var(--primary)' : 'var(--surface-foreground)'
+                            }}
+                          >
+                            {isUnlocked ? (i18n.language === 'ko' ? '해금됨' : 'Unlocked') : (i18n.language === 'ko' ? '잠김' : 'Locked')}
+                          </span>
                         </div>
                       );
                     })}
                   </div>
-                )}
-              </div>
-
-              {/* Column 2: Quiz Log */}
-              <div className="card" style={{ marginBottom: 0 }}>
-                <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '12px' }}>
-                  <Award size={20} color="var(--gold)" />
-                  {i18n.language === 'ko' ? '나의 퀴즈 기록' : 'My Quiz Logs'}
                 </div>
+              );
+            })()}
 
-                {Object.keys(solvedQuizzes).length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--surface-foreground)' }}>
-                    <Award size={32} style={{ margin: '0 auto 0.5rem', opacity: 0.5, display: 'block' }} />
-                    <p style={{ fontSize: '0.85rem', margin: 0 }}>
-                      {i18n.language === 'ko'
-                        ? '아직 해결한 퀴즈가 없습니다.'
-                        : 'No solved quizzes yet.'}
-                    </p>
+            {activeLogSubTab === 'logs' && (
+              <div style={{ alignItems: 'flex-start' }} className="safety-grid">
+                {/* Column 1: My Heritage Logs */}
+                <div className="card" style={{ marginBottom: 0 }}>
+                  <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '12px' }}>
+                    <BookOpen size={20} color="var(--primary)" />
+                    {i18n.language === 'ko' ? '나의 역사지 기록' : 'My Historical Site Log'}
                   </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '450px', overflowY: 'auto', paddingRight: '4px' }}>
-                    {Object.entries(solvedQuizzes)
-                      .sort((a, b) => new Date(b[1].timestamp).getTime() - new Date(a[1].timestamp).getTime())
-                      .map(([key, solved]) => {
-                        const isHeritage = key.startsWith('heritage_');
-                        return (
-                          <div key={key} className="list-item" style={{ flexDirection: 'column', alignItems: 'stretch', padding: '12px', border: '1px solid var(--border)', borderRadius: '8px', gap: '6px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span style={{ fontWeight: 800, fontSize: '0.78rem', color: 'var(--surface-foreground)' }}>
-                                {isHeritage ? (i18n.language === 'ko' ? '🏛️ 유적지 퀴즈' : '🏛️ Heritage Quiz') : (i18n.language === 'ko' ? '❓ 일반 퀴즈' : '❓ General Quiz')}
-                              </span>
-                              <span className={`badge ${solved.isCorrect ? 'green' : 'red'}`} style={{ margin: 0 }}>
-                                {solved.isCorrect ? (i18n.language === 'ko' ? '정답 👏' : 'Correct 👏') : (i18n.language === 'ko' ? '오답 😢' : 'Incorrect 😢')}
-                              </span>
-                            </div>
-                            
-                            <p style={{ fontSize: '0.8rem', fontWeight: 600, margin: '2px 0 6px 0', lineHeight: 1.4 }}>
-                              Q. {solved.questionText}
-                            </p>
-                            
-                            <div style={{ fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: '2px', padding: '6px 8px', borderRadius: '6px', background: 'var(--surface)' }}>
-                              <div>
-                                <span style={{ color: 'var(--surface-foreground)' }}>
-                                  {i18n.language === 'ko' ? '선택한 답: ' : 'Your Answer: '}
-                                </span>
-                                <span style={{ fontWeight: 700, color: solved.isCorrect ? 'var(--primary)' : '#dc2626' }}>
-                                  {solved.selectedAnswer}
-                                </span>
-                              </div>
-                              {!solved.isCorrect && (
-                                <div>
-                                  <span style={{ color: 'var(--surface-foreground)' }}>
-                                    {i18n.language === 'ko' ? '정답: ' : 'Correct Answer: '}
-                                  </span>
-                                  <span style={{ fontWeight: 700, color: 'var(--primary)' }}>
-                                    {solved.correctAnswer}
-                                  </span>
+
+                  {/* Filter Selector Button Group */}
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px dashed var(--border)' }}>
+                    {(['all', 'planned', 'visited'] as const).map(filterVal => {
+                      const isActive = heritageLogFilter === filterVal;
+                      let label = '';
+                      if (filterVal === 'all') label = i18n.language === 'ko' ? '전체' : 'All';
+                      else if (filterVal === 'planned') label = i18n.language === 'ko' ? '📌 탐방 계획' : '📌 Planned';
+                      else label = i18n.language === 'ko' ? '✅ 탐방 완료' : '✅ Visited';
+
+                      return (
+                        <button
+                          key={filterVal}
+                          onClick={() => setHeritageLogFilter(filterVal)}
+                          className={`era-btn ${isActive ? 'active' : ''}`}
+                          style={{
+                            flex: 1,
+                            padding: '6px 8px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border)',
+                            background: isActive ? 'var(--primary)' : 'var(--surface)',
+                            color: isActive ? 'white' : 'var(--foreground)',
+                            fontSize: '0.78rem',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            textAlign: 'center'
+                          }}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {(() => {
+                    const loggedHeritages = MASTER_HERITAGES.filter(h => {
+                      const status = heritageStatuses[h.id];
+                      if (heritageLogFilter === 'all') {
+                        return status === 'planned' || status === 'visited';
+                      }
+                      return status === heritageLogFilter;
+                    });
+
+                    if (loggedHeritages.length === 0) {
+                      return (
+                        <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--surface-foreground)' }}>
+                          <MapIcon size={32} style={{ margin: '0 auto 0.5rem', opacity: 0.5, display: 'block' }} />
+                          <p style={{ fontSize: '0.85rem', margin: 0 }}>
+                            {i18n.language === 'ko'
+                              ? '해당하는 역사지 기록이 없습니다.'
+                              : 'No matching historical site logs.'}
+                          </p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '450px', overflowY: 'auto', paddingRight: '4px' }}>
+                        {loggedHeritages.map(heritage => {
+                          const status = heritageStatuses[heritage.id];
+                          const isEditing = editingHeritageId === heritage.id;
+                          return (
+                            <div key={heritage.id} className="list-item" style={{ flexDirection: 'column', alignItems: 'stretch', padding: '12px', border: '1px solid var(--border)', borderRadius: '8px', gap: '6px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>{t(heritage.name)}</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  {status === 'planned' ? (
+                                    <>
+                                      <span className="badge warning" style={{ margin: 0, fontSize: '0.72rem' }}>탐방 계획 📌</span>
+                                      <button
+                                        onClick={() => handleHeritageStatusClick(heritage, 'visited')}
+                                        style={{
+                                          padding: '2px 6px',
+                                          borderRadius: '4px',
+                                          border: 'none',
+                                          background: 'var(--primary)',
+                                          color: 'white',
+                                          fontSize: '0.7rem',
+                                          fontWeight: 'bold',
+                                          cursor: 'pointer'
+                                        }}
+                                      >
+                                        {i18n.language === 'ko' ? '탐방 완료 등록' : 'Mark Visited'}
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                                      <span className="badge green" style={{ margin: 0, fontSize: '0.72rem' }}>탐방 완료 ✅</span>
+                                      {heritageVisitDates[heritage.id] && (
+                                        <span style={{ fontSize: '0.62rem', color: 'var(--surface-foreground)', opacity: 0.8 }}>
+                                          {new Date(heritageVisitDates[heritage.id]).toLocaleDateString(i18n.language === 'ko' ? 'ko-KR' : 'en-US', {
+                                            year: 'numeric',
+                                            month: '2-digit',
+                                            day: '2-digit'
+                                          })}
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
+                              </div>
+                              
+                              {status === 'visited' && (
+                                <>
+                                  {isEditing ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
+                                      <textarea
+                                        value={editingReviewText}
+                                        onChange={(e) => setEditingReviewText(e.target.value)}
+                                        style={{
+                                          width: '100%',
+                                          minHeight: '60px',
+                                          padding: '8px',
+                                          borderRadius: '6px',
+                                          border: '1px solid var(--primary)',
+                                          fontSize: '0.8rem',
+                                          resize: 'vertical',
+                                          background: 'var(--surface)',
+                                          color: 'var(--foreground)'
+                                        }}
+                                      />
+                                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+                                        <button
+                                          onClick={() => setEditingHeritageId(null)}
+                                          style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--surface)', fontSize: '0.72rem', cursor: 'pointer' }}
+                                        >
+                                          {i18n.language === 'ko' ? '취소' : 'Cancel'}
+                                        </button>
+                                        <button
+                                          onClick={() => handleSaveEditedReview(heritage.id)}
+                                          style={{ padding: '4px 8px', borderRadius: '4px', border: 'none', background: 'var(--primary)', color: 'white', fontSize: '0.72rem', cursor: 'pointer' }}
+                                        >
+                                          {i18n.language === 'ko' ? '저장' : 'Save'}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div style={{ marginTop: '4px' }}>
+                                      <p style={{ fontSize: '0.8rem', color: 'var(--surface-foreground)', margin: '0 0 6px 0', minHeight: '20px', whiteSpace: 'pre-wrap' }}>
+                                        {heritageReviews[heritage.id] || (i18n.language === 'ko' ? '등록된 후기가 없습니다.' : 'No review registered.')}
+                                      </p>
+                                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                        <button
+                                          onClick={() => {
+                                            setEditingHeritageId(heritage.id);
+                                            setEditingReviewText(heritageReviews[heritage.id] || '');
+                                          }}
+                                          style={{ border: 'none', background: 'none', color: 'var(--primary)', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', padding: 0 }}
+                                        >
+                                          {i18n.language === 'ko' ? '수정' : 'Edit'}
+                                        </button>
+                                        <button
+                                          onClick={() => handleDeleteReview(heritage.id)}
+                                          style={{ border: 'none', background: 'none', color: '#dc2626', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', padding: 0 }}
+                                        >
+                                          {i18n.language === 'ko' ? '삭제' : 'Delete'}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </>
                               )}
                             </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
 
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', fontSize: '0.65rem', color: 'var(--surface-foreground)', marginTop: '2px' }}>
-                              {new Date(solved.timestamp).toLocaleDateString(i18n.language === 'ko' ? 'ko-KR' : 'en-US', {
-                                year: 'numeric',
-                                month: '2-digit',
-                                day: '2-digit',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </div>
-                          </div>
-                        );
-                      })}
+                {/* Column 2: Quiz Log */}
+                <div className="card" style={{ marginBottom: 0 }}>
+                  <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '12px' }}>
+                    <Award size={20} color="var(--gold)" />
+                    {i18n.language === 'ko' ? '나의 퀴즈 기록' : 'My Quiz Logs'}
                   </div>
-                )}
+
+                  {Object.keys(solvedQuizzes).length === 0 ? (
+                    <div style={{ textShadow: 'none', textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--surface-foreground)' }}>
+                      <Award size={32} style={{ margin: '0 auto 0.5rem', opacity: 0.5, display: 'block' }} />
+                      <p style={{ fontSize: '0.85rem', margin: 0 }}>
+                        {i18n.language === 'ko'
+                          ? '아직 해결한 퀴즈가 없습니다.'
+                          : 'No solved quizzes yet.'}
+                      </p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '450px', overflowY: 'auto', paddingRight: '4px' }}>
+                      {Object.entries(solvedQuizzes)
+                        .sort((a, b) => new Date(b[1].timestamp).getTime() - new Date(a[1].timestamp).getTime())
+                        .map(([key, solved]) => {
+                          const isHeritage = key.startsWith('heritage_');
+                          return (
+                            <div key={key} className="list-item" style={{ flexDirection: 'column', alignItems: 'stretch', padding: '12px', border: '1px solid var(--border)', borderRadius: '8px', gap: '6px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontWeight: 800, fontSize: '0.78rem', color: 'var(--surface-foreground)' }}>
+                                  {isHeritage ? (i18n.language === 'ko' ? '🏛️ 유적지 퀴즈' : '🏛️ Heritage Quiz') : (i18n.language === 'ko' ? '❓ 일반 퀴즈' : '❓ General Quiz')}
+                                </span>
+                                <span className={`badge ${solved.isCorrect ? 'green' : 'red'}`} style={{ margin: 0 }}>
+                                  {solved.isCorrect ? (i18n.language === 'ko' ? '정답 👏' : 'Correct 👏') : (i18n.language === 'ko' ? '오답 😢' : 'Incorrect 😢')}
+                                </span>
+                              </div>
+                              
+                              <p style={{ fontSize: '0.8rem', fontWeight: 600, margin: '2px 0 6px 0', lineHeight: 1.4 }}>
+                                Q. {solved.questionText}
+                              </p>
+                              
+                              <div style={{ fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: '2px', padding: '6px 8px', borderRadius: '6px', background: 'var(--surface)' }}>
+                                <div>
+                                  <span style={{ color: 'var(--surface-foreground)' }}>
+                                    {i18n.language === 'ko' ? '선택한 답: ' : 'Your Answer: '}
+                                  </span>
+                                  <span style={{ fontWeight: 700, color: solved.isCorrect ? 'var(--primary)' : '#dc2626' }}>
+                                    {solved.selectedAnswer}
+                                  </span>
+                                </div>
+                                {!solved.isCorrect && (
+                                  <div>
+                                    <span style={{ color: 'var(--surface-foreground)' }}>
+                                      {i18n.language === 'ko' ? '정답: ' : 'Correct Answer: '}
+                                    </span>
+                                    <span style={{ fontWeight: 700, color: 'var(--primary)' }}>
+                                      {solved.correctAnswer}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+
+                              <div style={{ display: 'flex', justifyContent: 'flex-end', fontSize: '0.65rem', color: 'var(--surface-foreground)', marginTop: '2px' }}>
+                                {new Date(solved.timestamp).toLocaleDateString(i18n.language === 'ko' ? 'ko-KR' : 'en-US', {
+                                  year: 'numeric',
+                                  month: '2-digit',
+                                  day: '2-digit',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>
 
       <nav className="bottom-nav">
-        <button className={`nav-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}><Compass /><span>{t('tabs.home')}</span></button>
         <button className={`nav-item ${activeTab === 'era' ? 'active' : ''}`} onClick={() => setActiveTab('era')}><Clock /><span>{t('tabs.era')}</span></button>
         <button className={`nav-item ${activeTab === 'route' ? 'active' : ''}`} onClick={() => setActiveTab('route')}><MapPin /><span>{t('tabs.route')}</span></button>
         <button className={`nav-item ${activeTab === 'quiz' ? 'active' : ''}`} onClick={() => setActiveTab('quiz')}><Award /><span>{t('tabs.quiz')}</span></button>
@@ -3929,6 +5326,334 @@ function App() {
           </div>
         );
       })()}
+
+      {selectedBadge && (() => {
+        const isUnlocked = selectedBadge.checkUnlocked(heritageStatuses, solvedQuizzes, heritageReviews);
+        return (
+          <div className="modal-backdrop" style={{ zIndex: 3000 }} onClick={() => setSelectedBadge(null)}>
+            <div className="modal-card" style={{ maxWidth: '380px', padding: '2rem 1.5rem', textAlign: 'center', position: 'relative' }} onClick={(e) => e.stopPropagation()}>
+              <button 
+                onClick={() => setSelectedBadge(null)}
+                style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'var(--surface-foreground)' }}
+              >
+                ✕
+              </button>
+              
+              <div 
+                className={isUnlocked ? "badge-spin" : ""}
+                style={{ 
+                  width: '90px', 
+                  height: '90px', 
+                  borderRadius: '50%', 
+                  background: isUnlocked ? `radial-gradient(circle, rgba(255,255,255,1) 0%, ${selectedBadge.color}22 100%)` : 'rgba(0,0,0,0.04)', 
+                  border: `2px solid ${isUnlocked ? selectedBadge.color : '#cbd5e1'}`,
+                  boxShadow: isUnlocked ? `0 0 20px ${selectedBadge.color}33` : 'none',
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  fontSize: '3rem', 
+                  margin: '0 auto 1.5rem'
+                }}
+              >
+                {selectedBadge.icon}
+              </div>
+              
+              <h4 style={{ fontSize: '1.2rem', fontWeight: 900, marginBottom: '0.5rem', color: 'var(--foreground)' }}>
+                {i18n.language === 'ko' ? selectedBadge.nameKo : selectedBadge.nameEn}
+              </h4>
+              
+              <div style={{ marginBottom: '1.25rem' }}>
+                <span 
+                  style={{ 
+                    fontSize: '0.72rem', 
+                    fontWeight: 'bold', 
+                    padding: '3px 8px', 
+                    borderRadius: '8px',
+                    background: isUnlocked ? 'rgba(22, 101, 52, 0.08)' : 'rgba(220, 38, 38, 0.08)',
+                    color: isUnlocked ? 'var(--primary)' : '#dc2626'
+                  }}
+                >
+                  {isUnlocked ? (i18n.language === 'ko' ? '기록 달성 🏆' : 'UNLOCKED 🏆') : (i18n.language === 'ko' ? '도전 중 🔒' : 'LOCKED 🔒')}
+                </span>
+              </div>
+              
+              <p style={{ fontSize: '0.82rem', color: 'var(--surface-foreground)', lineHeight: 1.5, marginBottom: '1.5rem', background: 'var(--surface)', padding: '12px', borderRadius: '10px', border: '1px solid var(--border)', textAlign: 'left' }}>
+                {i18n.language === 'ko' ? selectedBadge.descKo : selectedBadge.descEn}
+              </p>
+              
+              {isUnlocked ? (
+                <button
+                  onClick={() => {
+                    const text = i18n.language === 'ko' 
+                      ? `[전북 역사 캠퍼] 나만의 배지 획득! 🏅 "${selectedBadge.nameKo}" 배지를 해금했습니다. 전북의 유적지 캠핑을 함께 떠나요!`
+                      : `[Jeonbuk History Camper] I unlocked the "${selectedBadge.nameEn}" badge! Join me on a historical camping tour!`;
+                    navigator.clipboard.writeText(text);
+                    alert(i18n.language === 'ko' ? '공유 문구가 클립보드에 복사되었습니다!' : 'Share message copied to clipboard!');
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    borderRadius: '10px',
+                    background: 'var(--primary)',
+                    color: 'white',
+                    border: 'none',
+                    fontWeight: 'bold',
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <span>📢</span> {i18n.language === 'ko' ? '획득 인증 공유하기' : 'Share Achievement'}
+                </button>
+              ) : (
+                <div style={{ fontSize: '0.75rem', color: 'var(--surface-foreground)' }}>
+                  {i18n.language === 'ko' ? '유적지 탐방과 퀴즈 풀이를 통해 조건이 충족되면 자동으로 획득됩니다.' : 'Automatically unlocked when requirements are met through travel & quizzes.'}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {isLocationGuideOpen && (
+        <div className="modal-backdrop" style={{ zIndex: 3000 }} onClick={() => setIsLocationGuideOpen(false)}>
+          <div className="modal-card" style={{ maxWidth: '420px', padding: '1.5rem', textAlign: 'left', position: 'relative' }} onClick={(e) => e.stopPropagation()}>
+            <button 
+              onClick={() => setIsLocationGuideOpen(false)}
+              style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'var(--surface-foreground)' }}
+            >
+              ✕
+            </button>
+
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 900, marginBottom: '1rem', color: 'var(--foreground)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              🎯 {i18n.language === 'ko' ? '위치 권한 허용 가이드' : 'Location Permission Guide'}
+            </h3>
+
+            {isStandalone && (
+              <div style={{ 
+                padding: '10px 12px', 
+                borderRadius: '8px', 
+                background: 'rgba(22, 101, 52, 0.05)', 
+                border: '1px solid rgba(22, 101, 52, 0.15)', 
+                color: 'var(--primary)',
+                fontSize: '0.78rem',
+                lineHeight: 1.4,
+                marginBottom: '1rem'
+              }}>
+                📌 <strong>{i18n.language === 'ko' ? '홈 화면 앱(PWA)으로 실행 중입니다' : 'Running as Home Screen App'}</strong><br />
+                {i18n.language === 'ko' 
+                  ? '홈 화면에 추가된 바로가기 앱은 브라우저 설정창이 없어 권한 관리가 까다롭습니다. 위치가 정상 작동하지 않으면 맨 아래의 꿀팁을 참고해 주세요.' 
+                  : 'Home Screen apps do not have standard browser address bars to manage permissions easily. Please refer to the reset tip at the bottom.'}
+              </div>
+            )}
+
+            {/* Tabs */}
+            <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '1rem', gap: '4px' }}>
+              <button 
+                onClick={() => setGuideTab('inapp')}
+                style={{
+                  flex: 1,
+                  padding: '8px 4px',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: guideTab === 'inapp' ? '2px solid var(--primary)' : '2px solid transparent',
+                  fontWeight: guideTab === 'inapp' ? 'bold' : 'normal',
+                  color: guideTab === 'inapp' ? 'var(--primary)' : 'var(--surface-foreground)',
+                  fontSize: '0.78rem',
+                  cursor: 'pointer'
+                }}
+              >
+                {i18n.language === 'ko' ? '카카오톡/인앱' : 'In-App / Kakao'}
+              </button>
+              <button 
+                onClick={() => setGuideTab('chrome')}
+                style={{
+                  flex: 1,
+                  padding: '8px 4px',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: guideTab === 'chrome' ? '2px solid var(--primary)' : '2px solid transparent',
+                  fontWeight: guideTab === 'chrome' ? 'bold' : 'normal',
+                  color: guideTab === 'chrome' ? 'var(--primary)' : 'var(--surface-foreground)',
+                  fontSize: '0.78rem',
+                  cursor: 'pointer'
+                }}
+              >
+                {i18n.language === 'ko' ? '크롬/삼성' : 'Chrome/Samsung'}
+              </button>
+              <button 
+                onClick={() => setGuideTab('safari')}
+                style={{
+                  flex: 1,
+                  padding: '8px 4px',
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: guideTab === 'safari' ? '2px solid var(--primary)' : '2px solid transparent',
+                  fontWeight: guideTab === 'safari' ? 'bold' : 'normal',
+                  color: guideTab === 'safari' ? 'var(--primary)' : 'var(--surface-foreground)',
+                  fontSize: '0.78rem',
+                  cursor: 'pointer'
+                }}
+              >
+                {i18n.language === 'ko' ? '아이폰 사파리' : 'iPhone Safari'}
+              </button>
+            </div>
+
+            {/* Content */}
+            <div style={{ minHeight: '180px', fontSize: '0.82rem', lineHeight: 1.5, color: 'var(--foreground)' }}>
+              {guideTab === 'inapp' && (
+                <div>
+                  <p style={{ fontWeight: 'bold', color: 'var(--red-accent)', marginBottom: '0.5rem' }}>
+                    {i18n.language === 'ko' 
+                      ? '⚠️ 카카오톡 등 앱 내부 브라우저는 위치 차단이 잦습니다.' 
+                      : '⚠️ In-App browsers often restrict location services.'}
+                  </p>
+                  <ol style={{ paddingLeft: '1.2rem', margin: '0 0 1rem 0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <li>
+                      {i18n.language === 'ko' 
+                        ? '화면 오른쪽 아래의 메뉴 버튼(점 3개 ⋯ 또는 🧭 아이콘)을 누릅니다.' 
+                        : 'Tap the menu button (⋯ or 🧭 compass icon) at the bottom-right.'}
+                    </li>
+                    <li>
+                      {i18n.language === 'ko' 
+                        ? '옵션에서 "다른 브라우저로 열기" (크롬/사파리)를 선택합니다.' 
+                        : 'Select "Open in External Browser" (Safari/Chrome).'}
+                    </li>
+                  </ol>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--surface-foreground)', marginBottom: '0.75rem' }}>
+                    {i18n.language === 'ko' 
+                      ? '또는 주소를 복사하여 크롬이나 사파리에 직접 붙여넣으세요.' 
+                      : 'Or, copy the link and paste it into Chrome or Safari.'}
+                  </p>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(window.location.href);
+                      alert(i18n.language === 'ko' ? '주소가 복사되었습니다!' : 'URL copied to clipboard!');
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      borderRadius: '8px',
+                      background: 'rgba(217, 119, 6, 0.08)',
+                      border: '1px dashed var(--gold)',
+                      color: 'var(--gold)',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      textAlign: 'center'
+                    }}
+                  >
+                    🔗 {i18n.language === 'ko' ? '현재 주소 복사하기' : 'Copy Current URL'}
+                  </button>
+                </div>
+              )}
+
+              {guideTab === 'chrome' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <p style={{ fontWeight: 'bold', color: 'var(--primary)', marginBottom: '2px' }}>
+                    {i18n.language === 'ko' ? '크롬 및 삼성 인터넷 (안드로이드/PC)' : 'Chrome & Samsung Internet (Android/PC)'}
+                  </p>
+                  <ol style={{ paddingLeft: '1.2rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <li>
+                      {i18n.language === 'ko' 
+                        ? '주소창 왼쪽의 자물쇠 아이콘(🔒) 또는 설정 조절 단추를 클릭합니다.' 
+                        : 'Click the lock icon (🔒) or settings slider on the left of the address bar.'}
+                    </li>
+                    <li>
+                      {i18n.language === 'ko' 
+                        ? '"권한" 또는 "사이트 설정" 메뉴로 이동합니다.' 
+                        : 'Go to "Permissions" or "Site settings".'}
+                    </li>
+                    <li>
+                      {i18n.language === 'ko' 
+                        ? '"위치" 접근 권한을 "허용"으로 변경합니다.' 
+                        : 'Change the "Location" permission to "Allow".'}
+                    </li>
+                    <li>
+                      {i18n.language === 'ko' 
+                        ? '페이지를 새로고침(F5)한 뒤 "내 위치 찾기"를 다시 누릅니다.' 
+                        : 'Refresh the page and tap "Find My Location" again.'}
+                    </li>
+                  </ol>
+                </div>
+              )}
+
+              {guideTab === 'safari' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <p style={{ fontWeight: 'bold', color: 'var(--primary)', marginBottom: '2px' }}>
+                    {i18n.language === 'ko' ? '사파리 및 아이폰 설정 (iOS)' : 'Safari & iPhone Settings (iOS)'}
+                  </p>
+                  <ol style={{ paddingLeft: '1.2rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <li>
+                      {i18n.language === 'ko' 
+                        ? '아이폰 [설정] ➔ [개인정보 보호 및 보안] ➔ [위치 서비스]가 켜져 있는지 확인합니다.' 
+                        : 'Go to iPhone [Settings] ➔ [Privacy & Security] ➔ [Location Services] and verify it is turned on.'}
+                    </li>
+                    <li>
+                      {i18n.language === 'ko' 
+                        ? '[설정] ➔ [Safari] ➔ [위치]를 선택하고 반드시 "앱을 사용하는 동안"으로 변경합니다. ("묻기"로 되어 있으면 홈 화면 앱 특성상 안내창이 뜨지 않고 자동으로 차단됩니다.)' 
+                        : 'Go to [Settings] ➔ [Safari] ➔ [Location] and set it to "While Using the App" (or Allow). (If set to "Ask", standalone Home Screen apps cannot render the browser prompt and will fail automatically.)'}
+                    </li>
+                    <li>
+                      {i18n.language === 'ko' 
+                        ? '또는 Safari 주소창의 "한한/aA" 아이콘을 눌러 [웹 사이트 설정] ➔ [위치]를 "허용"으로 변경합니다.' 
+                        : 'Or, tap the "aA" icon in Safari\'s address bar, choose [Website Settings] ➔ [Location] and set to "Allow".'}
+                    </li>
+                  </ol>
+                </div>
+              )}
+            </div>
+
+            {isStandalone && (
+              <div style={{ 
+                marginTop: '1rem',
+                padding: '10px 12px', 
+                borderRadius: '8px', 
+                background: 'rgba(217, 119, 6, 0.05)', 
+                border: '1px dashed var(--gold)', 
+                color: 'var(--foreground)',
+                fontSize: '0.78rem',
+                lineHeight: 1.45
+              }}>
+                🔑 <strong>{i18n.language === 'ko' ? '💡 홈화면 바로가기 해결 꿀팁!' : '💡 PWA Reset Tip!'}</strong><br />
+                {i18n.language === 'ko' ? (
+                  <>
+                    1. 홈 화면에서 이 앱 아이콘을 길게 눌러 <strong>삭제(지우기)</strong>합니다.<br />
+                    2. <strong>아이폰 설정 ➔ 개인정보 보호 ➔ 위치 서비스 ➔ Safari 웹 사이트</strong> 설정을 <strong>'앱을 사용하는 동안'(허용)</strong>으로 변경합니다. (이게 <strong>'묻기'</strong>로 되어 있으면 홈 화면 앱에서는 무조건 실패합니다.)<br />
+                    3. 일반 브라우저로 재접속한 뒤 <strong>'홈 화면에 추가'</strong>를 다시 진행해 주세요.
+                  </>
+                ) : (
+                  <>
+                    1. Long-press the icon on your home screen and select <strong>Delete</strong>.<br />
+                    2. Go to <strong>iPhone Settings ➔ Privacy ➔ Location Services ➔ Safari Websites</strong> and set it to <strong>'While Using the App'</strong> (Allow). (If set to <strong>'Ask'</strong>, standalone mode will fail automatically.)<br />
+                    3. Re-open this site in standard browser and <strong>'Add to Home Screen'</strong> again.
+                  </>
+                )}
+              </div>
+            )}
+
+            <button
+              onClick={() => setIsLocationGuideOpen(false)}
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: '10px',
+                background: 'var(--primary)',
+                color: 'white',
+                border: 'none',
+                fontWeight: 'bold',
+                marginTop: '1.25rem',
+                cursor: 'pointer',
+                textAlign: 'center'
+              }}
+            >
+              {i18n.language === 'ko' ? '닫기' : 'Close'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
