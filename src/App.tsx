@@ -2019,6 +2019,42 @@ function App() {
   // Selected Campsite for interactive mapping (defaults to Moaksan)
   const [selectedCampsiteId, setSelectedCampsiteId] = useState('moaksan');
 
+  // Save feedback toast notification
+  const [saveToast, setSaveToast] = useState<{
+    id: number;
+    type: 'guest' | 'auth';
+    title: string;
+    desc: string;
+  } | null>(null);
+
+  const triggerSaveToast = (actionName: string) => {
+    const isKo = i18n.language === 'ko';
+    if (authUser) {
+      const name = authUser.user_metadata?.full_name || authUser.user_metadata?.name || (isKo ? '회원' : 'User');
+      setSaveToast({
+        id: Date.now(),
+        type: 'auth',
+        title: isKo ? `✅ ${actionName} 완료 (계정 저장)` : `✅ ${actionName} Saved`,
+        desc: isKo ? `${name}님의 카카오 계정에 안전하게 동기화되었습니다.` : `Synced safely with your Kakao account.`
+      });
+    } else {
+      setSaveToast({
+        id: Date.now(),
+        type: 'guest',
+        title: isKo ? `📌 ${actionName} 완료 (기기 저장)` : `📌 ${actionName} Saved locally`,
+        desc: isKo ? `현재 기기에 안전하게 저장되었습니다. 카카오 로그인 시 계정에 영구 보관됩니다.` : `Saved to this device. Sign in with Kakao to sync across devices.`
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!saveToast) return;
+    const timer = setTimeout(() => {
+      setSaveToast(null);
+    }, 4500);
+    return () => clearTimeout(timer);
+  }, [saveToast]);
+
   // Map Center controller state
   const [mapCenter, setMapCenter] = useState<{ lat: number, lng: number }>({ lat: 35.6, lng: 126.9 });
 
@@ -2160,6 +2196,9 @@ function App() {
 
     setCampsiteStatuses(updated);
     localStorage.setItem('history_camper_statuses', JSON.stringify(updated));
+    if (!isRemoving) {
+      triggerSaveToast(targetStatus === 'visited' ? (i18n.language === 'ko' ? '캠핑장 방문 완료' : 'Campsite Visited') : (i18n.language === 'ko' ? '캠핑장 찜하기' : 'Campsite Planned'));
+    }
 
     if (isSupabaseConfigured && supabase) {
       try {
@@ -2248,6 +2287,8 @@ function App() {
         setHeritageReviews(updatedReviews);
         localStorage.setItem('history_camper_heritage_reviews', JSON.stringify(updatedReviews));
       }
+
+      triggerSaveToast(targetStatus === 'visited' ? (i18n.language === 'ko' ? '유적지 탐방 완료' : 'Heritage Visited') : (i18n.language === 'ko' ? '탐방 계획 저장' : 'Heritage Planned'));
     }
   };
 
@@ -2273,6 +2314,7 @@ function App() {
         };
         setSolvedQuizzes(newSolved);
         localStorage.setItem('history_camper_solved_quizzes', JSON.stringify(newSolved));
+        triggerSaveToast(i18n.language === 'ko' ? '역사 퀴즈 풀이' : 'Quiz Answer');
       }
     }
   };
@@ -2306,6 +2348,8 @@ function App() {
         setHeritageReviews(updatedReviews);
         localStorage.setItem('history_camper_heritage_reviews', JSON.stringify(updatedReviews));
       }
+
+      triggerSaveToast(i18n.language === 'ko' ? '탐방 기록 및 후기' : 'Visit Log & Review');
     }
 
     // Reset states
@@ -2326,6 +2370,7 @@ function App() {
     setHeritageReviews(updatedReviews);
     localStorage.setItem('history_camper_heritage_reviews', JSON.stringify(updatedReviews));
     setEditingHeritageId(null);
+    triggerSaveToast(i18n.language === 'ko' ? '후기 수정' : 'Review Updated');
   };
 
   const handleDeleteReview = (heritageId: string) => {
@@ -4832,11 +4877,64 @@ function App() {
         {activeTab === 'safety' && (
           <div className="animate-fade-in">
             <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.25rem' }}>{t('tabs.safety')}</h3>
-            <p style={{ color: 'var(--surface-foreground)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+            <p style={{ color: 'var(--surface-foreground)', fontSize: '0.9rem', marginBottom: '1.2rem' }}>
               {i18n.language === 'ko' 
                 ? '내가 다녀온 유적지의 생생한 후기와 역사 퀴즈 풀이 결과를 모아봅니다.' 
                 : 'Collect my vivid reviews of visited heritage sites and historical quiz results.'}
             </p>
+
+            {/* Sync & Account Status Banner Card */}
+            <div style={{
+              background: authUser ? 'rgba(22, 163, 74, 0.08)' : 'rgba(245, 158, 11, 0.1)',
+              border: `1px solid ${authUser ? 'rgba(22, 163, 74, 0.25)' : 'rgba(245, 158, 11, 0.3)'}`,
+              borderRadius: '14px',
+              padding: '14px 16px',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              flexWrap: 'wrap'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{
+                  width: '36px', height: '36px', borderRadius: '50%',
+                  background: authUser ? 'var(--primary)' : '#f59e0b',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'white', flexShrink: 0
+                }}>
+                  {authUser ? <CheckCircle2 size={20} /> : <User size={20} />}
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--foreground)' }}>
+                    {authUser
+                      ? (i18n.language === 'ko' ? `👤 ${authUser.user_metadata?.full_name || '회원'}님 계정으로 실시간 동기화 중` : `👤 Synced with ${authUser.user_metadata?.full_name || 'Account'}`)
+                      : (i18n.language === 'ko' ? '📱 현재 기기(게스트 모드)에 저장 중' : '📱 Saving to this device (Guest Mode)')}
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--surface-foreground)', marginTop: '2px', lineHeight: 1.4 }}>
+                    {authUser
+                      ? (i18n.language === 'ko' ? '모든 퀴즈 풀이와 방문 기록이 카카오 계정에 안전하게 보관됩니다.' : 'All quizzes and visit logs are safely saved to your account.')
+                      : (i18n.language === 'ko' ? '카카오 로그인 시 다른 스마트폰/PC에서도 내 기록을 그대로 이어볼 수 있어요.' : 'Sign in with Kakao to sync your logs across all devices.')}
+                  </div>
+                </div>
+              </div>
+              {!authUser && (
+                <button
+                  onClick={() => setShowLoginModal(true)}
+                  style={{
+                    background: '#fee500', color: '#3c1e1e',
+                    border: 'none', borderRadius: '10px',
+                    padding: '8px 14px', fontSize: '0.82rem', fontWeight: 800,
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
+                    boxShadow: '0 2px 8px rgba(254, 229, 0, 0.3)',
+                    marginLeft: 'auto'
+                  }}
+                >
+                  <LogIn size={14} />
+                  {i18n.language === 'ko' ? '카카오 로그인' : 'Sign In'}
+                </button>
+              )}
+            </div>
 
             {/* Sub-tab navigation */}
             <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '1.5rem', gap: '16px' }}>
@@ -5190,6 +5288,81 @@ function App() {
           </div>
         )}
       </div>
+
+      {/* Floating Save Toast Notification */}
+      {saveToast && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '76px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            maxWidth: '420px',
+            width: 'calc(100% - 32px)',
+            zIndex: 9990,
+            background: saveToast.type === 'auth' ? '#0f172a' : '#1e293b',
+            color: '#ffffff',
+            borderRadius: '16px',
+            padding: '12px 16px',
+            boxShadow: '0 12px 32px rgba(0,0,0,0.32)',
+            border: saveToast.type === 'auth' ? '1px solid rgba(34, 197, 94, 0.4)' : '1px solid rgba(245, 158, 11, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            animation: 'fadeIn 0.25s ease-out'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '32px', height: '32px', borderRadius: '50%',
+              background: saveToast.type === 'auth' ? 'var(--primary)' : '#f59e0b',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'white', flexShrink: 0
+            }}>
+              {saveToast.type === 'auth' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+            </div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: '0.86rem' }}>{saveToast.title}</div>
+              <div style={{ fontSize: '0.74rem', color: '#cbd5e1', marginTop: '2px', lineHeight: 1.3 }}>
+                {saveToast.desc}
+              </div>
+            </div>
+          </div>
+          {saveToast.type === 'guest' ? (
+            <button
+              onClick={() => {
+                setSaveToast(null);
+                setShowLoginModal(true);
+              }}
+              style={{
+                background: '#fee500',
+                color: '#3c1e1e',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '6px 10px',
+                fontSize: '0.76rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                flexShrink: 0,
+                boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+              }}
+            >
+              {i18n.language === 'ko' ? '로그인' : 'Sign In'}
+            </button>
+          ) : (
+            <button
+              onClick={() => setSaveToast(null)}
+              style={{
+                background: 'none', border: 'none', color: '#94a3b8',
+                cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center'
+              }}
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+      )}
 
       <nav className="bottom-nav">
         <button className={`nav-item ${activeTab === 'era' ? 'active' : ''}`} onClick={() => setActiveTab('era')}><Clock /><span>{t('tabs.era')}</span></button>
