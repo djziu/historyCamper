@@ -1906,9 +1906,7 @@ function App() {
   const handleKakaoLogin = async () => {
     if (!supabase) return;
     setLoginLoading(true);
-    const redirectTo = isLocal
-      ? 'http://localhost:5173/historyCamper/'
-      : 'https://djziu.github.io/historyCamper/';
+    const redirectTo = window.location.origin + window.location.pathname;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'kakao',
       options: { redirectTo },
