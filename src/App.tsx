@@ -2444,6 +2444,13 @@ function App() {
   // Load Quiz Data
   useEffect(() => {
     async function loadQuizzes() {
+      if (i18n.language === 'en') {
+        // In English mode, always use the thoroughly translated English quiz dataset
+        setQuizzes(MOCK_QUIZZES_EN);
+        setLoadingQuizzes(false);
+        return;
+      }
+
       if (isSupabaseConfigured && supabase) {
         setLoadingQuizzes(true);
         try {
@@ -2459,17 +2466,17 @@ function App() {
             })).sort((a: any, b: any) => (a.id || 0) - (b.id || 0));
             setQuizzes(formatted);
           } else {
-            setQuizzes(i18n.language === 'en' ? MOCK_QUIZZES_EN : MOCK_QUIZZES_KO);
+            setQuizzes(MOCK_QUIZZES_KO);
           }
         } catch (err) {
           console.error("Failed to load quizzes from Supabase, loading mock fallback:", err);
           setSupabaseError(true);
-          setQuizzes(i18n.language === 'en' ? MOCK_QUIZZES_EN : MOCK_QUIZZES_KO);
+          setQuizzes(MOCK_QUIZZES_KO);
         } finally {
           setLoadingQuizzes(false);
         }
       } else {
-        setQuizzes(i18n.language === 'en' ? MOCK_QUIZZES_EN : MOCK_QUIZZES_KO);
+        setQuizzes(MOCK_QUIZZES_KO);
       }
     }
     loadQuizzes();
