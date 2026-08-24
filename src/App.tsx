@@ -2554,8 +2554,15 @@ function App() {
     }
 
     let method = cl;
-    if (!method && url) {
-      method = i18n.language === 'ko' ? '온라인' : 'Online';
+    if (i18n.language === 'en') {
+      if (cl.includes('온라인') || url) method = 'Online';
+      else if (cl.includes('전화')) method = 'Phone';
+      else if (cl.includes('현장')) method = 'On-site';
+      else method = 'Available';
+    } else {
+      if (!method && url) {
+        method = '온라인';
+      }
     }
 
     return (
@@ -2563,6 +2570,50 @@ function App() {
         📅 {i18n.language === 'ko' ? `예약 (${method})` : `Book (${method})`}
       </span>
     );
+  };
+
+  // Helper to translate tags
+  const translateTag = (tag: string) => {
+    if (i18n.language === 'ko') return tag;
+    const tagMap: Record<string, string> = {
+      '안전점검 완료': 'Safety Verified',
+      '유적지 근접': 'Near Heritage',
+      '거리순 1위': '#1 Closest',
+      '#송광사': '#Songgwangsa',
+      '#마이산탑사': '#Maisan_Tapsa',
+      '#화암사': '#Hwaamsa',
+      '#경기전': '#Gyeonggijeon',
+      '#풍남문': '#Pungnammun',
+      '#오목대': '#Omokdae',
+      '#전주향교': '#Jeonju_Hyanggyo',
+      '#교룡산성': '#Gyoryongsanseong',
+      '#광한루원': '#Gwanghallu',
+      '#만인의총': '#Maninui_Chong',
+      '#미륵사지': '#Mireuksa',
+      '#왕궁리유적': '#Wanggungri',
+      '#쌍릉': '#Twin_Tombs',
+      '#고도리석불': '#Godori_Buddha',
+      '#동고사': '#Donggosa',
+      '#승암산성': '#Seungamsanseong',
+      '#금산사': '#Geumsansa',
+      '#벽골제': '#Byeokgolje',
+      '#금마도토성': '#Geumma_Fortress',
+      '#백두대간': '#Baekdudaegan',
+      '#지리산': '#Jirisan',
+      '#청암산': '#Cheongamsan',
+      '#근대역사박물관': '#Modern_Museum',
+      '#히로쓰가옥': '#Hirotsu_House',
+      '#고창고인돌': '#Gochang_Dolmen',
+      '#선운사': '#Seonunsa',
+      '#내소사': '#Naesosa',
+      '#무성서원': '#Museongseowon',
+      '#피향정': '#Pihyangjeong',
+      '#실상사': '#Silsangsa',
+      '#상이암': '#Sangiam',
+      '#황토현': '#Hwangtohyun',
+      '#적상산성': '#Jeoksangsanseong'
+    };
+    return tagMap[tag] || tag;
   };
 
   // Helper to render a campsite card
@@ -2595,7 +2646,9 @@ function App() {
             
             <div className="tag-container" style={{ marginTop: '6px' }}>
               {campsite.tags.map((tag: any, idx: number) => (
-                <span key={idx} className={`badge ${tag.startsWith('#') ? 'gold' : ''}`}>{tag}</span>
+                <span key={idx} className={`badge ${tag.startsWith('#') ? 'gold' : ''}`}>
+                  {translateTag(tag)}
+                </span>
               ))}
             </div>
 
@@ -5115,7 +5168,9 @@ function App() {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                   {status === 'planned' ? (
                                     <>
-                                      <span className="badge warning" style={{ margin: 0, fontSize: '0.72rem' }}>탐방 계획 📌</span>
+                                      <span className="badge warning" style={{ margin: 0, fontSize: '0.72rem' }}>
+                                        {i18n.language === 'ko' ? '탐방 계획 📌' : 'Plan to Visit 📌'}
+                                      </span>
                                       <button
                                         onClick={() => handleHeritageStatusClick(heritage, 'visited')}
                                         style={{
@@ -5134,7 +5189,9 @@ function App() {
                                     </>
                                   ) : (
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
-                                      <span className="badge green" style={{ margin: 0, fontSize: '0.72rem' }}>탐방 완료 ✅</span>
+                                      <span className="badge green" style={{ margin: 0, fontSize: '0.72rem' }}>
+                                        {i18n.language === 'ko' ? '탐방 완료 ✅' : 'Visited ✅'}
+                                      </span>
                                       {heritageVisitDates[heritage.id] && (
                                         <span style={{ fontSize: '0.62rem', color: 'var(--surface-foreground)', opacity: 0.8 }}>
                                           {new Date(heritageVisitDates[heritage.id]).toLocaleDateString(i18n.language === 'ko' ? 'ko-KR' : 'en-US', {
